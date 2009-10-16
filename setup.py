@@ -43,8 +43,12 @@ setup(name="pyutilib.virtualenv",
         'Programming Language :: Unix Shell',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Software Development :: Libraries :: Python Modules'],
-      packages=['pyutilib', 'pyutilib.ply'],
+      packages=['pyutilib', 'pyutilib.virtualenv', 'pyutilib.virtualenv.scripts'],
       keywords=['utility'],
-      namespace_packages=['pyutilib']
+      namespace_packages=['pyutilib'],
+      entry_points = """
+        [console_scripts]
+        virtualenv_installer = pyutilib.virtualenv.scripts.create_installer:main
+      """
       )
 

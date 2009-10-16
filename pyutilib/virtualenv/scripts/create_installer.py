@@ -20,10 +20,12 @@ import sys
 
 def main():
     if len(sys.argv) == 1:
-        print "create_installer <name>"
+        print "virtualenv_installer <config-file> <name>"
         sys.exit(1)
 
     here = os.path.dirname(os.path.abspath(__file__))
+    print "HERE",here
+    sys.exit(1)
     script_name = os.path.join(here, sys.argv[1])
 
     INPUT = open('header.py','r')
