@@ -1,0 +1,11 @@
+===============================
+ pyutilib.virtualenv CHANGELOG
+===============================
+
+-------------------------------------------------------------------------------
+pyutilib.virtualenv 1.0
+-------------------------------------------------------------------------------
+
+- Initial release of PyUtilib package to support customization of 
+  VirtualEnv installers.
+
