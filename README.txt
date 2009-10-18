@@ -20,7 +20,7 @@ Organization
 
 + Directories
 
-  * pyutilib - The root directory for PyUtilib's Python source code
+  * pyutilib - The root directory for PyUtilib source code
 
 + Documentation and Bug Tracking
 
