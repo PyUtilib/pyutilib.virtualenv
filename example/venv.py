@@ -1,6 +1,6 @@
 
 def configure(installer):
-    installer.name = 'venv'
+    installer.default_dirname = 'venv'
     #
     # Add repositories
     #
@@ -15,8 +15,8 @@ def configure(installer):
 #
 # This directory is managed with virtualenv, which creates a
 # virtual Python installation.  If the 'bin' directory is put in
-# user's PATH environment, then the bin/python command can be used to
-# employ SPOT without further installation.
+# user's PATH environment, then the bin/python command can be used 
+# without further installation.
 #
 # Directories:
 #   admin      Administrative data for maintaining this distribution

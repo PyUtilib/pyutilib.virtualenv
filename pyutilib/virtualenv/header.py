@@ -1,70 +1,66 @@
 #  _________________________________________________________________________
 #
-#  TEVA-SPOT Toolkit: Tools for Designing Contaminant Warning Systems
+#  PyUtilib: A Python utility library.
 #  Copyright (c) 2008 Sandia Corporation.
-#  This software is distributed under the LGPL License.
+#  This software is distributed under the BSD License.
 #  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
 #  the U.S. Government retains certain rights in this software.
-#  For more information, see the README.txt file in the top SPOT directory.
+#  For more information, see the PyUtilib README.txt file.
 #  _________________________________________________________________________
 #
-# This script was created with the spot_install script.
+#
+# This script was created with the virtualenv_install script.
 #
 
 import re
 import urllib2
 import zipfile
+import shutil
+import string
+import textwrap
+import sys
+import glob
+
+
+#
+# The following taken from PyUtilib
+#
+if (sys.platform[0:3] == "win"): #pragma:nocover
+   executable_extension=".exe"
+else:                            #pragma:nocover
+   executable_extension=""
+
+
+def search_file(filename, search_path=None, implicitExt=executable_extension, executable=False,         isfile=True):
+    if search_path is None:
+        #
+        # Use the PATH environment if it is defined and not empty
+        #
+        if "PATH" in os.environ and os.environ["PATH"] != "":
+            search_path = string.split(os.environ["PATH"], os.pathsep)
+        else:
+            search_path = os.defpath.split(os.pathsep)
+    for path in search_path:
+      if os.path.exists(os.path.join(path, filename)) and \
+         (not isfile or os.path.isfile(os.path.join(path, filename))):
+         if not executable or os.access(os.path.join(path,filename),os.X_OK):
+            return os.path.abspath(os.path.join(path, filename))
+      if os.path.exists(os.path.join(path, filename+implicitExt)) and \
+         (not isfile or os.path.isfile(os.path.join(path, filename+implicitExt))):
+         if not executable or os.access(os.path.join(path,filename+implicitExt),os.X_OK):
+            return os.path.abspath(os.path.join(path, filename+implicitExt))
+    return None
+
+#
+# PyUtilib Ends
+#
+
 
 #
 # The following taken from pkg_resources
 #
 component_re = re.compile(r'(\d+ | [a-z]+ | \.| -)', re.VERBOSE)
 replace = {'pre':'c', 'preview':'c','-':'final-','rc':'c','dev':'@'}.get
-
-
-def zip(filename,fdlist):
-    zf = zipfile.ZipFile(filename, 'w')
-    for file in fdlist:
-        if os.path.isdir(file):
-            for root, dirs, files in os.walk(file):
-                for fname in files:
-                    if fname.endswith('exe'):
-                        zf.external_attr = (0777 << 16L) | (010 << 28L)
-                    else:
-                        zf.external_attr = (0660 << 16L) | (010 << 28L)
-                    zf.write(join(root,fname))
-        else:
-            zf.write(file)
-    zf.close()
-
-
-def unzip(filename, dir=None):
-    fname = os.path.abspath(filename)
-    zf = zipfile.ZipFile(fname, 'r')
-    if dir is None:
-        dir = os.getcwd()
-    #zf.extractall()
-    for file in zf.infolist():
-        name = file.filename
-        #perm = ((file.external_attr >> 16L) & 0777)
-        #print "HERE",perm,file.external_attr, file.external_attr >> 16L
-        if name.endswith('/') or name.endswith('\\'):
-            outfile = os.path.join(dir, name)
-            if not os.path.exists(outfile):
-                os.makedirs(outfile)
-        else:
-            outfile = os.path.join(dir, name)
-            parent = os.path.dirname(outfile)
-            if not os.path.exists(parent):
-                os.makedirs(parent)
-            OUTPUT = open(outfile, 'wb')
-            OUTPUT.write(zf.read(name))
-            OUTPUT.close()
-    zf.close()
-
-
-def svnjoin(*args):
-    return '/'.join(args)
 
 def _parse_version_parts(s):
     for part in component_re.split(s):
@@ -117,6 +113,46 @@ def guess_release(svndir):
             latest = v
             latest_str = version
     return svndir+"/"+latest_str
+
+
+
+def zip(filename,fdlist):
+    zf = zipfile.ZipFile(filename, 'w')
+    for file in fdlist:
+        if os.path.isdir(file):
+            for root, dirs, files in os.walk(file):
+                for fname in files:
+                    if fname.endswith('exe'):
+                        zf.external_attr = (0777 << 16L) | (010 << 28L)
+                    else:
+                        zf.external_attr = (0660 << 16L) | (010 << 28L)
+                    zf.write(join(root,fname))
+        else:
+            zf.write(file)
+    zf.close()
+
+
+def unzip(filename, dir=None):
+    fname = os.path.abspath(filename)
+    zf = zipfile.ZipFile(fname, 'r')
+    if dir is None:
+        dir = os.getcwd()
+    for file in zf.infolist():
+        name = file.filename
+        if name.endswith('/') or name.endswith('\\'):
+            outfile = os.path.join(dir, name)
+            if not os.path.exists(outfile):
+                os.makedirs(outfile)
+        else:
+            outfile = os.path.join(dir, name)
+            parent = os.path.dirname(outfile)
+            if not os.path.exists(parent):
+                os.makedirs(parent)
+            OUTPUT = open(outfile, 'wb')
+            OUTPUT.write(zf.read(name))
+            OUTPUT.close()
+    zf.close()
+
 
 
 class Repository(object):
@@ -377,50 +413,6 @@ if sys.platform.startswith('win'):
    Repository.svn += '.exe'
 
 
-#
-# The following taken from PyUtilib
-#
-#  _________________________________________________________________________
-#
-#  PyUtilib: A Python utility library.
-#  Copyright (c) 2008 Sandia Corporation.
-#  This software is distributed under the BSD License.
-#  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-#  the U.S. Government retains certain rights in this software.
-#  For more information, see the PyUtilib README.txt file.
-#  _________________________________________________________________________
-#
-if (sys.platform[0:3] == "win"): #pragma:nocover
-   executable_extension=".exe"
-else:                            #pragma:nocover
-   executable_extension=""
-
-
-def search_file(filename, search_path=None, implicitExt=executable_extension, executable=False,         isfile=True):
-    if search_path is None:
-        #
-        # Use the PATH environment if it is defined and not empty
-        #
-        if "PATH" in os.environ and os.environ["PATH"] != "":
-            search_path = string.split(os.environ["PATH"], os.pathsep)
-        else:
-            search_path = os.defpath.split(os.pathsep)
-    for path in search_path:
-      if os.path.exists(os.path.join(path, filename)) and \
-         (not isfile or os.path.isfile(os.path.join(path, filename))):
-         if not executable or os.access(os.path.join(path,filename),os.X_OK):
-            return os.path.abspath(os.path.join(path, filename))
-      if os.path.exists(os.path.join(path, filename+implicitExt)) and \
-         (not isfile or os.path.isfile(os.path.join(path, filename+implicitExt))):
-         if not executable or os.access(os.path.join(path,filename+implicitExt),os.X_OK):
-            return os.path.abspath(os.path.join(path, filename+implicitExt))
-    return None
-
-#
-# PyUtilib Ends
-#
-
-
 def filter_python_develop(line):
     if not line.strip():
         return Logger.DEBUG
@@ -432,15 +424,404 @@ def filter_python_develop(line):
     return Logger.NOTIFY
 
 
-def localize_cmd_files(dir):
-    if not sys.platform.startswith('win'):
-        return
-    for file in cmd_files:
-        INPUT = open(join(dir,'bin',file), 'r')
-        content = "".join(INPUT.readlines())
-        INPUT.close()
-        content = content.replace('__VIRTUAL_ENV__',dir)
-        OUTPUT = open(join(dir,'bin',file), 'w')
-        OUTPUT.write(content)
+
+wrapper = textwrap.TextWrapper(subsequent_indent="    ")
+
+
+class Installer(object):
+
+    def __init__(self):
+        self.description="This script manages the installation of packages into a virtual Python installation."
+        self.home_dir = None
+        self.abshome_dir = None
+        self.sw_packages = []
+        self.sw_dict = {}
+        self.cmd_files = []
+        self.auxdir = []
+
+    def add_repository(self, *args, **kwds):
+        repos = Repository( *args, **kwds)
+        self.sw_dict[repos.name] = repos
+        self.sw_packages.append( repos )
+
+    def add_dos_cmd(self, file):
+        self.cmd_files.append( file )
+
+    def add_auxdir(self, package, todir, fromdir):
+        self.auxdir.append( (todir, package, fromdir) )
+
+    def modify_parser(self, parser):
+        self.default_windir = 'C:\\'+self.default_dirname
+        self.default_unixdir = './'+self.default_dirname
+        #
+        parser.add_option('--trunk',
+            help='Install trunk branches of Python software.',
+            action='store_true',
+            dest='trunk',
+            default=False)
+
+        parser.add_option('--stable',
+            help='Install stable branches of Python software.',
+            action='store_true',
+            dest='stable',
+            default=False)
+
+        parser.add_option('--update',
+            help='Update all Python packages.',
+            action='store_true',
+            dest='update',
+            default=False)
+
+        parser.add_option('--proxy',
+            help='Set the HTTP_PROXY environment with this option.',
+            action='store',
+            dest='proxy',
+            default=None)
+
+        parser.add_option('--preinstall',
+            help='Prepare an installation that will be used to build a MS Windows installer.',
+            action='store_true',
+            dest='preinstall',
+            default=False)
+
+        parser.add_option('--zip',
+            help='Add ZIP files that are use define this installation.',
+            action='append',
+            dest='zip',
+            default=[])
+
+        parser.add_option('--forum-pkg',
+            help='Use one or more packages from the Coopr Forum.  Multiple packages are specified with a comma-separated list.',
+            action='store',
+            dest='forum',
+            default='')
+
+        parser.add_option('--forum-dev',
+            help="Explicitly indicate which of the Coopr Forum packages are treated as development packages.  By default, no Coopr Forum packages are treated this way; packages omited from this list are installed from their latest 'tags' branch.  Multiple packages are specified with a comma-separated list.",
+            action='store',
+            dest='forumdev',
+            default='')
+
+        parser.add_option('--use-pythonpath',
+            help="By default, the PYTHONPATH is ignored when installing.  This option allows the 'easy_install' tool to search this path for related Python packages, which are then installed.",
+            action='store_true',
+            dest='use_pythonpath',
+            default=False)
+
+        parser.add_option(
+            '--site-packages',
+            dest='no_site_packages',
+            action='store_false',
+            help="Setup the virtual environment to use the global site-packages",
+            default=True)
+
+        #
+        # Change the virtualenv options
+        #
+        parser.get_option("--python").help = "Specify the Python interpreter to use, e.g., --python=python2.5 will install with the python2.5 interpreter."
+        parser.get_option("--clear").help = "Remove the existing installation and reinstall from scratch."
+        parser.remove_option("--relocatable")
+        parser.remove_option("--version")
+        parser.remove_option("--unzip-setuptools")
+        parser.remove_option("--no-site-packages")
+        #
+        # Add description 
+        #
+        parser.description=self.description
+        parser.epilog="If DEST_DIR is not specified, then a default installation path is used:  "+self.default_windir+" on Windows and "+self.default_unixdir+" on Linux.  This command uses the Python 'setuptools' package to install Python packages.  This package installs packages by downloading files from the internet.  If you are running this from within a firewall, you may need to set the HTTP_PROXY environment variable to a value like 'http://<proxyhost>:<port>'."
+        
+
+    def adjust_options(self, options, args):
+        #
+        global logger
+        verbosity = options.verbose - options.quiet
+        self.logger = Logger([(Logger.level_for_integer(2-verbosity), sys.stdout)])
+        logger = self.logger
+        #
+        if options.update and (options.stable or options.trunk):
+            self.logger.fatal("ERROR: cannot specify --stable or --trunk when specifying the --update option.")
+            sys.exit(1000)
+        if len(args) > 1:
+            self.logger.fatal("ERROR: "+self.installer.name+" can only have one argument")
+            sys.exit(1000)
+        #
+        # Error checking
+        #
+        if not options.preinstall and (os.path.exists(self.abshome_dir) ^ options.update):
+            if options.update:
+                self.logger.fatal(wrapper.fill("ERROR: The 'update' option is specified, but the installation path '%s' does not exist!" % self.home_dir))
+                sys.exit(1000)
+            elif not options.clear and os.path.exists(join(self.abshome_dir,'bin')):
+                    self.logger.fatal(wrapper.fill("ERROR: The installation path '%s' already exists!  Use the --update option if you wish to update, or use --clear to create a fresh installation." % self.home_dir))
+                    sys.exit(1000)
+        if len(args) == 0:
+            args.append(self.abshome_dir)
+
+    def get_homedir(self, options, args):
+        #
+        # Figure out the installation directory
+        #
+        if len(args) == 0:
+            path = self.guess_path()
+            if path is None or options.preinstall:
+                # Install in a default location.
+                if sys.platform == 'win32':
+                    home_dir = self.default_windir
+                else:
+                    home_dir = self.default_unixdir
+            else:
+                home_dir = os.path.dirname(os.path.dirname(path))
+        else:
+            home_dir = args[0]
+        self.home_dir = home_dir
+        self.abshome_dir = os.path.abspath(home_dir)
+
+    def guess_path(self):
+        return None
+
+    def setup_installer(self, options):
+        if options.update:
+            print "Updating existing installation in '%s'" % self.home_dir
+        else:
+            print "Starting fresh installation in '%s'" % self.home_dir
+        #
+        # Open up zip files
+        #
+        for file in options.zip:
+            unzip(file, dir=self.abshome_dir)
+        #
+        # Setup HTTP proxy
+        #
+        if not options.proxy is None:
+            os.environ['HTTP_PROXY'] = options.proxy
+        print "  using the HTTP_PROXY environment: %s" % os.environ.get('HTTP_PROXY',"''")
+        print ""
+        #
+        # Disable the PYTHONPATH, to isolate this installation from 
+        # other Python installations that a user may be working with.
+        #
+        if not options.use_pythonpath:
+            try:
+                del os.environ["PYTHONPATH"]
+            except:
+                pass
+        #self.sw_packages = get_repositories()
+        dev = options.forumdev.split(',')
+        for pkg in options.forum.split(','):
+            if pkg is '':
+                continue
+            if pkg in dev:
+                if (options.trunk or options.stable):
+                    self.sw_packages[pkg] = 'http://coopr-forum.googlecode.com/svn/'+pkg
+                else:
+                    self.sw_packages[pkg] = '-f http://coopr-forum.googlecode.com/svn/'+pkg+'/trunk '+pkg
+                dev_packages.append(pkg)
+            else:
+                try:
+                    self.sw_packages[pkg] = guess_release('http://coopr-forum.googlecode.com/svn/'+pkg+'/dev/')
+                except Exception, err:
+                    print "-----------------------------------------------------------------"
+                    print "ERROR Finding 'tags' branch for Coopr Forum Package %s: %s" % (pkg,str(err))
+                    print "-----------------------------------------------------------------"
+        #
+        # If --preinstall is declared, then we remove the directory, and prepare a ZIP file
+        # that contains the full installation.
+        #
+        if options.preinstall:
+            print "-----------------------------------------------------------------"
+            print " STARTING preinstall in directory %s" % self.home_dir
+            print "-----------------------------------------------------------------"
+            rmtree(self.abshome_dir)
+            os.mkdir(self.abshome_dir)
+        #
+        # If we're clearing the current installation, then remove a bunch of
+        # directories
+        #
+        elif options.clear:
+            path = join(self.abshome_dir,'src')
+            if os.path.exists(path):
+                rmtree(path)
+        #
+        # Setup the 'admin' directory
+        #
+        if not os.path.exists(self.abshome_dir):
+            os.mkdir(self.abshome_dir)
+        if not os.path.exists(join(self.abshome_dir,'admin')):
+            os.mkdir(join(self.abshome_dir,'admin'))
+        if options.update:
+            INPUT=open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'r')
+            options.trunk = INPUT.readline().strip() != 'False'
+            options.stable = INPUT.readline().strip() != 'False'
+            INPUT.close()
+        else:
+            OUTPUT=open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'w')
+            print >>OUTPUT, options.trunk
+            print >>OUTPUT, options.stable
+            OUTPUT.close()
+        #
+        # Setup package directories
+        #
+        if not os.path.exists(join(self.abshome_dir,'dist')):
+            os.mkdir(join(self.abshome_dir,'dist'))
+        if not os.path.exists(self.abshome_dir+os.sep+"src"):
+            os.mkdir(self.abshome_dir+os.sep+"src")
+        if not os.path.exists(self.abshome_dir+os.sep+"bin"):
+            os.mkdir(self.abshome_dir+os.sep+"bin")
+        #
+        # Get source packages
+        #
+        for pkg in self.sw_packages:
+            if pkg.dev:
+                tmp = join(self.abshome_dir,'src',pkg.name)
+            else:
+                tmp = join(self.abshome_dir,'dist',pkg.name)
+            if options.trunk:
+                if not options.update:
+                    pkg.install_trunk(dir=tmp, setup=False)
+            elif options.stable:
+                if not options.update:
+                    pkg.install_stable(dir=tmp, setup=False)
+            else:
+                if not options.update:
+                    pkg.install_release(dir=tmp, setup=False)
+        if options.update or not os.path.exists(join(self.abshome_dir,'doc')):
+            self.install_auxdirs(options)
+        #
+        # Create a README.txt file
+        #
+        OUTPUT=open(join(self.abshome_dir,"README.txt"),"w")
+        print >>OUTPUT, self.README.strip()
         OUTPUT.close()
+        #
+        # Finalize preinstall
+        #
+        if options.preinstall:
+            print "-----------------------------------------------------------------"
+            print " FINISHED preinstall in directory %s" % self.home_dir
+            print "-----------------------------------------------------------------"
+            os.chdir(self.abshome_dir)
+            zip(self.destdir+'.zip', ['.'])
+            sys.exit(0)
+
+        
+    def install_packages(self, options):
+        #
+        # Set the bin directory
+        #
+        if os.path.exists(self.abshome_dir+os.sep+"Scripts"):
+            bindir = join(self.abshome_dir,"Scripts")
+        else:
+            bindir = join(self.abshome_dir,"bin")
+        Repository.easy_install_path = os.path.abspath(join(bindir, 'easy_install'))
+        Repository.python = os.path.abspath(join(bindir, 'python'))
+        #
+        # Install the related packages
+        #
+        for pkg in self.sw_packages:
+            if pkg.dev:
+                srcdir = join(self.abshome_dir,'src',pkg.name)
+            else:
+                srcdir = join(self.abshome_dir,'dist',pkg.name)
+            if options.trunk:
+                if options.update:
+                    pkg.update_trunk(dir=srcdir)
+                else:
+                    pkg.install_trunk(dir=srcdir)
+            elif options.stable:
+                if options.update:
+                    pkg.update_stable(dir=srcdir)
+                else:
+                    pkg.install_stable(dir=srcdir)
+            else:
+                if options.update:
+                    pkg.update_release(dir=srcdir)
+                else:
+                    pkg.install_release(dir=srcdir)
+        #
+        # Copy the <env>/Scripts/* files into <env>/bin
+        #
+        if os.path.exists(self.abshome_dir+os.sep+"Scripts"):
+            for file in glob.glob(self.abshome_dir+os.sep+"Scripts"+os.sep+"*"):
+                shutil.copy(file, self.abshome_dir+os.sep+"bin")
+        #
+        # Localize DOS cmd files
+        #
+        self.localize_cmd_files(self.abshome_dir)
+        #
+        # Misc notifications
+        #
+        if not options.update:
+            print ""
+            print "-----------------------------------------------------------------"
+            print "  Add %s to the PATH environment variable" % (self.home_dir+os.sep+"bin")
+            print "-----------------------------------------------------------------"
+        print ""
+        print "Finished installation in '%s'" % self.home_dir
+
+    def localize_cmd_files(self, dir):
+        """
+        Hard-code the path to Python that is used in the Python CMD files that
+        are installed.
+        """
+        if not sys.platform.startswith('win'):
+            return
+        for file in self.cmd_files:
+            INPUT = open(join(dir,'bin',file), 'r')
+            content = "".join(INPUT.readlines())
+            INPUT.close()
+            content = content.replace('__VIRTUAL_ENV__',dir)
+            OUTPUT = open(join(dir,'bin',file), 'w')
+            OUTPUT.write(content)
+            OUTPUT.close()
+
+    def svnjoin(*args):
+        return '/'.join(args[1:])
+
+    def install_auxdirs(self, options):
+        for todir,pkg,fromdir in self.auxdir:
+            pkgroot = self.sw_dict[pkg].pkgroot
+            if options.update:
+                cmd = [Repository.svn,'update','-q',self.svnjoin(self.abshome_dir, todir)]
+            else:
+                if options.clear:
+                    rmtree( join(self.abshome_dir,todir) )
+                cmd = [Repository.svn,'checkout','-q',self.svnjoin(pkgroot,fromdir),join(self.abshome_dir,todir)]
+            print "Running command '%s'" % " ".join(cmd)
+            call_subprocess(cmd, filter_stdout=filter_python_develop,show_stdout=True)
+
+
+def get_installer(ctype):
+    """
+    Return an instance of the installer object.  If this object
+    does not already exist, then create the object and use the
+    configure() function to customize it based on the end-user's
+    needs.
+
+    The argument to this function is the class type that will be
+    constructed if needed.
+    """
+    try:
+        return get_installer.installer
+    except:
+        get_installer.installer = configure(ctype())
+        return get_installer.installer
+    
+
+#
+# The following methods will be called by virtualenv
+#
+
+def extend_parser(parser):
+    installer = get_installer(Installer)
+    installer.modify_parser(parser)
+
+def adjust_options(options, args):
+    installer = get_installer(Installer)
+    installer.get_homedir(options, args)
+    installer.adjust_options(options, args)
+    installer.setup_installer(options)
+    
+def after_install(options, home_dir):
+    installer = get_installer(Installer)
+    installer.install_packages(options)
 

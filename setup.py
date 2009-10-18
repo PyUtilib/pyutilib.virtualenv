@@ -48,7 +48,7 @@ setup(name="pyutilib.virtualenv",
       namespace_packages=['pyutilib'],
       entry_points = """
         [console_scripts]
-        virtualenv_installer = pyutilib.virtualenv.scripts.create_installer:main
+        virtualenv_installer = pyutilib.virtualenv.installer:main
       """
       )
 

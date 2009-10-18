@@ -17,24 +17,20 @@ import os
 import os.path
 import virtualenv
 import sys
+import stat
 
 def main():
-    if len(sys.argv) == 1:
+    if len(sys.argv) != 3:
         print "virtualenv_installer <config-file> <name>"
         sys.exit(1)
 
-    here = os.path.dirname(os.path.abspath(__file__))
-    print "HERE",here
-    sys.exit(1)
-    script_name = os.path.join(here, sys.argv[1])
+    script_name = sys.argv[2]
 
-    INPUT = open('header.py','r')
+    here = os.path.dirname(os.path.abspath(__file__))
+    INPUT = open(os.path.join(here,'header.py'),'r')
     new_text = "".join( INPUT.readlines() )
     INPUT.close()
-    INPUT = open('config.py','r')
-    new_text += "".join( INPUT.readlines() )
-    INPUT.close()
-    INPUT = open('venv.py','r')
+    INPUT = open(sys.argv[1],'r')
     new_text += "".join( INPUT.readlines() )
     INPUT.close()
 
@@ -58,6 +54,7 @@ def main():
         f = open(script_name, 'w')
         f.write(new_text)
         f.close()
+        os.chmod(script_name, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
 if __name__ == '__main__':
     main()
