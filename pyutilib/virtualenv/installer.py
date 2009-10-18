@@ -1,15 +1,15 @@
 #! /usr/bin/env python
 #  _________________________________________________________________________
 #
-#  TEVA-SPOT Toolkit: Tools for Designing Contaminant Warning Systems
+#  PyUtilib: A Python utility library.
 #  Copyright (c) 2008 Sandia Corporation.
-#  This software is distributed under the LGPL License.
+#  This software is distributed under the BSD License.
 #  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
 #  the U.S. Government retains certain rights in this software.
-#  For more information, see the README.txt file in the top SPOT directory.
+#  For more information, see the PyUtilib README.txt file.
 #  _________________________________________________________________________
 #
-# This script creates the spot_install script.  Note that this script assumes that 
+# This script creates a Python installer script.  Note that this script assumes that 
 # 'virtualenv' is installed in Python.
 #
 

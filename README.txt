@@ -2,58 +2,52 @@
 pyutilib.virtualenv README
 ==========================
 
-The pyutilib.virtualenv Python package includes a script for 
-creating virtualenv installers that automate the installation of 
+This Python package includes the virtualenv_installer script, which is
+used to create virtualenv installers that automate the installation of
 other Python packages.
 
 
-INSTALLATION
-------------
-
-See the INSTALL.txt file.
-
-
-LICENSE
+-------
+License
 -------
 
-See the LICENSE.txt file.
+BSD.  See the LICENSE.txt file.
 
 
-GETTING STARTED
----------------
+------------
+Organization
+------------
 
-Directories
++ Directories
 
-* pyutilib - The root directory for PyUtilib's Python source code
+  * pyutilib - The root directory for PyUtilib's Python source code
 
++ Documentation and Bug Tracking
 
-Documentation and Bug Tracking
+  * Trac wiki: https://software.sandia.gov/trac/pyutilib
+ 
+  * Examples in the pyutilib.virtualenv/example directory
 
-* The PyUtilib Trac wiki supports documentation, issue tracking, and 
-  browsing of the PyUtilib subversion repository:
++ Authors
 
-  * https://software.sandia.gov/trac/pyutilib
+  * See the AUTHORS.txt file.
 
-Authors
++ Project Managers
 
-* See the AUTHORS.txt file.
+  * William E. Hart, wehart@sandia.gov
 
-Project Managers
++ Mailing List
 
-* William E. Hart, wehart@sandia.gov
-
-Mailing List
-
-* PyUtilib is managed with the Acro Project. A separate checkins mailing
-   list is managed for PyUtilib, but otherwise the main Acro mailing lists
-   are used to manage the development of this software:
+  * PyUtilib is managed with the Acro Project. A separate checkins mailing
+    list is managed for PyUtilib, but otherwise the main Acro mailing lists
+    are used to manage the development of this software:
 
     - acro-developers@software.sandia.gov
     - acro-users@software.sandia.gov
 
-
-THIRD PARTY SOFTARE
--------------------
+--------------------
+Third Party Software
+--------------------
 
 The pyutilib.virtualenv package depends on the following Python packages:
     - virtualenv
