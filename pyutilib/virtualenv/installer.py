@@ -33,6 +33,8 @@ def main():
     INPUT = open(sys.argv[1],'r')
     new_text += "".join( INPUT.readlines() )
     INPUT.close()
+    new_text += "\n"
+    new_text += "Repository.easy_install_path='"+sys.prefix+os.sep+'bin'+os.sep+'easy_install'+"'"
 
     new_text = virtualenv.create_bootstrap_script(new_text)
     tmp = []

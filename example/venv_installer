@@ -1123,7 +1123,7 @@ def unzip(filename, dir=None):
 
 class Repository(object):
 
-    easy_install = "easy_install"
+    easy_install_path = "easy_install"
     python = "python"
     svn = "svn"
     dev = []
@@ -1181,8 +1181,8 @@ class Repository(object):
                 self.install_stable(dir=dir, setup=setup)
             elif self.pypi is '':
                 self.install_release(dir=dir, setup=setup)
-            elif setup:
-                self.easy_install()
+            else:
+                self.easy_install(setup, dir)
         else:
             self.pkgdir=self.trunk
             self.pkgroot=self.trunk_root
@@ -1204,8 +1204,8 @@ class Repository(object):
                 self.install_release(dir=dir, setup=setup)
             elif self.pypi is '':
                 self.install_trunk(dir=dir, setup=setup)
-            elif setup:
-                self.easy_install()
+            else:
+                self.easy_install(setup, dir)
         else:
             self.pkgdir=self.stable
             self.pkgroot=self.stable_root
@@ -1228,8 +1228,8 @@ class Repository(object):
                 self.install_stable(dir=dir, setup=setup)
             elif self.pypi is '':
                 self.install_trunk(dir=dir, setup=setup)
-            elif setup:
-                self.easy_install()
+            else:
+                self.easy_install(setup, dir)
         else:
             self.pkgdir=self.release
             self.pkgroot=self.release_root
@@ -1303,7 +1303,7 @@ class Repository(object):
             self.run([self.svn,'update','-q',dir])
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
-    def sdist_trunk(self, format='zip'):
+    def Xsdist_trunk(self, format='zip'):
         if self.trunk is None:
             if not self.pypi is None:
                 self.easy_install()
@@ -1323,7 +1323,7 @@ class Repository(object):
             os.chdir('..')
             rmtree('pkg'+self.name)
 
-    def sdist_stable(self, format='zip'):
+    def Xsdist_stable(self, format='zip'):
         if self.stable is None:
             if not self.pypi is None:
                 self.easy_install()
@@ -1342,7 +1342,7 @@ class Repository(object):
             self.run([self.svn,'checkout','-q',self.stable, dir])
             self.run([self.python, 'setup.py', 'develop'], dir=dir)
 
-    def sdist_release(self, dir=None):
+    def Xsdist_release(self, dir=None):
         if self.release is None:
             if not self.pypi is None:
                 self.easy_install()
@@ -1361,17 +1361,26 @@ class Repository(object):
             self.run([self.svn,'checkout','-q',self.release, dir])
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
-    def easy_install(self):
-        self.run([self.easy_install_path, '-q', self.pypi])
+    def easy_install(self, setup, dir):
+        if setup:
+            if not os.path.exists(dir):
+                self.run([self.easy_install_path, '-q', self.pypi])
+            else:
+                self.run([self.python, 'setup.py', 'install'], dir=dir)
+        else: 
+            self.run([self.easy_install_path, '-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
 
     def easy_upgrade(self):
         self.run([self.easy_install_path, '-q', '--upgrade', self.pypi])
 
     def run(self, cmd, dir=None):
         if not dir is None:
+            cwd=os.getcwd()
             os.chdir(dir)
         print "Running command '%s'" % " ".join(cmd)
         call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
+        if not dir is None:
+            os.chdir(cwd)
 
 
 if sys.platform.startswith('win'):
@@ -1399,6 +1408,7 @@ class Installer(object):
     def __init__(self):
         self.description="This script manages the installation of packages into a virtual Python installation."
         self.home_dir = None
+        self.abshome_dir = None
         self.sw_packages = []
         self.sw_dict = {}
         self.cmd_files = []
@@ -1413,7 +1423,7 @@ class Installer(object):
         self.cmd_files.append( file )
 
     def add_auxdir(self, package, todir, fromdir):
-        self.auxdir.append( (todir, packge, fromdir) )
+        self.auxdir.append( (todir, package, fromdir) )
 
     def modify_parser(self, parser):
         self.default_windir = 'C:\\'+self.default_dirname
@@ -1447,6 +1457,12 @@ class Installer(object):
             help='Prepare an installation that will be used to build a MS Windows installer.',
             action='store_true',
             dest='preinstall',
+            default=False)
+
+        parser.add_option('--offline',
+            help='Perform installation offline, using source extracted from ZIP files.',
+            action='store_true',
+            dest='offline',
             default=False)
 
         parser.add_option('--zip',
@@ -1501,6 +1517,7 @@ class Installer(object):
         global logger
         verbosity = options.verbose - options.quiet
         self.logger = Logger([(Logger.level_for_integer(2-verbosity), sys.stdout)])
+        logger = self.logger
         #
         if options.update and (options.stable or options.trunk):
             self.logger.fatal("ERROR: cannot specify --stable or --trunk when specifying the --update option.")
@@ -1511,15 +1528,15 @@ class Installer(object):
         #
         # Error checking
         #
-        if not options.preinstall and (os.path.exists(self.home_dir) ^ options.update):
+        if not options.preinstall and (os.path.exists(self.abshome_dir) ^ options.update):
             if options.update:
-                logger.fatal(wrapper.fill("ERROR: The 'update' option is specified, but the installation path '%s' does not exist!" % self.home_dir))
+                self.logger.fatal(wrapper.fill("ERROR: The 'update' option is specified, but the installation path '%s' does not exist!" % self.home_dir))
                 sys.exit(1000)
-            elif options.clear is None and os.path.exists(join(self.home_dir,'python')):
-                    logger.fatal(wrapper.fill("ERROR: The installation path '%s' already exists!  Use the --update option if you wish to update, or use --clear to create a fresh installation." % self.home_dir))
+            elif not options.clear and os.path.exists(join(self.abshome_dir,'bin')):
+                    self.logger.fatal(wrapper.fill("ERROR: The installation path '%s' already exists!  Use the --update option if you wish to update, or use --clear to create a fresh installation." % self.home_dir))
                     sys.exit(1000)
         if len(args) == 0:
-            args.append(self.home_dir)
+            args.append(self.abshome_dir)
 
     def get_homedir(self, options, args):
         #
@@ -1537,28 +1554,27 @@ class Installer(object):
                 home_dir = os.path.dirname(os.path.dirname(path))
         else:
             home_dir = args[0]
-        self.home_dir = os.path.abspath(home_dir)
+        self.home_dir = home_dir
+        self.abshome_dir = os.path.abspath(home_dir)
 
     def guess_path(self):
         return None
 
     def setup_installer(self, options):
-        if options.update:
+        if options.preinstall:
+            print "Creating preinstall zip file in '%s'" % self.home_dir
+        elif options.update:
             print "Updating existing installation in '%s'" % self.home_dir
         else:
             print "Starting fresh installation in '%s'" % self.home_dir
         #
-        # Open up zip files
-        #
-        for file in options.zip:
-            unzip(file, dir=self.home_dir)
-        #
         # Setup HTTP proxy
         #
-        if not options.proxy is None:
-            os.environ['HTTP_PROXY'] = options.proxy
-        print "  using the HTTP_PROXY environment: %s" % os.environ.get('HTTP_PROXY',"''")
-        print ""
+        if not options.preinstall:
+            if not options.proxy is None:
+                os.environ['HTTP_PROXY'] = options.proxy
+            print "  using the HTTP_PROXY environment: %s" % os.environ.get('HTTP_PROXY',"''")
+            print ""
         #
         # Disable the PYTHONPATH, to isolate this installation from 
         # other Python installations that a user may be working with.
@@ -1568,7 +1584,73 @@ class Installer(object):
                 del os.environ["PYTHONPATH"]
             except:
                 pass
-        #self.sw_packages = get_repositories()
+        #
+        # If --preinstall is declared, then we remove the directory, and prepare a ZIP file
+        # that contains the full installation.
+        #
+        if options.preinstall:
+            print "-----------------------------------------------------------------"
+            print " STARTING preinstall in directory %s" % self.home_dir
+            print "-----------------------------------------------------------------"
+            rmtree(self.abshome_dir)
+            os.mkdir(self.abshome_dir)
+        #
+        # If we're clearing the current installation, then remove a bunch of
+        # directories
+        #
+        elif options.clear:
+            path = join(self.abshome_dir,'src')
+            if os.path.exists(path):
+                rmtree(path)
+        #
+        # Open up zip files
+        #
+        for file in options.zip:
+            unzip(file, dir=self.abshome_dir)
+
+        if options.preinstall or not options.offline:
+            self.get_packages(options)
+
+    def get_packages(self, options):
+        #
+        # Setup the 'admin' directory
+        #
+        if not os.path.exists(self.abshome_dir):
+            os.mkdir(self.abshome_dir)
+        if not os.path.exists(join(self.abshome_dir,'admin')):
+            os.mkdir(join(self.abshome_dir,'admin'))
+        if options.update:
+            INPUT=open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'r')
+            options.trunk = INPUT.readline().strip() != 'False'
+            options.stable = INPUT.readline().strip() != 'False'
+            INPUT.close()
+        else:
+            OUTPUT=open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'w')
+            print >>OUTPUT, options.trunk
+            print >>OUTPUT, options.stable
+            OUTPUT.close()
+        #
+        # Setup package directories
+        #
+        if not os.path.exists(join(self.abshome_dir,'dist')):
+            os.mkdir(join(self.abshome_dir,'dist'))
+        if not os.path.exists(self.abshome_dir+os.sep+"src"):
+            os.mkdir(self.abshome_dir+os.sep+"src")
+        if not os.path.exists(self.abshome_dir+os.sep+"bin"):
+            os.mkdir(self.abshome_dir+os.sep+"bin")
+        #
+        # Get source packages
+        #
+        if options.preinstall:
+            #
+            # When preinstalling, disable the default install_setuptools() function,
+            # and add the setuptools package to the installation list
+            #
+            install_setuptools.use_default=False
+            self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+        #
+        # Add Coopr Forum packages
+        #
         dev = options.forumdev.split(',')
         for pkg in options.forum.split(','):
             if pkg is '':
@@ -1587,57 +1669,13 @@ class Installer(object):
                     print "ERROR Finding 'tags' branch for Coopr Forum Package %s: %s" % (pkg,str(err))
                     print "-----------------------------------------------------------------"
         #
-        # If --preinstall is declared, then we remove the directory, and prepare a ZIP file
-        # that contains the full installation.
-        #
-        if options.preinstall:
-            print "-----------------------------------------------------------------"
-            print " STARTING preinstall in directory %s" % self.home_dir
-            print "-----------------------------------------------------------------"
-            rmtree(self.home_dir)
-            os.mkdir(self.home_dir)
-        #
-        # If we're clearing the current installation, then remove a bunch of
-        # directories
-        #
-        elif options.clear:
-            path = join(self.home_dir,'src')
-            if os.path.exists(path):
-                rmtree(path)
-        #
-        # Setup the 'admin' directory
-        #
-        if not os.path.exists(self.home_dir):
-            os.mkdir(self.home_dir)
-        if not os.path.exists(join(self.home_dir,'admin')):
-            os.mkdir(join(self.home_dir,'admin'))
-        if options.update:
-            INPUT=open(join(self.home_dir,'admin',"virtualenv.cfg"),'r')
-            options.trunk = INPUT.readline().strip() != 'False'
-            options.stable = INPUT.readline().strip() != 'False'
-            INPUT.close()
-        else:
-            OUTPUT=open(join(self.home_dir,'admin',"virtualenv.cfg"),'w')
-            print >>OUTPUT, options.trunk
-            print >>OUTPUT, options.stable
-            OUTPUT.close()
-        #
-        # Setup package directories
-        #
-        if not os.path.exists(join(self.home_dir,'dist')):
-            os.mkdir(join(self.home_dir,'dist'))
-        if not os.path.exists(self.home_dir+os.sep+"src"):
-            os.mkdir(self.home_dir+os.sep+"src")
-        if not os.path.exists(self.home_dir+os.sep+"bin"):
-            os.mkdir(self.home_dir+os.sep+"bin")
-        #
-        # Get source packages
+        # Get package source
         #
         for pkg in self.sw_packages:
             if pkg.dev:
-                tmp = join(self.home_dir,'src',pkg.name)
+                tmp = join(self.abshome_dir,'src',pkg.name)
             else:
-                tmp = join(self.home_dir,'dist',pkg.name)
+                tmp = join(self.abshome_dir,'dist',pkg.name)
             if options.trunk:
                 if not options.update:
                     pkg.install_trunk(dir=tmp, setup=False)
@@ -1647,12 +1685,13 @@ class Installer(object):
             else:
                 if not options.update:
                     pkg.install_release(dir=tmp, setup=False)
-        if options.update or not os.path.exists(join(self.home_dir,'doc')):
+        if options.update or not os.path.exists(join(self.abshome_dir,'doc')):
             self.install_auxdirs(options)
         #
         # Create a README.txt file
         #
-        OUTPUT=open(join(self.home_dir,"README.txt"),"w")
+        print "HERE",self.abshome_dir
+        OUTPUT=open(join(self.abshome_dir,"README.txt"),"w")
         print >>OUTPUT, self.README.strip()
         OUTPUT.close()
         #
@@ -1662,7 +1701,7 @@ class Installer(object):
             print "-----------------------------------------------------------------"
             print " FINISHED preinstall in directory %s" % self.home_dir
             print "-----------------------------------------------------------------"
-            os.chdir(self.home_dir)
+            os.chdir(self.abshome_dir)
             zip(self.destdir+'.zip', ['.'])
             sys.exit(0)
 
@@ -1671,10 +1710,10 @@ class Installer(object):
         #
         # Set the bin directory
         #
-        if os.path.exists(self.home_dir+os.sep+"Scripts"):
-            bindir = join(self.home_dir,"Scripts")
+        if os.path.exists(self.abshome_dir+os.sep+"Scripts"):
+            bindir = join(self.abshome_dir,"Scripts")
         else:
-            bindir = join(self.home_dir,"bin")
+            bindir = join(self.abshome_dir,"bin")
         Repository.easy_install_path = os.path.abspath(join(bindir, 'easy_install'))
         Repository.python = os.path.abspath(join(bindir, 'python'))
         #
@@ -1682,9 +1721,9 @@ class Installer(object):
         #
         for pkg in self.sw_packages:
             if pkg.dev:
-                srcdir = join(self.home_dir,'src',pkg.name)
+                srcdir = join(self.abshome_dir,'src',pkg.name)
             else:
-                srcdir = join(self.home_dir,'dist',pkg.name)
+                srcdir = join(self.abshome_dir,'dist',pkg.name)
             if options.trunk:
                 if options.update:
                     pkg.update_trunk(dir=srcdir)
@@ -1703,13 +1742,13 @@ class Installer(object):
         #
         # Copy the <env>/Scripts/* files into <env>/bin
         #
-        if os.path.exists(self.home_dir+os.sep+"Scripts"):
-            for file in glob.glob(self.home_dir+os.sep+"Scripts"+os.sep+"*"):
-                shutil.copy(file, self.home_dir+os.sep+"bin")
+        if os.path.exists(self.abshome_dir+os.sep+"Scripts"):
+            for file in glob.glob(self.abshome_dir+os.sep+"Scripts"+os.sep+"*"):
+                shutil.copy(file, self.abshome_dir+os.sep+"bin")
         #
         # Localize DOS cmd files
         #
-        self.localize_cmd_files(self.home_dir)
+        self.localize_cmd_files(self.abshome_dir)
         #
         # Misc notifications
         #
@@ -1738,17 +1777,17 @@ class Installer(object):
             OUTPUT.close()
 
     def svnjoin(*args):
-        return '/'.join(args)
+        return '/'.join(args[1:])
 
     def install_auxdirs(self, options):
         for todir,pkg,fromdir in self.auxdir:
             pkgroot = self.sw_dict[pkg].pkgroot
             if options.update:
-                cmd = [Repository.svn,'update','-q',self.svnjoin(self.home_dir, todir)]
+                cmd = [Repository.svn,'update','-q',self.svnjoin(self.abshome_dir, todir)]
             else:
                 if options.clear:
-                    rmtree( join(self.home_dir,todir) )
-                cmd = [Repository.svn,'checkout','-q',self.svnjoin(pkgroot,fromdir),join(self.home_dir,todir)]
+                    rmtree( join(self.abshome_dir,todir) )
+                cmd = [Repository.svn,'checkout','-q',self.svnjoin(pkgroot,fromdir),join(self.abshome_dir,todir)]
             print "Running command '%s'" % " ".join(cmd)
             call_subprocess(cmd, filter_stdout=filter_python_develop,show_stdout=True)
 
@@ -1771,9 +1810,21 @@ def get_installer(ctype):
     
 
 #
+# This is a monkey patch, to control the execution of the install_setuptools()
+# function that is defined by virtualenv.
+#
+default_install_setuptools = install_setuptools
+
+def install_setuptools(py_executable, unzip=False):
+    if install_setuptools.use_default:
+        default_install_setuptools(py_executable, unzip)
+
+install_setuptools.use_default=True
+
+
+#
 # The following methods will be called by virtualenv
 #
-
 def extend_parser(parser):
     installer = get_installer(Installer)
     installer.modify_parser(parser)
@@ -1826,6 +1877,7 @@ def configure(installer):
     return installer
 
 
+Repository.easy_install_path='/home/wehart/src/pyutilib/python/bin/easy_install'
 
 ##file site.py
 SITE_PY = """

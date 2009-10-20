@@ -157,7 +157,7 @@ def unzip(filename, dir=None):
 
 class Repository(object):
 
-    easy_install = "easy_install"
+    easy_install_path = "easy_install"
     python = "python"
     svn = "svn"
     dev = []
@@ -215,8 +215,8 @@ class Repository(object):
                 self.install_stable(dir=dir, setup=setup)
             elif self.pypi is '':
                 self.install_release(dir=dir, setup=setup)
-            elif setup:
-                self.easy_install()
+            else:
+                self.easy_install(setup, dir)
         else:
             self.pkgdir=self.trunk
             self.pkgroot=self.trunk_root
@@ -238,8 +238,8 @@ class Repository(object):
                 self.install_release(dir=dir, setup=setup)
             elif self.pypi is '':
                 self.install_trunk(dir=dir, setup=setup)
-            elif setup:
-                self.easy_install()
+            else:
+                self.easy_install(setup, dir)
         else:
             self.pkgdir=self.stable
             self.pkgroot=self.stable_root
@@ -262,8 +262,8 @@ class Repository(object):
                 self.install_stable(dir=dir, setup=setup)
             elif self.pypi is '':
                 self.install_trunk(dir=dir, setup=setup)
-            elif setup:
-                self.easy_install()
+            else:
+                self.easy_install(setup, dir)
         else:
             self.pkgdir=self.release
             self.pkgroot=self.release_root
@@ -337,7 +337,7 @@ class Repository(object):
             self.run([self.svn,'update','-q',dir])
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
-    def sdist_trunk(self, format='zip'):
+    def Xsdist_trunk(self, format='zip'):
         if self.trunk is None:
             if not self.pypi is None:
                 self.easy_install()
@@ -357,7 +357,7 @@ class Repository(object):
             os.chdir('..')
             rmtree('pkg'+self.name)
 
-    def sdist_stable(self, format='zip'):
+    def Xsdist_stable(self, format='zip'):
         if self.stable is None:
             if not self.pypi is None:
                 self.easy_install()
@@ -376,7 +376,7 @@ class Repository(object):
             self.run([self.svn,'checkout','-q',self.stable, dir])
             self.run([self.python, 'setup.py', 'develop'], dir=dir)
 
-    def sdist_release(self, dir=None):
+    def Xsdist_release(self, dir=None):
         if self.release is None:
             if not self.pypi is None:
                 self.easy_install()
@@ -395,17 +395,26 @@ class Repository(object):
             self.run([self.svn,'checkout','-q',self.release, dir])
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
-    def easy_install(self):
-        self.run([self.easy_install_path, '-q', self.pypi])
+    def easy_install(self, setup, dir):
+        if setup:
+            if not os.path.exists(dir):
+                self.run([self.easy_install_path, '-q', self.pypi])
+            else:
+                self.run([self.python, 'setup.py', 'install'], dir=dir)
+        else: 
+            self.run([self.easy_install_path, '-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
 
     def easy_upgrade(self):
         self.run([self.easy_install_path, '-q', '--upgrade', self.pypi])
 
     def run(self, cmd, dir=None):
         if not dir is None:
+            cwd=os.getcwd()
             os.chdir(dir)
         print "Running command '%s'" % " ".join(cmd)
         call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
+        if not dir is None:
+            os.chdir(cwd)
 
 
 if sys.platform.startswith('win'):
@@ -482,6 +491,12 @@ class Installer(object):
             help='Prepare an installation that will be used to build a MS Windows installer.',
             action='store_true',
             dest='preinstall',
+            default=False)
+
+        parser.add_option('--offline',
+            help='Perform installation offline, using source extracted from ZIP files.',
+            action='store_true',
+            dest='offline',
             default=False)
 
         parser.add_option('--zip',
@@ -580,22 +595,20 @@ class Installer(object):
         return None
 
     def setup_installer(self, options):
-        if options.update:
+        if options.preinstall:
+            print "Creating preinstall zip file in '%s'" % self.home_dir
+        elif options.update:
             print "Updating existing installation in '%s'" % self.home_dir
         else:
             print "Starting fresh installation in '%s'" % self.home_dir
         #
-        # Open up zip files
-        #
-        for file in options.zip:
-            unzip(file, dir=self.abshome_dir)
-        #
         # Setup HTTP proxy
         #
-        if not options.proxy is None:
-            os.environ['HTTP_PROXY'] = options.proxy
-        print "  using the HTTP_PROXY environment: %s" % os.environ.get('HTTP_PROXY',"''")
-        print ""
+        if not options.preinstall:
+            if not options.proxy is None:
+                os.environ['HTTP_PROXY'] = options.proxy
+            print "  using the HTTP_PROXY environment: %s" % os.environ.get('HTTP_PROXY',"''")
+            print ""
         #
         # Disable the PYTHONPATH, to isolate this installation from 
         # other Python installations that a user may be working with.
@@ -605,24 +618,6 @@ class Installer(object):
                 del os.environ["PYTHONPATH"]
             except:
                 pass
-        #self.sw_packages = get_repositories()
-        dev = options.forumdev.split(',')
-        for pkg in options.forum.split(','):
-            if pkg is '':
-                continue
-            if pkg in dev:
-                if (options.trunk or options.stable):
-                    self.sw_packages[pkg] = 'http://coopr-forum.googlecode.com/svn/'+pkg
-                else:
-                    self.sw_packages[pkg] = '-f http://coopr-forum.googlecode.com/svn/'+pkg+'/trunk '+pkg
-                dev_packages.append(pkg)
-            else:
-                try:
-                    self.sw_packages[pkg] = guess_release('http://coopr-forum.googlecode.com/svn/'+pkg+'/dev/')
-                except Exception, err:
-                    print "-----------------------------------------------------------------"
-                    print "ERROR Finding 'tags' branch for Coopr Forum Package %s: %s" % (pkg,str(err))
-                    print "-----------------------------------------------------------------"
         #
         # If --preinstall is declared, then we remove the directory, and prepare a ZIP file
         # that contains the full installation.
@@ -641,6 +636,16 @@ class Installer(object):
             path = join(self.abshome_dir,'src')
             if os.path.exists(path):
                 rmtree(path)
+        #
+        # Open up zip files
+        #
+        for file in options.zip:
+            unzip(file, dir=self.abshome_dir)
+
+        if options.preinstall or not options.offline:
+            self.get_packages(options)
+
+    def get_packages(self, options):
         #
         # Setup the 'admin' directory
         #
@@ -669,6 +674,36 @@ class Installer(object):
             os.mkdir(self.abshome_dir+os.sep+"bin")
         #
         # Get source packages
+        #
+        if options.preinstall:
+            #
+            # When preinstalling, disable the default install_setuptools() function,
+            # and add the setuptools package to the installation list
+            #
+            install_setuptools.use_default=False
+            self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+        #
+        # Add Coopr Forum packages
+        #
+        dev = options.forumdev.split(',')
+        for pkg in options.forum.split(','):
+            if pkg is '':
+                continue
+            if pkg in dev:
+                if (options.trunk or options.stable):
+                    self.sw_packages[pkg] = 'http://coopr-forum.googlecode.com/svn/'+pkg
+                else:
+                    self.sw_packages[pkg] = '-f http://coopr-forum.googlecode.com/svn/'+pkg+'/trunk '+pkg
+                dev_packages.append(pkg)
+            else:
+                try:
+                    self.sw_packages[pkg] = guess_release('http://coopr-forum.googlecode.com/svn/'+pkg+'/dev/')
+                except Exception, err:
+                    print "-----------------------------------------------------------------"
+                    print "ERROR Finding 'tags' branch for Coopr Forum Package %s: %s" % (pkg,str(err))
+                    print "-----------------------------------------------------------------"
+        #
+        # Get package source
         #
         for pkg in self.sw_packages:
             if pkg.dev:
@@ -808,9 +843,21 @@ def get_installer(ctype):
     
 
 #
+# This is a monkey patch, to control the execution of the install_setuptools()
+# function that is defined by virtualenv.
+#
+default_install_setuptools = install_setuptools
+
+def install_setuptools(py_executable, unzip=False):
+    if install_setuptools.use_default:
+        default_install_setuptools(py_executable, unzip)
+
+install_setuptools.use_default=True
+
+
+#
 # The following methods will be called by virtualenv
 #
-
 def extend_parser(parser):
     installer = get_installer(Installer)
     installer.modify_parser(parser)
