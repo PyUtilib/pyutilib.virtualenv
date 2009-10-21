@@ -17,7 +17,7 @@ The **virtualenv_installer** script integrates a Python module into a **virtuale
 bootstrap script.  A user defines a **configure()** function in this module to
 control the configuration of the **virtualenv** installation.  For example, the
 following function declares the default installation directory, and that the
-virtual Python repository contains the **virtualenv** and **nose** Python packages:
+virtual Python repository contains the **virtualenv** and **nose** Python packages::
 
   def configure(installer):
         installer.default_dirname = 'venv'
@@ -39,12 +39,12 @@ Further, this package is installed in *develop* mode.
 
 A virtual Python bootstrap script is created by calling
 **venv_install** and specifying the Python module and script
-name.:
+name.::
 
   venv_install venv.py venv_install
 
 The bootstrap script can also setup a virtual Python
-installation in a specified directory:
+installation in a specified directory::
 
   venv_install venvdir
 
@@ -52,7 +52,7 @@ installation in a specified directory:
 By default, the bootstrap script installs the latest software release.
 In PyPI, this is the latest revision.  In subversion, this is the latest
 revision in either the *tags* or *releases* directory.  The trunk branch of
-the subversion repository can also be installed using the **--trunk** option:
+the subversion repository can also be installed using the **--trunk** option::
 
   venv_install --trunk venv
 
@@ -73,7 +73,7 @@ Alternatively, the **--proxy** option can be specified.
 The bootstrap script also provides a mechanism for enabling offline virtualenv
 installations.  This requires a two-stage process.  First, the
 **--preinstall** option is used to create a ZIP file that contains the Python
-packages.  For example, the command
+packages.  For example, the command::
 
   venv_install --preinstall
 
@@ -82,7 +82,7 @@ The preinstall step must be executed on a machine with internet
 connectivity.  However, this ZIP file can be used to perform an off-line
 installation with the **--offline** option.  For example, the following
 command will uses the **venv.zip** file to perform off-line installation
-in the **temp** directory:
+in the **temp** directory::
 
   venv_install --offline --zip=venv.zip test
 
