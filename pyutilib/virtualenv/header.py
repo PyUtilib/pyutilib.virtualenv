@@ -402,7 +402,8 @@ class Repository(object):
             else:
                 self.run([self.python, 'setup.py', 'install'], dir=dir)
         else: 
-            self.run([self.easy_install_path, '-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
+            if not os.path.exists(dir):
+                self.run([self.easy_install_path, '-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
 
     def easy_upgrade(self):
         self.run([self.easy_install_path, '-q', '--upgrade', self.pypi])

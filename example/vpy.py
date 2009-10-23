@@ -8,6 +8,12 @@
 
 import ConfigParser
 
+class MyConfigParser(ConfigParser.ConfigParser):
+
+    def optionxform(self, option):
+        """Do not convert to lower case"""
+        return option
+
 class ConfigInstaller(Installer):
     """
     This class extends the logic in the Installer class to add a
@@ -39,7 +45,7 @@ class ConfigInstaller(Installer):
         """
         Read a config file.
         """
-        parser = ConfigParser.ConfigParser()
+        parser = MyConfigParser()
         if not file in parser.read(file):
             raise IOError, "Error while parsing file %s." % file 
         for option, value in parser.items('installer'):
