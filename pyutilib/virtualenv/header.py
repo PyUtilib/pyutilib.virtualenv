@@ -442,6 +442,7 @@ class Installer(object):
     def __init__(self):
         self.description="This script manages the installation of packages into a virtual Python installation."
         self.home_dir = None
+        self.default_dirname='python'
         self.abshome_dir = None
         self.sw_packages = []
         self.sw_dict = {}
@@ -846,7 +847,16 @@ class Installer(object):
             call_subprocess(cmd, filter_stdout=filter_python_develop,show_stdout=True)
 
 
-def get_installer(ctype):
+def configure(installer):
+    """
+    A dummy configuration function.
+    """
+    return installer
+
+def create_installer():
+    return Installer()
+
+def get_installer():
     """
     Return an instance of the installer object.  If this object
     does not already exist, then create the object and use the
@@ -859,7 +869,7 @@ def get_installer(ctype):
     try:
         return get_installer.installer
     except:
-        get_installer.installer = configure(ctype())
+        get_installer.installer = configure( create_installer() )
         return get_installer.installer
     
 
@@ -880,16 +890,16 @@ install_setuptools.use_default=True
 # The following methods will be called by virtualenv
 #
 def extend_parser(parser):
-    installer = get_installer(Installer)
+    installer = get_installer()
     installer.modify_parser(parser)
 
 def adjust_options(options, args):
-    installer = get_installer(Installer)
+    installer = get_installer()
     installer.get_homedir(options, args)
     installer.adjust_options(options, args)
     installer.setup_installer(options)
     
 def after_install(options, home_dir):
-    installer = get_installer(Installer)
+    installer = get_installer()
     installer.install_packages(options)
 
