@@ -41,6 +41,8 @@ def main():
     for line in new_text.split('\n'):
         if not 'win32api' in line:
             tmp.append(line)
+        else:
+            tmp.append( line[:line.index(line.strip())] + 'pass')
     new_text = "\n".join(tmp)
     if os.path.exists(script_name):
         f = open(script_name)

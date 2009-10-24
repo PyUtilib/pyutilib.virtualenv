@@ -522,10 +522,13 @@ def path_locations(home_dir):
         mkdir(home_dir)
         if ' ' in home_dir:
             try:
+                pass
             except ImportError:
                 print 'Error: the path "%s" has a space in it' % home_dir
+                pass
                 print '  http://sourceforge.net/projects/pywin32/'
                 sys.exit(3)
+            pass
         lib_dir = join(home_dir, 'Lib')
         inc_dir = join(home_dir, 'Include')
         bin_dir = join(home_dir, 'Scripts')
