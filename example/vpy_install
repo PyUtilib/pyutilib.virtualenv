@@ -3295,7 +3295,31 @@ class MyConfigParser(ConfigParser.ConfigParser):
     """
 
     def __init__(self):
-        ConfigParser.ConfigParser.__init__(self, dict_type=OrderedDict)
+        if sys.version >= (2,6,0):
+            ConfigParser.ConfigParser.__init__(self, dict_type=OrderedDict)
+        else:
+            ConfigParser.ConfigParser.__init__(self)
+            self._defaults = OrderedDict()
+            self._sections = OrderedDict()
+
+    def get_sections(self, file):
+        """
+        In old version of Python, we prefetch the sections, to
+        ensure that the data structures we are using are OrderedDict.
+        """
+        if sys.version >= (2,6,0):
+            return
+        if not os.path.exists(file):
+            return
+        INPUT=open(file,'r')
+        for line in INPUT:
+            line.strip()
+            mo = self.SECTCRE.match(line)
+            if mo:
+                sectname = mo.group('header')
+                if not sectname in self._sections:
+                    self._sections[sectname] = OrderedDict()
+                    self._sections[sectname]['__name__'] = sectname
 
     def optionxform(self, option):
         """Do not convert to lower case"""
@@ -3334,6 +3358,7 @@ class ConfigInstaller(Installer):
         Read a config file.
         """
         parser = MyConfigParser()
+        parser.get_sections(file)
         if not file in parser.read(file):
             raise IOError, "Error while parsing file %s." % file 
         sections = parser.sections()
