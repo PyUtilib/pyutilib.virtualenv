@@ -116,7 +116,7 @@ def guess_release(svndir):
 
 
 
-def zip(filename,fdlist):
+def zip_file(filename,fdlist):
     zf = zipfile.ZipFile(filename, 'w')
     for file in fdlist:
         if os.path.isdir(file):
@@ -132,7 +132,7 @@ def zip(filename,fdlist):
     zf.close()
 
 
-def unzip(filename, dir=None):
+def unzip_file(filename, dir=None):
     fname = os.path.abspath(filename)
     zf = zipfile.ZipFile(fname, 'r')
     if dir is None:
@@ -184,20 +184,32 @@ class Repository(object):
                 self.release = None
                 self.release_root = None
         else:
-            self.trunk = ""
+            self.trunk = None
             self.trunk_root = None
-            self.stable = ""
+            self.stable = None
             self.stable_root = None
-            self.release = ""
+            self.release = None
             self.release_root = None
         if not trunk is None:
-            self.trunk += trunk
+            if self.trunk is None:
+                self.trunk = trunk
+            else:
+                self.trunk += trunk
         if not stable is None:
-            self.stable += stable
+            if self.stable is None:
+                self.stable = stable
+            else:
+                self.stable += stable
         if not release is None:
-            self.release += release
+            if self.release is None:
+                self.release = release
+            else:
+                self.release += release
         if not tag is None:
-            self.release += tag
+            if self.release is None:
+                self.release = tag
+            else:
+                self.release += tag
         self.pypi = pypi
         if not pypi is None:
             self.pyname=pypi
@@ -210,10 +222,10 @@ class Repository(object):
         self.pkgroot = None
 
     def install_trunk(self, dir=None, setup=True):
-        if self.trunk is '':
-            if not self.stable is '':
+        if self.trunk is None:
+            if not self.stable is None:
                 self.install_stable(dir=dir, setup=setup)
-            elif self.pypi is '':
+            elif self.pypi is None:
                 self.install_release(dir=dir, setup=setup)
             else:
                 self.easy_install(setup, dir)
@@ -233,10 +245,10 @@ class Repository(object):
                 self.run([self.python, 'setup.py', 'develop'], dir=dir)
 
     def install_stable(self, dir=None, setup=True):
-        if self.stable is '':
-            if not self.release is '':
+        if self.stable is None: 
+            if not self.release is None:
                 self.install_release(dir=dir, setup=setup)
-            elif self.pypi is '':
+            elif self.pypi is None:
                 self.install_trunk(dir=dir, setup=setup)
             else:
                 self.easy_install(setup, dir)
@@ -257,10 +269,10 @@ class Repository(object):
                 self.run([self.python, 'setup.py', 'develop'], dir=dir)
 
     def install_release(self, dir=None, setup=True):
-        if self.release is '':
-            if not self.stable is '':
+        if self.release is None:
+            if not self.stable is None:
                 self.install_stable(dir=dir, setup=setup)
-            elif self.pypi is '':
+            elif self.pypi is None:
                 self.install_trunk(dir=dir, setup=setup)
             else:
                 self.easy_install(setup, dir)
@@ -663,7 +675,7 @@ class Installer(object):
         # Open up zip files
         #
         for file in options.zip:
-            unzip(file, dir=self.abshome_dir)
+            unzip_file(file, dir=self.abshome_dir)
 
         if options.preinstall or not options.offline:
             self.get_packages(options)
@@ -758,7 +770,7 @@ class Installer(object):
             print " FINISHED preinstall in directory %s" % self.home_dir
             print "-----------------------------------------------------------------"
             os.chdir(self.abshome_dir)
-            zip(self.default_dirname+'.zip', ['.'])
+            zip_file(self.default_dirname+'.zip', ['.'])
             sys.exit(0)
 
         
