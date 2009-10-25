@@ -408,15 +408,20 @@ class Repository(object):
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def easy_install(self, install, preinstall, dir, offline):
-        if install:
-            #self.run([self.easy_install_path, '-q', self.pypi])
-            if offline:
-                self.run([self.python, 'setup.py', 'install'], dir=dir)
-            else:
-                self.run([self.easy_install_path, '-q', self.pypi])
-        elif preinstall: 
-            if not os.path.exists(dir):
-                self.run([self.easy_install_path, '-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
+        try:
+            if install:
+                #self.run([self.easy_install_path, '-q', self.pypi])
+                if offline:
+                    self.run([self.python, 'setup.py', 'install'], dir=dir)
+                else:
+                    self.run([self.easy_install_path, '-q', self.pypi])
+            elif preinstall: 
+                if not os.path.exists(dir):
+                    self.run([self.easy_install_path, '-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
+        except OSError, err:
+            print "-----------------------------------------------------------------"
+            print "Warning!!! Ignoring easy_install error '%s'" % str(err)
+            print "-----------------------------------------------------------------"
 
     def easy_upgrade(self):
         self.run([self.easy_install_path, '-q', '--upgrade', self.pypi])
