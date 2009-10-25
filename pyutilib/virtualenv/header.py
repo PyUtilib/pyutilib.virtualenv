@@ -221,14 +221,14 @@ class Repository(object):
         self.pkgdir = None
         self.pkgroot = None
 
-    def install_trunk(self, dir=None, setup=True):
+    def install_trunk(self, dir=None, install=True, preinstall=False, offline=False):
         if self.trunk is None:
             if not self.stable is None:
-                self.install_stable(dir=dir, setup=setup)
+                self.install_stable(dir=dir, install=install)
             elif self.pypi is None:
-                self.install_release(dir=dir, setup=setup)
+                self.install_release(dir=dir, install=install)
             else:
-                self.easy_install(setup, dir)
+                self.easy_install(install, preinstall, dir, offline)
         else:
             self.pkgdir=self.trunk
             self.pkgroot=self.trunk_root
@@ -241,17 +241,17 @@ class Repository(object):
             else:
                 print "-----------------------------------------------------------------"
                 self.run([self.svn,'checkout','-q',self.trunk, dir])
-            if setup:
+            if install:
                 self.run([self.python, 'setup.py', 'develop'], dir=dir)
 
-    def install_stable(self, dir=None, setup=True):
+    def install_stable(self, dir=None, install=True, preinstall=False, offline=False):
         if self.stable is None: 
             if not self.release is None:
-                self.install_release(dir=dir, setup=setup)
+                self.install_release(dir=dir, install=install)
             elif self.pypi is None:
-                self.install_trunk(dir=dir, setup=setup)
+                self.install_trunk(dir=dir, install=install)
             else:
-                self.easy_install(setup, dir)
+                self.easy_install(install, preinstall, dir, offline)
         else:
             self.pkgdir=self.stable
             self.pkgroot=self.stable_root
@@ -265,17 +265,17 @@ class Repository(object):
             else:
                 print "-----------------------------------------------------------------"
                 self.run([self.svn,'checkout','-q',self.stable, dir])
-            if setup:
+            if install:
                 self.run([self.python, 'setup.py', 'develop'], dir=dir)
 
-    def install_release(self, dir=None, setup=True):
+    def install_release(self, dir=None, install=True, preinstall=False, offline=False):
         if self.release is None:
             if not self.stable is None:
-                self.install_stable(dir=dir, setup=setup)
+                self.install_stable(dir=dir, install=install)
             elif self.pypi is None:
-                self.install_trunk(dir=dir, setup=setup)
+                self.install_trunk(dir=dir, install=install)
             else:
-                self.easy_install(setup, dir)
+                self.easy_install(install, preinstall, dir, offline)
         else:
             self.pkgdir=self.release
             self.pkgroot=self.release_root
@@ -289,7 +289,7 @@ class Repository(object):
             else:
                 print "-----------------------------------------------------------------"
                 self.run([self.svn,'checkout','-q',self.release, dir])
-            if setup:
+            if install:
                 self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def update_trunk(self, dir=None):
@@ -407,13 +407,14 @@ class Repository(object):
             self.run([self.svn,'checkout','-q',self.release, dir])
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
-    def easy_install(self, setup, dir):
-        if setup:
-            if not os.path.exists(dir):
-                self.run([self.easy_install_path, '-q', self.pypi])
-            else:
+    def easy_install(self, install, preinstall, dir, offline):
+        if install:
+            #self.run([self.easy_install_path, '-q', self.pypi])
+            if offline:
                 self.run([self.python, 'setup.py', 'install'], dir=dir)
-        else: 
+            else:
+                self.run([self.easy_install_path, '-q', self.pypi])
+        elif preinstall: 
             if not os.path.exists(dir):
                 self.run([self.easy_install_path, '-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
 
@@ -747,13 +748,13 @@ class Installer(object):
                 tmp = join(self.abshome_dir,'dist',pkg.name)
             if options.trunk:
                 if not options.update:
-                    pkg.install_trunk(dir=tmp, setup=False)
+                    pkg.install_trunk(dir=tmp, install=False, preinstall=options.preinstall, offline=options.offline)
             elif options.stable:
                 if not options.update:
-                    pkg.install_stable(dir=tmp, setup=False)
+                    pkg.install_stable(dir=tmp, install=False, preinstall=options.preinstall, offline=options.offline)
             else:
                 if not options.update:
-                    pkg.install_release(dir=tmp, setup=False)
+                    pkg.install_release(dir=tmp, install=False, preinstall=options.preinstall, offline=options.offline)
         if options.update or not os.path.exists(join(self.abshome_dir,'doc')):
             self.install_auxdirs(options)
         #
@@ -796,17 +797,17 @@ class Installer(object):
                 if options.update:
                     pkg.update_trunk(dir=srcdir)
                 else:
-                    pkg.install_trunk(dir=srcdir)
+                    pkg.install_trunk(dir=srcdir, preinstall=options.preinstall, offline=options.offline)
             elif options.stable:
                 if options.update:
                     pkg.update_stable(dir=srcdir)
                 else:
-                    pkg.install_stable(dir=srcdir)
+                    pkg.install_stable(dir=srcdir, preinstall=options.preinstall, offline=options.offline)
             else:
                 if options.update:
                     pkg.update_release(dir=srcdir)
                 else:
-                    pkg.install_release(dir=srcdir)
+                    pkg.install_release(dir=srcdir, preinstall=options.preinstall, offline=options.offline)
         #
         # Copy the <env>/Scripts/* files into <env>/bin
         #
