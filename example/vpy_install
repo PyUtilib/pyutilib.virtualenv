@@ -1945,6 +1945,7 @@ def after_install(options, home_dir):
 #
 
 import ConfigParser
+import StringIO
 
 # odict.py
 # An Ordered Dictionary object
@@ -3347,17 +3348,17 @@ class MyConfigParser(ConfigParser.ConfigParser):
             self._defaults = OrderedDict()
             self._sections = OrderedDict()
 
-    def get_sections(self, file):
+    def get_sections(self, fp):
         """
         In old version of Python, we prefetch the sections, to
         ensure that the data structures we are using are OrderedDict.
         """
         if sys.version >= (2,6,0):
             return
-        if not os.path.exists(file):
-            return
-        INPUT=open(file,'r')
-        for line in INPUT:
+        while True:
+            line = fp.readline()
+            if not line:
+                break
             line.strip()
             mo = self.SECTCRE.match(line)
             if mo:
@@ -3403,9 +3404,22 @@ class ConfigInstaller(Installer):
         Read a config file.
         """
         parser = MyConfigParser()
-        parser.get_sections(file)
-        if not file in parser.read(file):
-            raise IOError, "Error while parsing file %s." % file 
+        if not os.path.exists(file):
+            output = urllib2.urlopen(file).read()
+            fp = StringIO.StringIO(output)
+            parser.get_sections(fp)
+            fp = StringIO.StringIO(output)
+            parser.readfp(fp, file)
+            fp.close()
+        else:
+            try:
+                fp=open(file)
+                parser.get_sections(fp)
+                fp.close()
+            except IOError:
+                pass
+            if not file in parser.read(file):
+                raise IOError, "Error while parsing file %s." % file 
         sections = parser.sections()
         if 'installer' in sections:
             for option, value in parser.items('installer'):
