@@ -39,10 +39,12 @@ def main():
     new_text = virtualenv.create_bootstrap_script(new_text)
     tmp = []
     for line in new_text.split('\n'):
-        if not 'win32api' in line:
-            tmp.append(line)
-        else:
+        if 'win32api' in line:
             tmp.append( line[:line.index(line.strip())] + 'pass')
+        elif 'TODO' in line or 'FIXME' in line:
+            tmp.append( line[:line.index(line.strip())] + '# pyutilib.virtualenv: ignoring comment')
+        else:
+            tmp.append(line)
     new_text = "\n".join(tmp)
     if os.path.exists(script_name):
         f = open(script_name)
