@@ -646,9 +646,16 @@ class Installer(object):
         # Setup HTTP proxy
         #
         if not options.preinstall:
+            proxy = ''
             if not options.proxy is None:
-                os.environ['HTTP_PROXY'] = options.proxy
-            print "  using the HTTP_PROXY environment: %s" % os.environ.get('HTTP_PROXY',"''")
+                proxy = options.proxy
+            if proxy is '':
+                proxy = os.environ.get('HTTP_PROXY', '')
+            if proxy is '':
+                proxy = os.environ.get('http_proxy', '')
+            os.environ['HTTP_PROXY'] = proxy
+            os.environ['http_proxy'] = proxy
+            print "  using the HTTP_PROXY environment: %s" % proxy
             print ""
         #
         # Disable the PYTHONPATH, to isolate this installation from 
