@@ -47,7 +47,7 @@ setup(name="pyutilib.virtualenv",
       keywords=['utility'],
       namespace_packages=['pyutilib'],
       install_requires=['virtualenv'],
-      scripts=['example/vpy_install'],
+      scripts=['scripts/vpy_install'],
       entry_points = """
         [console_scripts]
         vpy_create=pyutilib.virtualenv.installer:main

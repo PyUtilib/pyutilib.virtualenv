@@ -19,20 +19,38 @@ import virtualenv
 import sys
 import stat
 
+# The files that are integrated into a virtualenv installer
+files = ['odict.py', 'OrderedConfigParser.py', 'header.py']
+
 def main():
     if len(sys.argv) != 3:
-        print "virtualenv_installer <config-file> <name>"
+        print "vpy_create <config-file> <name>"
+        print "vpy_create vpy <name>"
         sys.exit(1)
 
     script_name = sys.argv[2]
 
     here = os.path.dirname(os.path.abspath(__file__))
-    INPUT = open(os.path.join(here,'header.py'),'r')
-    new_text = "".join( INPUT.readlines() )
-    INPUT.close()
-    INPUT = open(sys.argv[1],'r')
-    new_text += "".join( INPUT.readlines() )
-    INPUT.close()
+    new_text = ""
+    for file in files:
+        new_text += "\n"
+        new_text += "#\n"
+        new_text += "# Imported from %s\n" % file
+        new_text += "#\n"
+        new_text += "\n"
+        INPUT = open(os.path.join(here,file),'r')
+        new_text += "".join( INPUT.readlines() )
+        INPUT.close()
+        new_text += "\n"
+    if sys.argv[1] != 'vpy':
+        new_text += "\n"
+        new_text += "#\n"
+        new_text += "# Imported from %s\n" % sys.argv[1]
+        new_text += "#\n"
+        new_text += "\n"
+        INPUT = open(sys.argv[1],'r')
+        new_text += "".join( INPUT.readlines() )
+        INPUT.close()
     #new_text += "\n"
     #new_text += "Repository.easy_install_path='"+sys.prefix+os.sep+'bin'+os.sep+'easy_install'+"'"
 
