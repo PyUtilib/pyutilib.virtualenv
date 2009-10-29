@@ -29,7 +29,7 @@ setup(name="pyutilib.virtualenv",
     url = 'https://software.sandia.gov/svn/public/pyutilib/pyutilib.virtualenv',
     license = 'BSD',
     platforms = ["any"],
-    description = 'A utility for building custom virtualenv bootstrap scripts.',
+    description = 'PyUtilib utility for building custom virtualenv bootstrap scripts.',
     long_description = read('README.txt'),
     classifiers = [
         'Development Status :: 4 - Beta',
