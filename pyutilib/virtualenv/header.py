@@ -157,6 +157,7 @@ def unzip_file(filename, dir=None):
 
 class Repository(object):
 
+    svn_get='checkout'
     easy_install_path = "easy_install"
     python = "python"
     svn = "svn"
@@ -286,7 +287,7 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
             else:
                 print "-----------------------------------------------------------------"
-                self.run([self.svn,'checkout','-q',self.trunk, dir])
+                self.run([self.svn,Repository.svn_get,'-q',self.trunk, dir])
             if install:
                 if self.dev:
                     self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -314,7 +315,7 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
             else:
                 print "-----------------------------------------------------------------"
-                self.run([self.svn,'checkout','-q',self.stable, dir])
+                self.run([self.svn,Repository.svn_get,'-q',self.stable, dir])
             if install:
                 if self.dev:
                     self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -342,7 +343,7 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
             else:
                 print "-----------------------------------------------------------------"
-                self.run([self.svn,'checkout','-q',self.release, dir])
+                self.run([self.svn,Repository.svn_get,'-q',self.release, dir])
             if install:
                 if self.dev:
                     self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -454,7 +455,7 @@ class Repository(object):
             print "     Subversion dir: "+self.stable
             print "     Source dir:     "+dir
             print "-----------------------------------------------------------------"
-            self.run([self.svn,'checkout','-q',self.stable, dir])
+            self.run([self.svn,Repository.svn_get,'-q',self.stable, dir])
             self.run([self.python, 'setup.py', 'develop'], dir=dir)
 
     def Xsdist_release(self, dir=None):
@@ -473,7 +474,7 @@ class Repository(object):
             print "     Subversion dir: "+self.release
             print "     Source dir:     "+dir
             print "-----------------------------------------------------------------"
-            self.run([self.svn,'checkout','-q',self.release, dir])
+            self.run([self.svn,Repository.svn_get,'-q',self.release, dir])
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def easy_install(self, install, preinstall, dir, offline):
@@ -727,6 +728,10 @@ class Installer(object):
         print "-----------------------------------------------------------------"
         print " END - Configuration summary"
         print "-----------------------------------------------------------------"
+        #
+        # If applying preinstall, then only do subversion exports
+        #
+        Repository.svn_get='export'
 
     def get_homedir(self, options, args):
         #
@@ -984,7 +989,7 @@ class Installer(object):
             else:
                 if options.clear:
                     rmtree( join(self.abshome_dir,todir) )
-                cmd = [Repository.svn,'checkout','-q',self.svnjoin(pkgroot,fromdir),join(self.abshome_dir,todir)]
+                cmd = [Repository.svn,Repository.svn_get,'-q',self.svnjoin(pkgroot,fromdir),join(self.abshome_dir,todir)]
             print "Running command '%s'" % " ".join(cmd)
             call_subprocess(cmd, filter_stdout=filter_python_develop,show_stdout=True)
 

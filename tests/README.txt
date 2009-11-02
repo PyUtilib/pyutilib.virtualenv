@@ -67,4 +67,19 @@ NOTE: this uses the ZIP file generated in (3).
 . Verify that pyutilib.th is installed with 'install'
 
 
+7. ../scripts/vpy_install --config test5.ini dummy
+   ../scripts/vpy_install --update
+
+. Verify that this gives an error because the directory 'python' does
+  not exist.
+
+
+8. ../scripts/vpy_install --config test5.ini dummy
+   ../scripts/vpy_install --update dummy
+
+. Verify that easy_install upgrades pyutilib.common
+. Verify that the other packages are updated with subversion
+. Verify that pyutilib.enum and tevaspot are installed with 'develop'
+. Verify that pyutilib.th is installed with 'install'
+
 
