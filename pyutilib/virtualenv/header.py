@@ -162,63 +162,108 @@ class Repository(object):
     dev = []
 
     def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False):
-        self.name = name
-        if not root is None:
+        class _TEMP_(object): pass
+        self.config = _TEMP_()
+        self.config.name=name
+        self.config.root=root
+        self.config.trunk=trunk
+        self.config.stable=stable
+        self.config.release=release
+        self.config.tag=tag
+        self.config.pyname=pyname
+        self.config.pypi=pypi
+        if dev == 'True' or dev is True:
+            self.config.dev=True
+        else:
+            self.config.dev=False
+        self.initialize(self.config)
+
+    def initialize(self, config):
+        self.name = config.name
+        self.root=config.root
+        if not config.root is None:
             try:
-                self.trunk = root+'/trunk'
+                self.trunk = config.root+'/trunk'
                 self.trunk_root = self.trunk
             except urllib2.HTTPError:
                 self.trunk = None
                 self.trunk_root = None
             try:
-                self.stable = guess_release(root+'/stable')
+                self.stable = guess_release(config.root+'/stable')
                 self.stable_root = self.stable
             except urllib2.HTTPError:
                 self.stable = None
                 self.stable_root = None
             try:
-                self.release = guess_release(root+'/releases')
+                self.release = guess_release(config.root+'/releases')
+                self.tag = None
                 self.release_root = self.release
             except urllib2.HTTPError:
-                self.release = None
-                self.release_root = None
+                try:
+                    self.release = guess_release(config.root+'/tags')
+                    self.tag = self.release
+                    self.release_root = self.release
+                except urllib2.HTTPError:
+                    self.release = None
+                    self.release_root = None
         else:
             self.trunk = None
             self.trunk_root = None
             self.stable = None
             self.stable_root = None
             self.release = None
+            self.tag = None
             self.release_root = None
-        if not trunk is None:
+        if not config.trunk is None:
             if self.trunk is None:
-                self.trunk = trunk
+                self.trunk = config.trunk
             else:
-                self.trunk += trunk
-        if not stable is None:
+                self.trunk += config.trunk
+        if not config.stable is None:
             if self.stable is None:
-                self.stable = stable
+                self.stable = config.stable
             else:
-                self.stable += stable
-        if not release is None:
+                self.stable += config.stable
+        if not config.release is None:
             if self.release is None:
-                self.release = release
+                self.release = config.release
             else:
-                self.release += release
-        if not tag is None:
+                self.release += config.release
+        if not config.tag is None:
             if self.release is None:
-                self.release = tag
+                self.release = config.tag
             else:
-                self.release += tag
-        self.pypi = pypi
-        if not pypi is None:
-            self.pyname=pypi
+                self.release += config.tag
+        self.pypi = config.pypi
+        if not config.pypi is None:
+            self.pyname=config.pypi
         else:
-            self.pyname=pyname
-        self.dev = dev
-        if dev:
-            Repository.dev.append(name)
+            self.pyname=config.pyname
+        self.dev = config.dev
+        if config.dev:
+            Repository.dev.append(config.name)
         self.pkgdir = None
         self.pkgroot = None
+
+    def write_config(self, OUTPUT):
+        config = self.config
+        print >>OUTPUT, '[%s]' % config.name
+        if not config.root is None:
+            print >>OUTPUT, 'root=%s' % config.root
+        if not config.trunk is None:
+            print >>OUTPUT, 'trunk=%s' % config.trunk
+        if not config.stable is None:
+            print >>OUTPUT, 'stable=%s' % config.stable
+        if not config.tag is None:
+            print >>OUTPUT, 'tag=%s' % config.tag
+        elif not config.release is None:
+            print >>OUTPUT, 'release=%s' % config.release
+        if not config.pypi is None:
+            print >>OUTPUT, 'pypi=%s' % config.pypi
+        elif not config.pyname is None:
+            print >>OUTPUT, 'pypi=%s' % config.pyname
+        print >>OUTPUT, 'dev=%s' % str(config.dev)
+
 
     def install_trunk(self, dir=None, install=True, preinstall=False, offline=False):
         if self.trunk is None:
@@ -232,6 +277,7 @@ class Repository(object):
             self.pkgdir=self.trunk
             self.pkgroot=self.trunk_root
             print "-----------------------------------------------------------------"
+            print "  Installing trunk branch"
             print "  Checking out source for package",self.name
             print "     Subversion dir: "+self.trunk
             if os.path.exists(dir):
@@ -241,7 +287,10 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
                 self.run([self.svn,'checkout','-q',self.trunk, dir])
             if install:
-                self.run([self.python, 'setup.py', 'develop'], dir=dir)
+                if self.dev:
+                    self.run([self.python, 'setup.py', 'develop'], dir=dir)
+                else:
+                    self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def install_stable(self, dir=None, install=True, preinstall=False, offline=False):
         if self.stable is None: 
@@ -255,6 +304,7 @@ class Repository(object):
             self.pkgdir=self.stable
             self.pkgroot=self.stable_root
             print "-----------------------------------------------------------------"
+            print "  Installing stable branch"
             print "  Checking out source for package",self.name
             print "     Subversion dir: "+self.stable
             print "     Source dir:     "+dir
@@ -265,7 +315,10 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
                 self.run([self.svn,'checkout','-q',self.stable, dir])
             if install:
-                self.run([self.python, 'setup.py', 'develop'], dir=dir)
+                if self.dev:
+                    self.run([self.python, 'setup.py', 'develop'], dir=dir)
+                else:
+                    self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def install_release(self, dir=None, install=True, preinstall=False, offline=False):
         if self.release is None:
@@ -279,6 +332,7 @@ class Repository(object):
             self.pkgdir=self.release
             self.pkgroot=self.release_root
             print "-----------------------------------------------------------------"
+            print "  Installing release branch"
             print "  Checking out source for package",self.name
             print "     Subversion dir: "+self.release
             print "     Source dir:     "+dir
@@ -289,64 +343,79 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
                 self.run([self.svn,'checkout','-q',self.release, dir])
             if install:
-                self.run([self.python, 'setup.py', 'install'], dir=dir)
+                if self.dev:
+                    self.run([self.python, 'setup.py', 'develop'], dir=dir)
+                else:
+                    self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def update_trunk(self, dir=None):
         if self.trunk is None:
-            if not self.pypi is None:
-                self.easy_upgrade()
-            elif not self.stable is None:
+            if not self.stable is None:
                 self.update_stable()
-            else:
+            elif self.pypi is None:
                 self.update_release()
+            else:
+                self.easy_upgrade()
         else:
             self.pkgdir=self.trunk
             self.pkgroot=self.trunk_root
             print "-----------------------------------------------------------------"
+            print "  Updating trunk branch"
             print "  Updating source for package",self.name
             print "     Subversion dir: "+self.trunk
             print "     Source dir:     "+dir
             print "-----------------------------------------------------------------"
             self.run([self.svn,'update','-q',dir])
-            self.run([self.python, 'setup.py', 'develop'], dir=dir)
+            if self.dev:
+                self.run([self.python, 'setup.py', 'develop'], dir=dir)
+            else:
+                self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def update_stable(self, dir=None):
         if self.stable is None:
-            if not self.pypi is None:
-                self.easy_upgrade()
-            elif not self.release is None:
+            if not self.release is None:
                 self.update_release()
-            elif not self.trunk is None:
+            elif self.pypi is None:
                 self.update_trunk()
+            else:
+                self.easy_upgrade()
         else:
             self.pkgdir=self.stable
             self.pkgroot=self.stable_root
             print "-----------------------------------------------------------------"
+            print "  Updating stable branch"
             print "  Updating source for package",self.name
             print "     Subversion dir: "+self.stable
             print "     Source dir:     "+dir
             print "-----------------------------------------------------------------"
             self.run([self.svn,'update','-q',dir])
-            self.run([self.python, 'setup.py', 'develop'], dir=dir)
+            if self.dev:
+                self.run([self.python, 'setup.py', 'develop'], dir=dir)
+            else:
+                self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def update_release(self, dir=None):
         if self.release is None:
-            if not self.pypi is None:
-                self.easy_upgrade()
-            elif not self.stable is None:
+            if not self.stable is None:
                 self.update_stable()
-            elif not self.trunk is None:
+            elif self.pypi is None:
                 self.update_trunk()
+            else:
+                self.easy_upgrade()
         else:
             self.pkgdir=self.release
             self.pkgroot=self.release_root
             print "-----------------------------------------------------------------"
+            print "  Updating release branch"
             print "  Updating source for package",self.name
             print "     Subversion dir: "+self.release
             print "     Source dir:     "+dir
             print "-----------------------------------------------------------------"
             self.run([self.svn,'update','-q',dir])
-            self.run([self.python, 'setup.py', 'install'], dir=dir)
+            if self.dev:
+                self.run([self.python, 'setup.py', 'develop'], dir=dir)
+            else:
+                self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def Xsdist_trunk(self, format='zip'):
         if self.trunk is None:
@@ -583,6 +652,12 @@ class Installer(object):
             dest='clear_config',
             default=False)
 
+        parser.add_option('--localize',
+            help='Force localization of DOS scripts on Linux platforms',
+            action='store_true',
+            dest='localize',
+            default=False)
+
         #
         # Change the virtualenv options
         #
@@ -609,6 +684,12 @@ class Installer(object):
         if options.update and (options.stable or options.trunk):
             self.logger.fatal("ERROR: cannot specify --stable or --trunk when specifying the --update option.")
             sys.exit(1000)
+        if options.update and len(options.config_files) > 0:
+            self.logger.fatal("ERROR: cannot specify --config when specifying the --update option.")
+            sys.exit(1000)
+        if options.update and options.clear_config:
+            self.logger.fatal("ERROR: cannot specify --clear-config when specifying the --update option.")
+            sys.exit(1000)
         if len(args) > 1:
             self.logger.fatal("ERROR: "+self.installer.name+" can only have one argument")
             sys.exit(1000)
@@ -627,12 +708,16 @@ class Installer(object):
         #
         # Parse config files
         #
+        if options.update:
+            self.config=None
+            options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
         if not self.config is None and not options.clear_config:
             fp = StringIO.StringIO(self.config)
             self.read_config_file(fp=fp)
             fp.close()
         for file in options.config_files:
             self.read_config_file(file=file)
+        self.write_config(stream=sys.stdout)
 
     def get_homedir(self, options, args):
         #
@@ -732,6 +817,7 @@ class Installer(object):
             print >>OUTPUT, options.trunk
             print >>OUTPUT, options.stable
             OUTPUT.close()
+            self.write_config( join(self.abshome_dir,'admin','config.ini') )
         #
         # Setup package directories
         #
@@ -850,7 +936,7 @@ class Installer(object):
         #
         # Localize DOS cmd files
         #
-        self.localize_cmd_files(self.abshome_dir)
+        self.localize_cmd_files(self.abshome_dir, options.localize)
         #
         # Misc notifications
         #
@@ -862,12 +948,12 @@ class Installer(object):
         print ""
         print "Finished installation in '%s'" % self.home_dir
 
-    def localize_cmd_files(self, dir):
+    def localize_cmd_files(self, dir, force_localization=False):
         """
         Hard-code the path to Python that is used in the Python CMD files that
         are installed.
         """
-        if not sys.platform.startswith('win'):
+        if not sys.platform.startswith('win') and not force_localization:
             return
         for file in self.cmd_files:
             INPUT = open(join(dir,'bin',file), 'r')
@@ -927,6 +1013,17 @@ class Installer(object):
                 for option, value in parser.items(sec):
                     options[option]=value
                 self.add_repository(sec, **options)
+
+    def write_config(self, filename=None, stream=None):
+        if not filename is None:
+            OUTPUT=open(filename,'w')
+            self.write_config(stream=OUTPUT)
+            OUTPUT.close()
+        else: 
+            for repos in self.sw_packages:
+                repos.write_config(stream)
+                print >>stream, ""
+        
 
 
 def configure(installer):

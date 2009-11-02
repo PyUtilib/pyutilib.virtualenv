@@ -126,6 +126,14 @@ This INI file will install the **nose** and **coopr** packages, and the
 **coopr** package will be installed in **python/src/coopr** as an editable
 *develop* package.
 
+Note that **vpy_install** does not require a user to install
+**setuptools**.  The **setuptools** package is only required when the
+**--preinstall** option is specified.  Thus, the default behavior of
+**vpy_install** (and other bootstrap scripts) does not require the
+installation of any third-party packages.  The **vpy_install** script
+can be distributed independent of **pyutilib.virtualenv**, and it can
+generally be used as a stand-alone script.
+
 
 -------
 License
