@@ -134,6 +134,18 @@ installation of any third-party packages.  The **vpy_install** script
 can be distributed independent of **pyutilib.virtualenv**, and it can
 generally be used as a stand-alone script.
 
+The **vpy_install** script supports an **--update** option that allows the
+user to update virtual Python installations.  This option does the following
+updates:
+
+* PyPI packages are upgraded
+* Subversion packages are updated and reinstalled
+
+Note that this option does not search for a newer release of a subversion
+package.  This limitation reflects the manner in which subversion packages
+are checked out within the virtual Python installation, which may be revised
+in the future.
+
 
 -------
 License
