@@ -2491,7 +2491,8 @@ import string
 import textwrap
 import sys
 import glob
-
+import errno
+import stat
 
 #
 # The following taken from PyUtilib
@@ -3189,7 +3190,15 @@ class Installer(object):
             fp.close()
         for file in options.config_files:
             self.read_config_file(file=file)
+        print "-----------------------------------------------------------------"
+        print "Finished processing configuration information."
+        print "-----------------------------------------------------------------"
+        print " START - Configuration summary"
+        print "-----------------------------------------------------------------"
         self.write_config(stream=sys.stdout)
+        print "-----------------------------------------------------------------"
+        print " END - Configuration summary"
+        print "-----------------------------------------------------------------"
 
     def get_homedir(self, options, args):
         #
@@ -3550,8 +3559,17 @@ def rmtree(dir):
 default_install_setuptools = install_setuptools
 
 def install_setuptools(py_executable, unzip=False):
-    if install_setuptools.use_default:
-        default_install_setuptools(py_executable, unzip)
+    try:
+        if install_setuptools.use_default:
+            default_install_setuptools(py_executable, unzip)
+    except OSError, err:
+        print "-----------------------------------------------------------------"
+        print "Error installing the 'setuptools' package!"
+        if os.environ['HTTP_PROXY'] == '':
+            print ""
+            print "WARNING: you may need to set your HTTP_PROXY environment variable!"
+        print "-----------------------------------------------------------------"
+        sys.exit(0)
 
 install_setuptools.use_default=True
 
