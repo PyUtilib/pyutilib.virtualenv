@@ -3525,6 +3525,25 @@ def get_installer():
     
 
 #
+# Override the default definition of rmtree, to better handle MSWindows errors
+# that are associated with read-only files
+#
+def handleRemoveReadonly(func, path, exc):
+  excvalue = exc[1]
+  if func in (os.rmdir, os.remove) and excvalue.errno == errno.EACCES:
+      os.chmod(path, stat.S_IRWXU| stat.S_IRWXG| stat.S_IRWXO) # 0777
+      func(path)
+  else:
+      raise
+
+def rmtree(dir):
+    if os.path.exists(dir):
+        logger.notify('Deleting tree %s', dir)
+        shutil.rmtree(dir, ignore_errors=False, onerror=handleRemoveReadonly)
+    else:
+        logger.info('Do not need to delete %s; already gone', dir)
+
+#
 # This is a monkey patch, to control the execution of the install_setuptools()
 # function that is defined by virtualenv.
 #
