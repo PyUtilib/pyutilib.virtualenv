@@ -98,3 +98,10 @@ NOTE: this uses the ZIP file generated in (3).
 . Verify that the CMD files are localized after installation.
 . Verify that the CMD files are localized after update.
 
+
+11. setenv SSG_USERNAME foobar
+    ../scripts/vpy_install --config test5.ini
+
+. Verify that pyutilib.plugin.core is checked out in python/src
+. Verify that the 'foobar' user does not have commit priviledges
+

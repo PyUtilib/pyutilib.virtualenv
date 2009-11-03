@@ -163,7 +163,7 @@ class Repository(object):
     svn = "svn"
     dev = []
 
-    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False):
+    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None):
         class _TEMP_(object): pass
         self.config = _TEMP_()
         self.config.name=name
@@ -178,6 +178,7 @@ class Repository(object):
             self.config.dev=True
         else:
             self.config.dev=False
+        self.config.username=username
         self.initialize(self.config)
 
     def initialize(self, config):
@@ -246,6 +247,10 @@ class Repository(object):
             Repository.dev.append(config.name)
         self.pkgdir = None
         self.pkgroot = None
+        if config.username is None or '$' in config.username:
+            self.svn_username = []
+        else:
+            self.svn_username = ['--username', config.username]
 
     def write_config(self, OUTPUT):
         config = self.config
@@ -287,7 +292,7 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
             else:
                 print "-----------------------------------------------------------------"
-                self.run([self.svn,Repository.svn_get,'-q',self.trunk, dir])
+                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.trunk, dir])
             if install:
                 if self.dev:
                     self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -315,7 +320,7 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
             else:
                 print "-----------------------------------------------------------------"
-                self.run([self.svn,Repository.svn_get,'-q',self.stable, dir])
+                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.stable, dir])
             if install:
                 if self.dev:
                     self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -343,7 +348,7 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
             else:
                 print "-----------------------------------------------------------------"
-                self.run([self.svn,Repository.svn_get,'-q',self.release, dir])
+                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.release, dir])
             if install:
                 if self.dev:
                     self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -434,7 +439,7 @@ class Repository(object):
             print "  Checking out source for package",self.name
             print "     Subversion dir: "+self.trunk
             print "-----------------------------------------------------------------"
-            self.run([self.svn,Repository.svn_get,'-q',self.trunk, 'pkg'+self.name])
+            self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.trunk, 'pkg'+self.name])
             self.run([self.python, 'setup.py', 'sdist','-q','--dist-dir=..', '--formats='+format], dir='pkg'+self.name)
             os.chdir('..')
             rmtree('pkg'+self.name)
@@ -455,7 +460,7 @@ class Repository(object):
             print "     Subversion dir: "+self.stable
             print "     Source dir:     "+dir
             print "-----------------------------------------------------------------"
-            self.run([self.svn,Repository.svn_get,'-q',self.stable, dir])
+            self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.stable, dir])
             self.run([self.python, 'setup.py', 'develop'], dir=dir)
 
     def Xsdist_release(self, dir=None):
@@ -474,7 +479,7 @@ class Repository(object):
             print "     Subversion dir: "+self.release
             print "     Source dir:     "+dir
             print "-----------------------------------------------------------------"
-            self.run([self.svn,Repository.svn_get,'-q',self.release, dir])
+            self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.release, dir])
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def easy_install(self, install, preinstall, dir, offline):
@@ -522,6 +527,10 @@ def filter_python_develop(line):
     return Logger.NOTIFY
 
 
+def apply_template(str, d):
+    t = string.Template(str)
+    return t.safe_substitute(d)
+
 
 wrapper = textwrap.TextWrapper(subsequent_indent="    ")
 
@@ -561,6 +570,8 @@ class Installer(object):
 """ % sys.argv[0]
 
     def add_repository(self, *args, **kwds):
+        if not 'root' in kwds and not 'pypi' in kwds:
+            raise IOError, "No root specified for repository "+args[0]
         repos = Repository( *args, **kwds)
         self.sw_dict[repos.name] = repos
         self.sw_packages.append( repos )
@@ -575,6 +586,12 @@ class Installer(object):
         self.default_windir = 'C:\\'+self.default_dirname
         self.default_unixdir = './'+self.default_dirname
         #
+        parser.add_option('--debug',
+            help='Configure script to generate debugging IO and to raise exceptions.',
+            action='store_true',
+            dest='debug',
+            default=False)
+
         parser.add_option('--trunk',
             help='Install trunk branches of Python software.',
             action='store_true',
@@ -678,6 +695,10 @@ class Installer(object):
 
     def adjust_options(self, options, args):
         #
+        global vpy_main
+        if options.debug:
+            vpy_main.raise_exceptions=True
+        #
         global logger
         verbosity = options.verbose - options.quiet
         self.logger = Logger([(Logger.level_for_integer(2-verbosity), sys.stdout)])
@@ -731,7 +752,8 @@ class Installer(object):
         #
         # If applying preinstall, then only do subversion exports
         #
-        Repository.svn_get='export'
+        if options.preinstall:
+            Repository.svn_get='export'
 
     def get_homedir(self, options, args):
         #
@@ -1011,7 +1033,7 @@ class Installer(object):
         sections = parser.sections()
         if 'installer' in sections:
             for option, value in parser.items('installer'):
-                setattr(self, option, value)
+                setattr(self, option, self.apply_template(value, os.environ) )
         if 'dos_cmd' in sections:
             for option, value in parser.items('dos_cmd'):
                 self.add_dos_cmd(option)
@@ -1021,11 +1043,11 @@ class Installer(object):
             if sec.startswith('auxdir_'):
                 auxdir = sec[7:]
                 for option, value in parser.items(sec):
-                    self.add_auxdir(auxdir, option, value)
+                    self.add_auxdir(auxdir, option, apply_template(value, os.environ) )
             else:
                 options = {}
                 for option, value in parser.items(sec):
-                    options[option]=value
+                    options[option] = apply_template(value, os.environ)
                 self.add_repository(sec, **options)
 
     def write_config(self, filename=None, stream=None):
@@ -1089,6 +1111,20 @@ def rmtree(dir):
         shutil.rmtree(dir, ignore_errors=False, onerror=handleRemoveReadonly)
     else:
         logger.info('Do not need to delete %s; already gone', dir)
+
+#
+# This is a monkey patch, to add control for exception management.
+#
+vpy_main = main
+vpy_main.raise_exceptions=False
+def main():
+    try:
+        vpy_main()
+    except Exception, err:
+        if vpy_main.raise_exceptions:
+            raise
+        print ""
+        print "ERROR:",str(err)
 
 #
 # This is a monkey patch, to control the execution of the install_setuptools()
