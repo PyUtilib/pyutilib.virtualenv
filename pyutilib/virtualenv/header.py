@@ -967,7 +967,7 @@ class Installer(object):
         Hard-code the path to Python that is used in the Python CMD files that
         are installed.
         """
-        if not sys.platform.startswith('win') and not force_localization:
+        if not (sys.platform.startswith('win') or force_localization):
             return
         for file in self.cmd_files:
             INPUT = open(join(dir,'bin',file), 'r')
@@ -1037,6 +1037,11 @@ class Installer(object):
             for repos in self.sw_packages:
                 repos.write_config(stream)
                 print >>stream, ""
+            if len(self.cmd_files) > 0:
+                print >>stream, "[dos_cmd]"
+                for file in self.cmd_files:
+                    print >>stream, file+"="
+                print >>stream, "\n"
         
 
 

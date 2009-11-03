@@ -92,3 +92,9 @@ NOTE: this uses the ZIP file generated in (3).
 . Verify that pyutilib.th is installed with 'install'
 
 
+10. ../scripts/vpy_install --config test5.ini --localize
+    ../scripts/vpy_install --localize --update
+
+. Verify that the CMD files are localized after installation.
+. Verify that the CMD files are localized after update.
+
