@@ -2906,7 +2906,7 @@ class Repository(object):
             print "  Checking out source for package",self.name
             print "     Subversion dir: "+self.trunk
             print "-----------------------------------------------------------------"
-            self.run([self.svn,'export','-q',self.trunk, 'pkg'+self.name])
+            self.run([self.svn,Repository.svn_get,'-q',self.trunk, 'pkg'+self.name])
             self.run([self.python, 'setup.py', 'sdist','-q','--dist-dir=..', '--formats='+format], dir='pkg'+self.name)
             os.chdir('..')
             rmtree('pkg'+self.name)
