@@ -353,9 +353,9 @@ class Repository(object):
     def update_trunk(self, dir=None):
         if self.trunk is None:
             if not self.stable is None:
-                self.update_stable()
+                self.update_stable(dir=dir)
             elif self.pypi is None:
-                self.update_release()
+                self.update_release(dir=dir)
             else:
                 self.easy_upgrade()
         else:
@@ -376,9 +376,9 @@ class Repository(object):
     def update_stable(self, dir=None):
         if self.stable is None:
             if not self.release is None:
-                self.update_release()
+                self.update_release(dir=dir)
             elif self.pypi is None:
-                self.update_trunk()
+                self.update_trunk(dir=dir)
             else:
                 self.easy_upgrade()
         else:
@@ -399,9 +399,9 @@ class Repository(object):
     def update_release(self, dir=None):
         if self.release is None:
             if not self.stable is None:
-                self.update_stable()
+                self.update_stable(dir=dir)
             elif self.pypi is None:
-                self.update_trunk()
+                self.update_trunk(dir=dir)
             else:
                 self.easy_upgrade()
         else:
