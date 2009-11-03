@@ -3505,7 +3505,7 @@ class Installer(object):
         sections = parser.sections()
         if 'installer' in sections:
             for option, value in parser.items('installer'):
-                setattr(self, option, self.apply_template(value, os.environ) )
+                setattr(self, option, apply_template(value, os.environ) )
         if 'dos_cmd' in sections:
             for option, value in parser.items('dos_cmd'):
                 self.add_dos_cmd(option)

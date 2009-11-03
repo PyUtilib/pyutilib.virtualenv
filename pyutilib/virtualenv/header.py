@@ -570,8 +570,8 @@ class Installer(object):
 """ % sys.argv[0]
 
     def add_repository(self, *args, **kwds):
-        if not 'root' in kwds and not 'pypi' in kwds:
-            raise IOError, "No root specified for repository "+args[0]
+        if not 'root' in kwds and not 'pypi' in kwds and not 'release' in kwds and not 'trunk' in kwds and not 'stable' in kwds:
+            raise IOError, "No repository info specified for repository "+args[0]
         repos = Repository( *args, **kwds)
         self.sw_dict[repos.name] = repos
         self.sw_packages.append( repos )
@@ -1023,7 +1023,11 @@ class Installer(object):
         if not fp is None:
             parser.readfp(fp, '<default configuration>')
         elif not os.path.exists(file):
-            output = urllib2.urlopen(file).read()
+            try:
+                output = urllib2.urlopen(file).read()
+            except Exception, err:
+                print "Problems opening configuration url:",url
+                raise
             fp = StringIO.StringIO(output)
             parser.readfp(fp, file)
             fp.close()
@@ -1033,7 +1037,7 @@ class Installer(object):
         sections = parser.sections()
         if 'installer' in sections:
             for option, value in parser.items('installer'):
-                setattr(self, option, self.apply_template(value, os.environ) )
+                setattr(self, option, apply_template(value, os.environ) )
         if 'dos_cmd' in sections:
             for option, value in parser.items('dos_cmd'):
                 self.add_dos_cmd(option)
