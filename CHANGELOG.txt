@@ -6,7 +6,20 @@
  1.1
 -------------------------------------------------------------------------------
 
-- Under development
+- Reworked the main() function to catch exceptions in a graceful manner.
+
+- Allow the configuration data to be processed with string templates, and
+  template variables are filled using environment variables.
+
+- Write out a config file when installing, which is then used to simplify
+  the update process.
+
+- Reworked the rmtree() function to enable more robust file deletions on
+  MS Windows.
+
+- Added a 'tests' directory, with a README.txt that describes tests that
+  need to be manually applied.
+
 
 -------------------------------------------------------------------------------
  1.0
