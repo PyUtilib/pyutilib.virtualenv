@@ -1122,6 +1122,11 @@ def rmtree(dir):
 vpy_main = main
 vpy_main.raise_exceptions=False
 def main():
+    if sys.platform != 'win32':
+        if os.environ.get('TMPDIR','') == '.':
+            os.environ['TMPDIR'] = '/tmp'
+        elif os.environ.get('TEMPDIR','') == '.':
+            os.environ['TEMPDIR'] = '/tmp'
     try:
         vpy_main()
     except Exception, err:
