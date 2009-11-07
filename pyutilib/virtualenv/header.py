@@ -1038,11 +1038,11 @@ class Installer(object):
         if 'installer' in sections:
             for option, value in parser.items('installer'):
                 setattr(self, option, apply_template(value, os.environ) )
-        if 'dos_cmd' in sections:
-            for option, value in parser.items('dos_cmd'):
+        if 'localize' in sections:
+            for option, value in parser.items('localize'):
                 self.add_dos_cmd(option)
         for sec in sections:
-            if sec in ['installer', 'dos_cmd']:
+            if sec in ['installer', 'localize']:
                 continue
             if sec.startswith('auxdir_'):
                 auxdir = sec[7:]
@@ -1064,7 +1064,7 @@ class Installer(object):
                 repos.write_config(stream)
                 print >>stream, ""
             if len(self.cmd_files) > 0:
-                print >>stream, "[dos_cmd]"
+                print >>stream, "[localize]"
                 for file in self.cmd_files:
                     print >>stream, file+"="
                 print >>stream, "\n"
