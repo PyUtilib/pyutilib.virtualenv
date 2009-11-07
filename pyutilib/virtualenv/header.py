@@ -112,6 +112,8 @@ def guess_release(svndir):
         if latest is None or latest < v:
             latest = v
             latest_str = version
+    if latest_str is None:
+        return None
     return svndir+"/"+latest_str
 
 
