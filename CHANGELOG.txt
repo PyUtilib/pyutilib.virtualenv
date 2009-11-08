@@ -6,7 +6,12 @@
  1.2
 -------------------------------------------------------------------------------
 
-- Under development.
+- Bug fix for guess_release() when no release revision is available.
+
+- Renamized the 'dos_cmd' section to 'localize'.
+
+- Update to use /tmp instead of '.' for the temporary directory (on non-windows 
+  platforms).
 
 
 -------------------------------------------------------------------------------
