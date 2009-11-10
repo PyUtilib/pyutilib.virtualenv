@@ -683,11 +683,11 @@ class Installer(object):
         # Change the virtualenv options
         #
         parser.get_option("--python").help = "Specify the Python interpreter to use, e.g., --python=python2.5 will install with the python2.5 interpreter."
-        parser.get_option("--clear").help = "Remove the existing installation and reinstall from scratch."
         parser.remove_option("--relocatable")
         parser.remove_option("--version")
         parser.remove_option("--unzip-setuptools")
         parser.remove_option("--no-site-packages")
+        parser.remove_option("--clear")
         #
         # Add description 
         #
@@ -696,6 +696,11 @@ class Installer(object):
         
 
     def adjust_options(self, options, args):
+        #
+        # Force options.clear to be False.  This allows us to preserve the logic
+        # associated with --clear, which we may want to use later.
+        #
+        options.clear=False
         #
         global vpy_main
         if options.debug:
@@ -725,8 +730,8 @@ class Installer(object):
             if options.update:
                 self.logger.fatal(wrapper.fill("ERROR: The 'update' option is specified, but the installation path '%s' does not exist!" % self.home_dir))
                 sys.exit(1000)
-            elif not options.clear and os.path.exists(join(self.abshome_dir,'bin')):
-                    self.logger.fatal(wrapper.fill("ERROR: The installation path '%s' already exists!  Use the --update option if you wish to update, or use --clear to create a fresh installation." % self.home_dir))
+            elif os.path.exists(join(self.abshome_dir,'bin')):
+                    self.logger.fatal(wrapper.fill("ERROR: The installation path '%s' already exists!  Use the --update option if you wish to update, or remove this directory to create a fresh installation." % self.home_dir))
                     sys.exit(1000)
         if len(args) == 0:
             args.append(self.abshome_dir)
