@@ -794,7 +794,10 @@ class Installer(object):
         #
         # Setup HTTP proxy
         #
-        if not options.preinstall:
+        if options.offline:
+            os.environ['HTTP_PROXY'] = ''
+            os.environ['http_proxy'] = ''
+        else:
             proxy = ''
             if not options.proxy is None:
                 proxy = options.proxy
@@ -825,6 +828,12 @@ class Installer(object):
             print "-----------------------------------------------------------------"
             rmtree(self.abshome_dir)
             os.mkdir(self.abshome_dir)
+        #
+        # When preinstalling or working offline, disable the 
+        # default install_setuptools() function.
+        #
+        if options.preinstall or options.offline:
+            install_setuptools.use_default=False
         #
         # If we're clearing the current installation, then remove a bunch of
         # directories
@@ -875,10 +884,8 @@ class Installer(object):
         #
         if options.preinstall:
             #
-            # When preinstalling, disable the default install_setuptools() function,
-            # and add the setuptools package to the installation list
+            # When preinstalling, add the setuptools package to the installation list
             #
-            install_setuptools.use_default=False
             self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
         #
         # Add Coopr Forum packages
