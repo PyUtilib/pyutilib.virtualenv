@@ -165,7 +165,7 @@ class Repository(object):
     svn = "svn"
     dev = []
 
-    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None):
+    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None):
         class _TEMP_(object): pass
         self.config = _TEMP_()
         self.config.name=name
@@ -181,11 +181,16 @@ class Repository(object):
         else:
             self.config.dev=False
         self.config.username=username
+        if install == 'False' or install is False:
+            self.config.install=False
+        else:
+            self.config.install=True
+        self.config.rev=rev
         self.initialize(self.config)
 
     def initialize(self, config):
         self.name = config.name
-        self.root=config.root
+        self.root = config.root
         if not config.root is None:
             try:
                 self.trunk = config.root+'/trunk'
@@ -253,6 +258,11 @@ class Repository(object):
             self.svn_username = []
         else:
             self.svn_username = ['--username', config.username]
+        if config.rev is None:
+            self.rev=''
+        else:
+            self.rev='@'+config.rev
+        self.install = config.install
 
     def write_config(self, OUTPUT):
         config = self.config
@@ -272,6 +282,9 @@ class Repository(object):
         elif not config.pyname is None:
             print >>OUTPUT, 'pypi=%s' % config.pyname
         print >>OUTPUT, 'dev=%s' % str(config.dev)
+        print >>OUTPUT, 'install=%s' % str(config.install)
+        if not config.rev is None:
+            print >>OUTPUT, 'rev=%s' % str(config.rev)
 
 
     def install_trunk(self, dir=None, install=True, preinstall=False, offline=False):
@@ -294,7 +307,7 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
             else:
                 print "-----------------------------------------------------------------"
-                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.trunk, dir])
+                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.trunk+self.rev, dir])
             if install:
                 if self.dev:
                     self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -322,7 +335,7 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
             else:
                 print "-----------------------------------------------------------------"
-                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.stable, dir])
+                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.stable+self.rev, dir])
             if install:
                 if self.dev:
                     self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -350,7 +363,7 @@ class Repository(object):
                 print "-----------------------------------------------------------------"
             else:
                 print "-----------------------------------------------------------------"
-                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.release, dir])
+                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.release+self.rev, dir])
             if install:
                 if self.dev:
                     self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -441,7 +454,7 @@ class Repository(object):
             print "  Checking out source for package",self.name
             print "     Subversion dir: "+self.trunk
             print "-----------------------------------------------------------------"
-            self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.trunk, 'pkg'+self.name])
+            self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.trunk, 'pkg'+self.name+self.rev])
             self.run([self.python, 'setup.py', 'sdist','-q','--dist-dir=..', '--formats='+format], dir='pkg'+self.name)
             os.chdir('..')
             rmtree('pkg'+self.name)
@@ -481,7 +494,7 @@ class Repository(object):
             print "     Subversion dir: "+self.release
             print "     Source dir:     "+dir
             print "-----------------------------------------------------------------"
-            self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.release, dir])
+            self.run([self.svn]+self.svn_username+[Repository.svn_get]+self.rev+['-q',self.release, dir])
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def easy_install(self, install, preinstall, dir, offline):
@@ -915,6 +928,8 @@ class Installer(object):
         # Get package source
         #
         for pkg in self.sw_packages:
+            if not pkg.install:
+                continue
             if pkg.dev:
                 tmp = join(self.abshome_dir,'src',pkg.name)
             else:
@@ -962,6 +977,8 @@ class Installer(object):
         # Install the related packages
         #
         for pkg in self.sw_packages:
+            if not pkg.install:
+                continue
             if pkg.dev:
                 srcdir = join(self.abshome_dir,'src',pkg.name)
             else:
@@ -1044,7 +1061,7 @@ class Installer(object):
             try:
                 output = urllib2.urlopen(file).read()
             except Exception, err:
-                print "Problems opening configuration url:",url
+                print "Problems opening configuration url:",file
                 raise
             fp = StringIO.StringIO(output)
             parser.readfp(fp, file)
