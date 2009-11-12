@@ -15,25 +15,23 @@ UNIX
 . SAME AS 1
 
 
-3. ../scripts/vpy_install --preinstall
-   OR
-   lbin ../scripts/vpy_install --preinstall
+3.  lbin ../scripts/vpy_install --preinstall
 
-. The diretory python/dist/setuptools exists
+. The directory python/dist/setuptools exists
 . The directory python/lib does not exist
 . The directory python/src is empty
 . The file python/python.zip exists and contains the entire directory tree
 
 
-4. ../scripts/vpy_install --offline --zip python.zip
+4. ../scripts/vpy_install --offline --zip python/python.zip foo
 
 NOTE: this uses the ZIP file generated in (3).
 
 . Verify that this generates the same results as (1) by installing in a separate 
   directory and then diff'ing:
 
-  ../scripts/vpy_install foo
-  diff -r foo python
+  ../scripts/vpy_install bar
+  diff -r -x '*pyc' -x '*svn*' -x '*egg' foo bar
 
 
 5. ../scripts/vpy_install --config test5.ini
@@ -56,6 +54,8 @@ NOTE: this uses the ZIP file generated in (3).
 . Verify that */dist/pyutilib.th contains build and dist directories for both
 
 . Verify that neither *src/pyutilib.enum directory contains build and dist directories
+
+. Verify that */doc exists
 
 
 6. ../scripts/vpy_install --config test5.ini

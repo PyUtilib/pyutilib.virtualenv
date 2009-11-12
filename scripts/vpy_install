@@ -2799,15 +2799,17 @@ class Repository(object):
         if config.dev:
             Repository.dev.append(config.name)
         self.pkgdir = None
-        self.pkgroot = config.root
+        self.pkgroot = None
         if config.username is None or '$' in config.username:
             self.svn_username = []
         else:
             self.svn_username = ['--username', config.username]
         if config.rev is None:
             self.rev=''
+            self.revarg=[]
         else:
             self.rev='@'+config.rev
+            self.revarg=['-r',config.rev]
         self.install = config.install
 
     def write_config(self, OUTPUT):
@@ -2831,159 +2833,121 @@ class Repository(object):
         print >>OUTPUT, 'install=%s' % str(config.install)
         if not config.rev is None:
             print >>OUTPUT, 'rev=%s' % str(config.rev)
+        if not config.username is None:
+            print >>OUTPUT, 'username=%s' % str(config.username)
 
+
+    def find_pkgroot(self, trunk=False, stable=False, release=False):
+        if trunk:
+            if self.trunk is None:
+                if not self.stable is None:
+                    self.find_pkgroot(stable=True)
+                elif self.pypi is None:
+                    self.find_pkgroot(release=True)
+                else:
+                    # use easy_install
+                    self.pkgdir = None
+                    self.pkgroot = None
+                    return
+            else:
+                self.pkgdir = self.trunk
+                self.pkgroot = self.trunk_root
+                return
+
+        elif stable:
+            if self.stable is None: 
+                if not self.release is None:
+                    self.find_pkgroot(release=True)
+                elif self.pypi is None:
+                    self.find_pkgroot(trunk=True)
+                else:
+                    # use easy_install
+                    self.pkgdir = None
+                    self.pkgroot = None
+                    return
+            else:
+                self.pkgdir = self.stable
+                self.pkgroot = self.stable_root
+                return
+
+        elif release:
+            if self.release is None:
+                if not self.stable is None:
+                    self.find_pkgroot(stable=True)
+                elif self.pypi is None:
+                    self.find_pkgroot(trunk=True)
+                else:
+                    # use easy_install
+                    self.pkgdir = None
+                    self.pkgroot = None
+                    return
+            else:
+                self.pkgdir = self.release
+                self.pkgroot = self.release_root
+
+        else:
+            raise IOError, "Must have one of trunk, stable or release specified"
+            
 
     def install_trunk(self, dir=None, install=True, preinstall=False, offline=False):
-        if self.trunk is None:
-            if not self.stable is None:
-                self.install_stable(dir=dir, install=install)
-            elif self.pypi is None:
-                self.install_release(dir=dir, install=install)
-            else:
-                self.easy_install(install, preinstall, dir, offline)
-        else:
-            self.pkgdir=self.trunk
-            self.pkgroot=self.trunk_root
-            print "-----------------------------------------------------------------"
-            print "  Installing trunk branch"
-            print "  Checking out source for package",self.name
-            print "     Subversion dir: "+self.trunk
-            if os.path.exists(dir):
-                print "     No checkout required"
-                print "-----------------------------------------------------------------"
-            else:
-                print "-----------------------------------------------------------------"
-                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.trunk+self.rev, dir])
-            if install:
-                if self.dev:
-                    self.run([self.python, 'setup.py', 'develop'], dir=dir)
-                else:
-                    self.run([self.python, 'setup.py', 'install'], dir=dir)
-
+        self.find_pkgroot(trunk=True)
+        self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
+        
     def install_stable(self, dir=None, install=True, preinstall=False, offline=False):
-        if self.stable is None: 
-            if not self.release is None:
-                self.install_release(dir=dir, install=install)
-            elif self.pypi is None:
-                self.install_trunk(dir=dir, install=install)
-            else:
-                self.easy_install(install, preinstall, dir, offline)
-        else:
-            self.pkgdir=self.stable
-            self.pkgroot=self.stable_root
-            print "-----------------------------------------------------------------"
-            print "  Installing stable branch"
-            print "  Checking out source for package",self.name
-            print "     Subversion dir: "+self.stable
-            print "     Source dir:     "+dir
-            if os.path.exists(dir):
-                print "     No checkout required"
-                print "-----------------------------------------------------------------"
-            else:
-                print "-----------------------------------------------------------------"
-                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.stable+self.rev, dir])
-            if install:
-                if self.dev:
-                    self.run([self.python, 'setup.py', 'develop'], dir=dir)
-                else:
-                    self.run([self.python, 'setup.py', 'install'], dir=dir)
-
+        self.find_pkgroot(stable=True)
+        self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
+        
     def install_release(self, dir=None, install=True, preinstall=False, offline=False):
-        if self.release is None:
-            if not self.stable is None:
-                self.install_stable(dir=dir, install=install)
-            elif self.pypi is None:
-                self.install_trunk(dir=dir, install=install)
-            else:
-                self.easy_install(install, preinstall, dir, offline)
-        else:
-            self.pkgdir=self.release
-            self.pkgroot=self.release_root
+        self.find_pkgroot(release=True)
+        self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
+        
+    def perform_install(self, dir=None, install=True, preinstall=False, offline=False):
+        if self.pkgdir is None:
+            self.easy_install(install, preinstall, dir, offline)
+            return
+        print "-----------------------------------------------------------------"
+        print "  Installing branch"
+        print "  Checking out source for package",self.name
+        print "     Subversion dir: "+self.pkgdir
+        if os.path.exists(dir):
+            print "     No checkout required"
             print "-----------------------------------------------------------------"
-            print "  Installing release branch"
-            print "  Checking out source for package",self.name
-            print "     Subversion dir: "+self.release
-            print "     Source dir:     "+dir
-            if os.path.exists(dir):
-                print "     No checkout required"
-                print "-----------------------------------------------------------------"
+        else:
+            print "-----------------------------------------------------------------"
+            self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.pkgdir+self.rev, dir])
+        if install:
+            if self.dev:
+                self.run([self.python, 'setup.py', 'develop'], dir=dir)
             else:
-                print "-----------------------------------------------------------------"
-                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.release+self.rev, dir])
-            if install:
-                if self.dev:
-                    self.run([self.python, 'setup.py', 'develop'], dir=dir)
-                else:
-                    self.run([self.python, 'setup.py', 'install'], dir=dir)
+                self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def update_trunk(self, dir=None):
-        if self.trunk is None:
-            if not self.stable is None:
-                self.update_stable(dir=dir)
-            elif self.pypi is None:
-                self.update_release(dir=dir)
-            else:
-                self.easy_upgrade()
-        else:
-            self.pkgdir=self.trunk
-            self.pkgroot=self.trunk_root
-            print "-----------------------------------------------------------------"
-            print "  Updating trunk branch"
-            print "  Updating source for package",self.name
-            print "     Subversion dir: "+self.trunk
-            print "     Source dir:     "+dir
-            print "-----------------------------------------------------------------"
-            self.run([self.svn,'update','-q',dir])
-            if self.dev:
-                self.run([self.python, 'setup.py', 'develop'], dir=dir)
-            else:
-                self.run([self.python, 'setup.py', 'install'], dir=dir)
+        self.find_pkgroot(trunk=True)
+        self.perform_update(dir=dir)
 
     def update_stable(self, dir=None):
-        if self.stable is None:
-            if not self.release is None:
-                self.update_release(dir=dir)
-            elif self.pypi is None:
-                self.update_trunk(dir=dir)
-            else:
-                self.easy_upgrade()
-        else:
-            self.pkgdir=self.stable
-            self.pkgroot=self.stable_root
-            print "-----------------------------------------------------------------"
-            print "  Updating stable branch"
-            print "  Updating source for package",self.name
-            print "     Subversion dir: "+self.stable
-            print "     Source dir:     "+dir
-            print "-----------------------------------------------------------------"
-            self.run([self.svn,'update','-q',dir])
-            if self.dev:
-                self.run([self.python, 'setup.py', 'develop'], dir=dir)
-            else:
-                self.run([self.python, 'setup.py', 'install'], dir=dir)
+        self.find_pkgroot(stable=True)
+        self.perform_update(dir=dir)
 
     def update_release(self, dir=None):
-        if self.release is None:
-            if not self.stable is None:
-                self.update_stable(dir=dir)
-            elif self.pypi is None:
-                self.update_trunk(dir=dir)
-            else:
-                self.easy_upgrade()
+        self.find_pkgroot(release=True)
+        self.perform_update(dir=dir)
+
+    def perform_update(self, dir=None):
+        if self.pkgdir is None:
+            self.easy_upgrade()
+            return
+        print "-----------------------------------------------------------------"
+        print "  Updating branch"
+        print "  Updating source for package",self.name
+        print "     Subversion dir: "+self.pkgdir
+        print "     Source dir:     "+dir
+        print "-----------------------------------------------------------------"
+        self.run([self.svn,'update','-q']+self.revarg+[dir])
+        if self.dev:
+            self.run([self.python, 'setup.py', 'develop'], dir=dir)
         else:
-            self.pkgdir=self.release
-            self.pkgroot=self.release_root
-            print "-----------------------------------------------------------------"
-            print "  Updating release branch"
-            print "  Updating source for package",self.name
-            print "     Subversion dir: "+self.release
-            print "     Source dir:     "+dir
-            print "-----------------------------------------------------------------"
-            self.run([self.svn,'update','-q',dir])
-            if self.dev:
-                self.run([self.python, 'setup.py', 'develop'], dir=dir)
-            else:
-                self.run([self.python, 'setup.py', 'install'], dir=dir)
+            self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def Xsdist_trunk(self, format='zip'):
         if self.trunk is None:
@@ -3063,10 +3027,11 @@ class Repository(object):
         self.run([self.easy_install_path, '-q', '--upgrade', self.pypi])
 
     def run(self, cmd, dir=None):
+        cwd=os.getcwd()
         if not dir is None:
-            cwd=os.getcwd()
             os.chdir(dir)
-        print "Running command '%s'" % " ".join(cmd)
+            cwd=dir
+        print "Running command '%s' in directory %s" % (" ".join(cmd), cwd)
         call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
         if not dir is None:
             os.chdir(cwd)
@@ -3444,12 +3409,12 @@ class Installer(object):
         #
         # Get source packages
         #
+        self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
         if options.preinstall:
             #
             # When preinstalling, add the setuptools package to the installation list
             #
             self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
-            self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
         #
         # Add Coopr Forum packages
         #
@@ -3470,11 +3435,12 @@ class Installer(object):
                     print "-----------------------------------------------------------------"
                     print "ERROR Finding 'tags' branch for Coopr Forum Package %s: %s" % (pkg,str(err))
                     print "-----------------------------------------------------------------"
-        #
+        #)
         # Get package source
         #
         for pkg in self.sw_packages:
             if not pkg.install:
+                pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=not (options.trunk or options.stable))
                 continue
             if pkg.dev:
                 tmp = join(self.abshome_dir,'src',pkg.name)
@@ -3524,6 +3490,7 @@ class Installer(object):
         #
         for pkg in self.sw_packages:
             if not pkg.install:
+                pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=not (options.trunk or options.stable))
                 continue
             if pkg.dev:
                 srcdir = join(self.abshome_dir,'src',pkg.name)
@@ -3582,7 +3549,6 @@ class Installer(object):
             OUTPUT.close()
 
     def svnjoin(*args):
-        print "HERE",args
         return '/'.join(args[1:])
 
     def install_auxdirs(self, options):
@@ -3608,7 +3574,7 @@ class Installer(object):
             try:
                 output = urllib2.urlopen(file).read()
             except Exception, err:
-                print "Problems opening configuration url:",url
+                print "Problems opening configuration url:",file
                 raise
             fp = StringIO.StringIO(output)
             parser.readfp(fp, file)
