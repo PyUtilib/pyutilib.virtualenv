@@ -851,6 +851,7 @@ class Installer(object):
         if options.preinstall or not options.offline:
             self.get_packages(options)
         else:
+            self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
             self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
 
     def get_packages(self, options):
@@ -889,6 +890,7 @@ class Installer(object):
             # When preinstalling, add the setuptools package to the installation list
             #
             self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+            self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
         #
         # Add Coopr Forum packages
         #
