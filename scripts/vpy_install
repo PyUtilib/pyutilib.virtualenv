@@ -3396,6 +3396,8 @@ class Installer(object):
 
         if options.preinstall or not options.offline:
             self.get_packages(options)
+        else:
+            self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
 
     def get_packages(self, options):
         #

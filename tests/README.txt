@@ -61,7 +61,7 @@ NOTE: this uses the ZIP file generated in (3).
 6. ../scripts/vpy_install --config test5.ini
    ../scripts/vpy_install --update
 
-. Verify that easy_install upgrades pyutilib.common
+. Verify that easy_install upgrades nose
 . Verify that the other packages are updated with subversion
 . Verify that pyutilib.enum and tevaspot are installed with 'develop'
 . Verify that pyutilib.th is installed with 'install'
@@ -77,7 +77,7 @@ NOTE: this uses the ZIP file generated in (3).
 8. ../scripts/vpy_install --config test5.ini dummy
    ../scripts/vpy_install --update dummy
 
-. Verify that easy_install upgrades pyutilib.common
+. Verify that easy_install upgrades nose
 . Verify that the other packages are updated with subversion
 . Verify that pyutilib.enum and tevaspot are installed with 'develop'
 . Verify that pyutilib.th is installed with 'install'
@@ -86,7 +86,7 @@ NOTE: this uses the ZIP file generated in (3).
 9. ../scripts/vpy_install --config test5.ini --trunk
    ../scripts/vpy_install --update
 
-. Verify that easy_install upgrades pyutilib.common
+. Verify that easy_install upgrades nose
 . Verify that the other packages are updated with subversion
 . Verify that pyutilib.enum and tevaspot are installed with 'develop'
 . Verify that pyutilib.th is installed with 'install'
@@ -106,9 +106,9 @@ NOTE: this uses the ZIP file generated in (3).
 . Verify that the 'foobar' user does not have commit priviledges
 
 
-12. lbin ../scripts/vpy_install --preinstall foo
+12. lbin ../scripts/vpy_install --preinstall --config test5.ini foo
     unsetenv HTTP_PROXY
-    ../scripts/vpy_install --offline --zip foo/python.zip bar
+    ../scripts/vpy_install --offline --zip foo/python.zip --config test5.ini bar
 
 . Confirm that offline the installation works correctly without
   the HTTP_PROXY set.
