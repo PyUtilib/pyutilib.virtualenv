@@ -105,12 +105,3 @@ NOTE: this uses the ZIP file generated in (3).
 . Verify that pyutilib.plugin.core is checked out in python/src
 . Verify that the 'foobar' user does not have commit priviledges
 
-
-12. lbin ../scripts/vpy_install --preinstall foo
-    unsetenv HTTP_PROXY
-    ../scripts/vpy_install --offline --zip foo/python.zip bar
-
-. Confirm that offline the installation works correctly without
-  the HTTP_PROXY set.
-
-
