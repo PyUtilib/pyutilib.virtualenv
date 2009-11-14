@@ -113,4 +113,6 @@ NOTE: this uses the ZIP file generated in (3).
 . Confirm that offline the installation works correctly without
   the HTTP_PROXY set.
 
+13. ../scripts/vpy_install --forum-pkg=neos --forum-dev=neos --trunk --debug
 
+. Verify that python/src/coopr.neos is checked out.

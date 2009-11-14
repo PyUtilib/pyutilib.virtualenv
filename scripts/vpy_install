@@ -3422,19 +3422,19 @@ class Installer(object):
         for pkg in options.forum.split(','):
             if pkg is '':
                 continue
-            if pkg in dev:
-                if (options.trunk or options.stable):
-                    self.sw_packages[pkg] = 'http://coopr-forum.googlecode.com/svn/'+pkg
-                else:
-                    self.sw_packages[pkg] = '-f http://coopr-forum.googlecode.com/svn/'+pkg+'/trunk '+pkg
-                dev_packages.append(pkg)
-            else:
-                try:
-                    self.sw_packages[pkg] = guess_release('http://coopr-forum.googlecode.com/svn/'+pkg+'/dev/')
-                except Exception, err:
-                    print "-----------------------------------------------------------------"
-                    print "ERROR Finding 'tags' branch for Coopr Forum Package %s: %s" % (pkg,str(err))
-                    print "-----------------------------------------------------------------"
+            self.add_repository(pkg, root='http://coopr-forum.googlecode.com/svn/'+pkg, dev=pkg in dev)
+            #if pkg in dev:
+                #if (options.trunk or options.stable):
+                #else:
+                    #self.sw_packages[pkg] = '-f http://coopr-forum.googlecode.com/svn/'+pkg+'/trunk '+pkg
+                #dev_packages.append(pkg)
+            #else:
+                #try:
+                    #self.sw_packages[pkg] = guess_release('http://coopr-forum.googlecode.com/svn/'+pkg+'/dev/')
+                #except Exception, err:
+                    #print "-----------------------------------------------------------------"
+                    #print "ERROR Finding 'tags' branch for Coopr Forum Package %s: %s" % (pkg,str(err))
+                    #print "-----------------------------------------------------------------"
         #)
         # Get package source
         #
