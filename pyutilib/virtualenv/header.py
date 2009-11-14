@@ -1046,8 +1046,8 @@ class Installer(object):
         for sec in sections:
             if sec in ['installer', 'localize']:
                 continue
-            if sec.startswith('auxdir_'):
-                auxdir = sec[7:]
+            if sec.endswith(':auxdir'):
+                auxdir = sec[:-7]
                 for option, value in parser.items(sec):
                     self.add_auxdir(auxdir, option, apply_template(value, os.environ) )
             else:

@@ -68,7 +68,7 @@ dev=True
 sp.cmd=
 teva-spot.cmd=
 
-[auxdir_tevaspot]
+[tevaspot:auxdir]
 etc/mod=/etc/mod
 examples/simple=/examples/simple
 data/Net3=/packages/test/data/Net3
