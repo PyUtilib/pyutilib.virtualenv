@@ -24,10 +24,9 @@ virtual Python repository contains the **virtualenv** and **nose** Python packag
         installer.add_repository('virtualenv', pypi='virtualenv')
         installer.add_repository('nose', pypi='nose')
         installer.add_repository(
-                        'coopr', 
-                        pyname='Coopr', 
-                        root='https://software.sandia.gov/svn/public/coopr', 
-                        dev=True)
+            'pyutilib.subprocess', 
+            root='https://software.sandia.gov/svn/public/pyutilib.subprocess', 
+            dev=True)
         return installer
 
 The **add_repository** method can specify a PyPI package with the *pypi*
@@ -110,21 +109,20 @@ consider the following INI file::
     [installer]
     description=This is an example.
     README="#
-    # This is a README file created by the bootstrap script.
-    #"
+     # This is a README file created by the bootstrap script.
+     #"
 
     [nose]
     pypi=nose
 
-    [coopr]
-    pyname=Coopr
-    root=https://software.sandia.gov/svn/public/coopr
+    [pyutilib.subprocess]
+    root=https://software.sandia.gov/svn/public/pyutilib/pyutilib.subprocess
     dev=True
 
 The default installation directory for **vpy_install** is **python**.
-This INI file will install the **nose** and **coopr** packages, and the
-**coopr** package will be installed in **python/src/coopr** as an editable
-*develop* package.
+This INI file will install the **nose** and **pyutilib.subprocess**
+packages, and the **pyutilib.subprocess** package will be installed in
+**python/src/pyutilib.subprocess** as an editable *develop* package.
 
 Note that **vpy_install** does not require a user to install
 **setuptools**.  The **setuptools** package is only required when the
