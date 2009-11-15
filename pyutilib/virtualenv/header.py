@@ -615,18 +615,6 @@ class Installer(object):
             dest='zip',
             default=[])
 
-        parser.add_option('--forum-pkg',
-            help='Use one or more packages from the Coopr Forum.  Multiple packages are specified with a comma-separated list.',
-            action='store',
-            dest='forum',
-            default='')
-
-        parser.add_option('--forum-dev',
-            help="Explicitly indicate which of the Coopr Forum packages are treated as development packages.  By default, no Coopr Forum packages are treated this way; packages omited from this list are installed from their latest 'tags' branch.  Multiple packages are specified with a comma-separated list.",
-            action='store',
-            dest='forumdev',
-            default='')
-
         parser.add_option('--use-pythonpath',
             help="By default, the PYTHONPATH is ignored when installing.  This option allows the 'easy_install' tool to search this path for related Python packages, which are then installed.",
             action='store_true',
@@ -875,24 +863,8 @@ class Installer(object):
         #
         # Add Coopr Forum packages
         #
-        dev = options.forumdev.split(',')
-        for pkg in options.forum.split(','):
-            if pkg is '':
-                continue
-            self.add_repository(pkg, root='http://coopr-forum.googlecode.com/svn/'+pkg, dev=pkg in dev)
-            #if pkg in dev:
-                #if (options.trunk or options.stable):
-                #else:
-                    #self.sw_packages[pkg] = '-f http://coopr-forum.googlecode.com/svn/'+pkg+'/trunk '+pkg
-                #dev_packages.append(pkg)
-            #else:
-                #try:
-                    #self.sw_packages[pkg] = guess_release('http://coopr-forum.googlecode.com/svn/'+pkg+'/dev/')
-                #except Exception, err:
-                    #print "-----------------------------------------------------------------"
-                    #print "ERROR Finding 'tags' branch for Coopr Forum Package %s: %s" % (pkg,str(err))
-                    #print "-----------------------------------------------------------------"
-        #)
+        self.get_other_packages(options)
+        #
         # Get package source
         #
         for pkg in self.sw_packages:
@@ -931,6 +903,12 @@ class Installer(object):
             zip_file(self.default_dirname+'.zip', ['.'])
             sys.exit(0)
 
+    def get_other_packages(self, options):
+        #
+        # Used by subclasses of Installer to 
+        # add packages that were requested through other means....
+        #
+        pass
         
     def install_packages(self, options):
         #
