@@ -688,7 +688,7 @@ class Installer(object):
             self.logger.fatal("ERROR: cannot specify --clear-config when specifying the --update option.")
             sys.exit(1000)
         if len(args) > 1:
-            self.logger.fatal("ERROR: "+self.installer.name+" can only have one argument")
+            self.logger.fatal("ERROR: installer script can only have one argument")
             sys.exit(1000)
         #
         # Error checking
