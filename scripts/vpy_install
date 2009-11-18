@@ -3687,6 +3687,28 @@ install_setuptools.use_default=True
 
 
 #
+# This is a monkey patch, to control the execution of the install_pip()
+# function that is defined by virtualenv.
+#
+default_install_pip = install_pip
+
+def install_pip(py_executable, unzip=False):
+    try:
+        if install_pip.use_default:
+            default_install_pip(py_executable, unzip)
+    except OSError, err:
+        print "-----------------------------------------------------------------"
+        print "Error installing the 'pip' package!"
+        if os.environ['HTTP_PROXY'] == '':
+            print ""
+            print "WARNING: you may need to set your HTTP_PROXY environment variable!"
+        print "-----------------------------------------------------------------"
+        sys.exit(0)
+
+install_pip.use_default=True
+
+
+#
 # The following methods will be called by virtualenv
 #
 def extend_parser(parser):
