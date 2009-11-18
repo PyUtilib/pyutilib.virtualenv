@@ -803,6 +803,7 @@ class Installer(object):
         #
         if options.preinstall or options.offline:
             install_setuptools.use_default=False
+            install_pip.use_default=False
         #
         # If we're clearing the current installation, then remove a bunch of
         # directories
@@ -821,6 +822,7 @@ class Installer(object):
             self.get_packages(options)
         else:
             self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
+            self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
             self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
 
     def get_packages(self, options):
@@ -855,6 +857,7 @@ class Installer(object):
         # Get source packages
         #
         self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
+        self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
         if options.preinstall:
             #
             # When preinstalling, add the setuptools package to the installation list
@@ -1146,10 +1149,10 @@ install_setuptools.use_default=True
 #
 default_install_pip = install_pip
 
-def install_pip(py_executable, unzip=False):
+def install_pip(*args, **kwds):
     try:
         if install_pip.use_default:
-            default_install_pip(py_executable, unzip)
+            default_install_pip(*args, **kwds)
     except OSError, err:
         print "-----------------------------------------------------------------"
         print "Error installing the 'pip' package!"
