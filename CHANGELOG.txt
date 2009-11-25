@@ -3,10 +3,37 @@
 ===============================
 
 -------------------------------------------------------------------------------
+ 1.4
+-------------------------------------------------------------------------------
+
+- Under development.
+
+
+-------------------------------------------------------------------------------
  1.3
 -------------------------------------------------------------------------------
 
-- Current development.
+- For offline installation, explicitly add setuptools and pip
+
+- Extension to allow repositories to have a specified revision
+
+- Extension to specify repositories that are not installed within 
+  virtual Python;  these are used to define a repository with auxilliary
+  directories.
+
+- Reworked the installer logic to find the package root as a separate
+  step from the installation process.
+
+- Changed the syntax for specifying auxdirs; this should avoid conflicts
+  with software package names that contain '_' characters.
+
+- Added support for a user-specified config file, which may be a URL that
+  is loaded.
+
+- Removed support for the '--forum' options, which are Coopr-specific.
+
+- Updates to work with virtualenv 1.4.2, which includes a new install_pip
+  function
 
 
 -------------------------------------------------------------------------------
