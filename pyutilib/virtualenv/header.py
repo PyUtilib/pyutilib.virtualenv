@@ -191,59 +191,14 @@ class Repository(object):
     def initialize(self, config):
         self.name = config.name
         self.root = config.root
-        if not config.root is None:
-            try:
-                self.trunk = config.root+'/trunk'
-                self.trunk_root = self.trunk
-            except urllib2.HTTPError:
-                self.trunk = None
-                self.trunk_root = None
-            try:
-                self.stable = guess_release(config.root+'/stable')
-                self.stable_root = self.stable
-            except urllib2.HTTPError:
-                self.stable = None
-                self.stable_root = None
-            try:
-                self.release = guess_release(config.root+'/releases')
-                self.tag = None
-                self.release_root = self.release
-            except urllib2.HTTPError:
-                try:
-                    self.release = guess_release(config.root+'/tags')
-                    self.tag = self.release
-                    self.release_root = self.release
-                except urllib2.HTTPError:
-                    self.release = None
-                    self.release_root = None
-        else:
-            self.trunk = None
-            self.trunk_root = None
-            self.stable = None
-            self.stable_root = None
-            self.release = None
-            self.tag = None
-            self.release_root = None
-        if not config.trunk is None:
-            if self.trunk is None:
-                self.trunk = config.trunk
-            else:
-                self.trunk += config.trunk
-        if not config.stable is None:
-            if self.stable is None:
-                self.stable = config.stable
-            else:
-                self.stable += config.stable
-        if not config.release is None:
-            if self.release is None:
-                self.release = config.release
-            else:
-                self.release += config.release
-        if not config.tag is None:
-            if self.release is None:
-                self.release = config.tag
-            else:
-                self.release += config.tag
+        self.trunk = None
+        self.trunk_root = None
+        self.stable = None
+        self.stable_root = None
+        self.release = None
+        self.tag = None
+        self.release_root = None
+        #
         self.pypi = config.pypi
         if not config.pypi is None:
             self.pyname=config.pypi
@@ -265,6 +220,60 @@ class Repository(object):
             self.rev='@'+config.rev
             self.revarg=['-r',config.rev]
         self.install = config.install
+
+    def guess_versions(self, offline=False):
+        if not self.config.root is None:
+            try:
+                self.trunk = self.config.root+'/trunk'
+                self.trunk_root = self.trunk
+            except urllib2.HTTPError:
+                self.trunk = None
+                self.trunk_root = None
+            try:
+                if offline:
+                    raise IOError
+                self.stable = guess_release(self.config.root+'/stable')
+                self.stable_root = self.stable
+            except (urllib2.HTTPError,IOError):
+                self.stable = None
+                self.stable_root = None
+            try:
+                if offline:
+                    raise IOError
+                self.release = guess_release(self.config.root+'/releases')
+                self.tag = None
+                self.release_root = self.release
+            except (urllib2.HTTPError,IOError):
+                try:
+                    if offline:
+                        raise IOError
+                    self.release = guess_release(self.config.root+'/tags')
+                    self.tag = self.release
+                    self.release_root = self.release
+                except (urllib2.HTTPError,IOError):
+                    self.release = None
+                    self.release_root = None
+        if not self.config.trunk is None:
+            if self.trunk is None:
+                self.trunk = self.config.trunk
+            else:
+                self.trunk += self.config.trunk
+        if not self.config.stable is None:
+            if self.stable is None:
+                self.stable = self.config.stable
+            else:
+                self.stable += self.config.stable
+        if not self.config.release is None:
+            if self.release is None:
+                self.release = self.config.release
+            else:
+                self.release += self.config.release
+        if not self.config.tag is None:
+            if self.release is None:
+                self.release = self.config.tag
+            else:
+                self.release += self.config.tag
+
 
     def write_config(self, OUTPUT):
         config = self.config
@@ -824,6 +833,11 @@ class Installer(object):
             self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
             self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
             self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+            #
+            # Configure the package versions, for offline installs
+            #
+            for pkg in self.sw_packages:
+                pkg.guess_versions(True)
 
     def get_packages(self, options):
         #
@@ -871,6 +885,7 @@ class Installer(object):
         # Get package source
         #
         for pkg in self.sw_packages:
+            pkg.guess_versions(False)
             if not pkg.install:
                 pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=not (options.trunk or options.stable))
                 continue
