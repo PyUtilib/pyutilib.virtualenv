@@ -11,6 +11,7 @@
 # This script was created with the virtualenv_install script.
 #
 
+import commands
 import re
 import urllib2
 import zipfile
@@ -21,6 +22,8 @@ import sys
 import glob
 import errno
 import stat
+
+using_subversion = True
 
 #
 # The following taken from PyUtilib
@@ -96,13 +99,25 @@ def parse_version(s):
 #   8.28.rc1
 #
 def guess_release(svndir):
-    output = urllib2.urlopen(svndir, timeout=30).read()
-    if output=="":
-       return None
-    links = re.findall('\<li>\<a href[^>]+>[^\<]+\</a>',output)
-    versions = []
-    for link in links:
-        versions.append( re.split('>', link[:-5])[-1] )
+    if using_subversion:
+        output = commands.getoutput('svn ls '+svndir)
+        if output=="":
+            return None
+        #print output
+        versions = []
+        for link in re.split('/',output.strip()):
+            tmp = link.strip()
+            if tmp != '':
+                versions.append( tmp )
+        #print versions
+    else:
+        output = urllib2.urlopen(svndir, timeout=30).read()
+        if output=="":
+            return None
+        links = re.findall('\<li>\<a href[^>]+>[^\<]+\</a>',output)
+        versions = []
+        for link in links:
+            versions.append( re.split('>', link[:-5])[-1] )
     latest = None
     latest_str = None
     for version in versions:
@@ -223,7 +238,10 @@ class Repository(object):
 
     def guess_versions(self, offline=False):
         if not self.config.root is None:
-            rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
+            if using_subversion:
+                rootdir_output = commands.getoutput('svn ls ' + self.config.root)
+            else:
+                rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
             try:
                 self.trunk = self.config.root+'/trunk'
                 self.trunk_root = self.trunk
