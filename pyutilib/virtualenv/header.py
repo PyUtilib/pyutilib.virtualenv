@@ -96,7 +96,7 @@ def parse_version(s):
 #   8.28.rc1
 #
 def guess_release(svndir):
-    output = urllib2.urlopen(svndir).read()
+    output = urllib2.urlopen(svndir, timeout=30).read()
     if output=="":
        return None
     links = re.findall('\<li>\<a href[^>]+>[^\<]+\</a>',output)
@@ -223,6 +223,7 @@ class Repository(object):
 
     def guess_versions(self, offline=False):
         if not self.config.root is None:
+            rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
             try:
                 self.trunk = self.config.root+'/trunk'
                 self.trunk_root = self.trunk
@@ -230,7 +231,7 @@ class Repository(object):
                 self.trunk = None
                 self.trunk_root = None
             try:
-                if offline:
+                if offline or not 'stable' in rootdir_output:
                     raise IOError
                 self.stable = guess_release(self.config.root+'/stable')
                 self.stable_root = self.stable
@@ -238,14 +239,14 @@ class Repository(object):
                 self.stable = None
                 self.stable_root = None
             try:
-                if offline:
+                if offline or not 'releases' in rootdir_output:
                     raise IOError
                 self.release = guess_release(self.config.root+'/releases')
                 self.tag = None
                 self.release_root = self.release
             except (urllib2.HTTPError,IOError):
                 try:
-                    if offline:
+                    if offline or not 'tags' in rootdir_output:
                         raise IOError
                     self.release = guess_release(self.config.root+'/tags')
                     self.tag = self.release
@@ -1024,8 +1025,10 @@ class Installer(object):
         if not fp is None:
             parser.readfp(fp, '<default configuration>')
         elif not os.path.exists(file):
+            if not '/' in file and not self.config_file is None:
+                file = os.path.dirname(self.config_file)+"/"+file
             try:
-                output = urllib2.urlopen(file).read()
+                output = urllib2.urlopen(file, timeout=30).read()
             except Exception, err:
                 print "Problems opening configuration url:",file
                 raise
