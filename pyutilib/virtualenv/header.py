@@ -657,15 +657,15 @@ class Installer(object):
             default=True)
 
         parser.add_option('--config',
-            help='Add INI config files that specify the packages used in this installation. ',
+            help='Use an INI config file to specify the packages used in this installation.  Using this option clears the initial configuration, but multiple uses of this option will add package specifications.',
             action='append',
             dest='config_files',
             default=[])
 
-        parser.add_option('--clear-config',
-            help='Clear any initial configuration data that was specified when constructing this installer.',
+        parser.add_option('--keep-config',
+            help='Keep the initial configuration data that was specified if the --config option is specified.',
             action='store_true',
-            dest='clear_config',
+            dest='keep_config',
             default=False)
 
         parser.add_option('--localize',
@@ -712,8 +712,8 @@ class Installer(object):
         if options.update and len(options.config_files) > 0:
             self.logger.fatal("ERROR: cannot specify --config when specifying the --update option.")
             sys.exit(1000)
-        if options.update and options.clear_config:
-            self.logger.fatal("ERROR: cannot specify --clear-config when specifying the --update option.")
+        if options.update and options.keep_config:
+            self.logger.fatal("ERROR: cannot specify --keep-config when specifying the --update option.")
             sys.exit(1000)
         if len(args) > 1:
             self.logger.fatal("ERROR: installer script can only have one argument")
@@ -736,11 +736,11 @@ class Installer(object):
         if options.update:
             self.config=None
             options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
-        if not self.config is None and not options.clear_config:
+        if not self.config is None and (len(options.config_files) == 0 or options.keep_config):
             fp = StringIO.StringIO(self.config)
             self.read_config_file(fp=fp)
             fp.close()
-        if not self.config_file is None and not options.clear_config:
+        if not self.config_file is None and (len(options.config_files) == 0 or options.keep_config):
             self.read_config_file(file=self.config_file)
         for file in options.config_files:
             self.read_config_file(file=file)
