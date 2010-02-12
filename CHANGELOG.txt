@@ -3,10 +3,34 @@
 ===============================
 
 -------------------------------------------------------------------------------
- 1.4
+ 1.5
 -------------------------------------------------------------------------------
 
 - Under development.
+
+
+-------------------------------------------------------------------------------
+ 1.4
+-------------------------------------------------------------------------------
+
+- Changing the semantics of the --config option. By default, this
+  clears the initial configuration information. The --keep-config option
+  can be used to retain this config information.
+
+- Using subversion for listing subversion web directories. This
+  eliminates various problems accessing ssl authenticated sites from
+  behind a proxy.
+
+  NOTE: there remains an issue getting to https config files from behind
+  a proxy, but that will only impact developers. Thus, we'll worry about
+  that issue when we really need to.
+
+- Changing the behavior of guess_version. Now, we verify that the
+  branch directories exist before get information on them.
+
+  Changed the semantics of the --config option. Now, if a INI file is
+  specified, but not available, then the application config_file will
+  be used to search for this file.
 
 
 -------------------------------------------------------------------------------
