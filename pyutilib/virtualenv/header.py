@@ -111,7 +111,10 @@ def guess_release(svndir):
                 versions.append( tmp )
         #print versions
     else:
-        output = urllib2.urlopen(svndir, timeout=30).read()
+        if sys.version_info[:2] <= (2,5):
+            output = urllib2.urlopen(svndir).read()
+        else:
+            output = urllib2.urlopen(svndir, timeout=30).read()
         if output=="":
             return None
         links = re.findall('\<li>\<a href[^>]+>[^\<]+\</a>',output)
@@ -241,7 +244,10 @@ class Repository(object):
             if using_subversion:
                 rootdir_output = commands.getoutput('svn ls ' + self.config.root)
             else:
-                rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
+                if sys.version_info[:2] <= (2,5):
+                    rootdir_output = urllib2.urlopen(self.config.root).read()
+                else:
+                    rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
             try:
                 self.trunk = self.config.root+'/trunk'
                 self.trunk_root = self.trunk
@@ -1046,7 +1052,10 @@ class Installer(object):
             if not '/' in file and not self.config_file is None:
                 file = os.path.dirname(self.config_file)+"/"+file
             try:
-                output = urllib2.urlopen(file, timeout=30).read()
+                if sys.version_info[:2] <= (2,5):
+                    output = urllib2.urlopen(file).read()
+                else:
+                    output = urllib2.urlopen(file, timeout=30).read()
             except Exception, err:
                 print "Problems opening configuration url:",file
                 raise
