@@ -3096,17 +3096,17 @@ class Repository(object):
                 if offline:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
-                    self.run([self.easy_install_path, '-q', self.pypi])
+                    self.run([self.python, self.easy_install_path, '-q', self.pypi])
             elif preinstall: 
                 if not os.path.exists(dir):
-                    self.run([self.easy_install_path, '-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
+                    self.run([self.python, self.easy_install_path, '-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
         except OSError, err:
             print "-----------------------------------------------------------------"
             print "Warning!!! Ignoring easy_install error '%s'" % str(err)
             print "-----------------------------------------------------------------"
 
     def easy_upgrade(self):
-        self.run([self.easy_install_path, '-q', '--upgrade', self.pypi])
+        self.run([self.python, self.easy_install_path, '-q', '--upgrade', self.pypi])
 
     def run(self, cmd, dir=None):
         cwd=os.getcwd()
@@ -3120,8 +3120,9 @@ class Repository(object):
 
 
 if sys.platform.startswith('win'):
-   Repository.python += '.exe'
-   Repository.svn += '.exe'
+    if not is_jython:
+        Repository.python += '.exe'
+    Repository.svn += '.exe'
 
 
 def filter_python_develop(line):
@@ -3556,7 +3557,10 @@ class Installer(object):
         else:
             bindir = join(self.abshome_dir,"bin")
         Repository.easy_install_path = os.path.abspath(join(bindir, 'easy_install'))
-        Repository.python = os.path.abspath(join(bindir, 'python'))
+        if is_jython:
+            Repository.python = os.path.abspath(join(bindir, 'jython.bat'))
+        else:
+            Repository.python = os.path.abspath(join(bindir, 'python'))
         #
         # Install the related packages
         #
