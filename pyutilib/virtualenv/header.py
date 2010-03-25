@@ -178,7 +178,7 @@ def unzip_file(filename, dir=None):
 class Repository(object):
 
     svn_get='checkout'
-    easy_install_path = "easy_install"
+    easy_install_path = ["easy_install"]
     python = "python"
     svn = "svn"
     dev = []
@@ -502,17 +502,17 @@ class Repository(object):
                 if offline:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
-                    self.run([self.python, self.easy_install_path, '-q', self.pypi])
+                    self.run(self.easy_install_path + ['-q', self.pypi])
             elif preinstall: 
                 if not os.path.exists(dir):
-                    self.run([self.python, self.easy_install_path, '-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
+                    self.run(self.easy_install_path + ['-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
         except OSError, err:
             print "-----------------------------------------------------------------"
             print "Warning!!! Ignoring easy_install error '%s'" % str(err)
             print "-----------------------------------------------------------------"
 
     def easy_upgrade(self):
-        self.run([self.python, self.easy_install_path, '-q', '--upgrade', self.pypi])
+        self.run(self.easy_install_path + ['-q', '--upgrade', self.pypi])
 
     def run(self, cmd, dir=None):
         cwd=os.getcwd()
@@ -962,14 +962,14 @@ class Installer(object):
             bindir = join(self.abshome_dir,"Scripts")
         else:
             bindir = join(self.abshome_dir,"bin")
-        if os.path.exists(os.path.abspath(join(bindir, 'easy_install'))):
-            Repository.easy_install_path = os.path.abspath(join(bindir, 'easy_install'))
-        else:
-            Repository.easy_install_path = os.path.abspath(join(bindir, 'easy_install.exe'))
         if is_jython:
             Repository.python = os.path.abspath(join(bindir, 'jython.bat'))
         else:
             Repository.python = os.path.abspath(join(bindir, 'python'))
+        if os.path.exists(os.path.abspath(join(bindir, 'easy_install'))):
+            Repository.easy_install_path = [Repository.python, os.path.abspath(join(bindir, 'easy_install'))]
+        else:
+            Repository.easy_install_path = [os.path.abspath(join(bindir, 'easy_install.exe'))]
         #
         # Install the related packages
         #
