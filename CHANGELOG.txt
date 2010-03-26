@@ -8,6 +8,15 @@
 
 - Under development.
 
+-------------------------------------------------------------------------------
+ 1.4.2
+-------------------------------------------------------------------------------
+
+- Rework of how the easy_install command is configured. When this is installed
+as an executable, then we can't call it with python.
+
+- Attempting to fix portability issue where easy_install has a *.exe extension
+that needs to be explicitly used.
 
 -------------------------------------------------------------------------------
  1.4.1
@@ -18,7 +27,6 @@
 
 - Adding a Python version check to verify that we can
   use the 'timeout' option for urlopen().
-
 
 -------------------------------------------------------------------------------
  1.4
@@ -43,14 +51,12 @@
   specified, but not available, then the application config_file will
   be used to search for this file.
 
-
 -------------------------------------------------------------------------------
  1.3.1
 -------------------------------------------------------------------------------
 
 - Restructuring repository access to delay the processing of
   repository versions until the last possible moment.
-
 
 -------------------------------------------------------------------------------
  1.3
@@ -78,7 +84,6 @@
 - Updates to work with virtualenv 1.4.2, which includes a new install_pip
   function
 
-
 -------------------------------------------------------------------------------
  1.2
 -------------------------------------------------------------------------------
@@ -89,7 +94,6 @@
 
 - Update to use /tmp instead of '.' for the temporary directory (on non-windows 
   platforms).
-
 
 -------------------------------------------------------------------------------
  1.1
@@ -108,7 +112,6 @@
 
 - Added a 'tests' directory, with a README.txt that describes tests that
   need to be manually applied.
-
 
 -------------------------------------------------------------------------------
  1.0
