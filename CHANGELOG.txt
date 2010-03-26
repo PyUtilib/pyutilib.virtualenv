@@ -3,12 +3,6 @@
 ===============================
 
 -------------------------------------------------------------------------------
- 1.5
--------------------------------------------------------------------------------
-
-- Under development.
-
--------------------------------------------------------------------------------
  1.4.2
 -------------------------------------------------------------------------------
 
@@ -17,6 +11,7 @@ as an executable, then we can't call it with python.
 
 - Attempting to fix portability issue where easy_install has a *.exe extension
 that needs to be explicitly used.
+
 
 -------------------------------------------------------------------------------
  1.4.1
@@ -27,6 +22,7 @@ that needs to be explicitly used.
 
 - Adding a Python version check to verify that we can
   use the 'timeout' option for urlopen().
+
 
 -------------------------------------------------------------------------------
  1.4
@@ -51,12 +47,14 @@ that needs to be explicitly used.
   specified, but not available, then the application config_file will
   be used to search for this file.
 
+
 -------------------------------------------------------------------------------
  1.3.1
 -------------------------------------------------------------------------------
 
 - Restructuring repository access to delay the processing of
   repository versions until the last possible moment.
+
 
 -------------------------------------------------------------------------------
  1.3
@@ -84,6 +82,7 @@ that needs to be explicitly used.
 - Updates to work with virtualenv 1.4.2, which includes a new install_pip
   function
 
+
 -------------------------------------------------------------------------------
  1.2
 -------------------------------------------------------------------------------
@@ -94,6 +93,7 @@ that needs to be explicitly used.
 
 - Update to use /tmp instead of '.' for the temporary directory (on non-windows 
   platforms).
+
 
 -------------------------------------------------------------------------------
  1.1
@@ -112,6 +112,7 @@ that needs to be explicitly used.
 
 - Added a 'tests' directory, with a README.txt that describes tests that
   need to be manually applied.
+
 
 -------------------------------------------------------------------------------
  1.0
