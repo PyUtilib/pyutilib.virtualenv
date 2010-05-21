@@ -836,7 +836,7 @@ class Installer(object):
         # When preinstalling or working offline, disable the 
         # default install_setuptools() function.
         #
-        if options.preinstall or options.offline:
+        if options.offline:
             install_setuptools.use_default=False
             install_pip.use_default=False
         #
@@ -854,7 +854,8 @@ class Installer(object):
             unzip_file(file, dir=self.abshome_dir)
 
         if options.preinstall or not options.offline:
-            self.get_packages(options)
+            #self.get_packages(options)
+            pass
         else:
             self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
             self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
@@ -970,6 +971,9 @@ class Installer(object):
             Repository.easy_install_path = [Repository.python, os.path.abspath(join(bindir, 'easy_install'))]
         else:
             Repository.easy_install_path = [os.path.abspath(join(bindir, 'easy_install.exe'))]
+        #
+        if options.preinstall or not options.offline:
+            self.get_packages(options)
         #
         # Install the related packages
         #
