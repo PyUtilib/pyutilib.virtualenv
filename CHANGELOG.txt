@@ -3,10 +3,30 @@
 ===============================
 
 -------------------------------------------------------------------------------
+ 1.6
+-------------------------------------------------------------------------------
+
+- Under development.
+
+-------------------------------------------------------------------------------
  1.5
 -------------------------------------------------------------------------------
 
-- Under development
+- Adding timing information for checkouts and installation.
+
+- Reorganizing the configuration for offline installation. Now, the
+  config file generated during installation is used, and this config
+  file is setup without executing the logic in guess_versions (which
+  isn't needed, really).
+
+- Disabling the '-p' option. This option is a shortcut to
+  '.python', so it isn't strictly necessary. Further, typing '-preinstall'
+  confuses the user into thinking that the 'reinstall' command cannot
+  be found.
+
+- Rework of virtualenv bootstrap script. This looks like it resolves
+  an outstanding issue with vpy_install: when the preinstall option was
+  used, this script needed to bootstrap the installation of setuptools.
 
 -------------------------------------------------------------------------------
  1.4.3
