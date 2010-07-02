@@ -4,7 +4,7 @@
 """Create a "virtual" Python installation
 """
 
-virtualenv_version = "1.4.8"
+virtualenv_version = "1.4.9"
 
 import sys
 import os
@@ -2602,7 +2602,6 @@ class OrderedConfigParser(ConfigParser.ConfigParser):
 # This script was created with the virtualenv_install script.
 #
 
-import time
 import commands
 import re
 import urllib2
@@ -2832,13 +2831,6 @@ class Repository(object):
         self.install = config.install
 
     def guess_versions(self, offline=False):
-        if offline:
-            self.release = self.config.root
-            if self.release is None:
-                self.release = self.name
-            self.stable = None
-            self.trunk = None
-            return
         if not self.config.root is None:
             if using_subversion:
                 rootdir_output = commands.getoutput('svn ls ' + self.config.root)
@@ -3340,19 +3332,12 @@ class Installer(object):
                     sys.exit(1000)
         if len(args) == 0:
             args.append(self.abshome_dir)
-        if options.update or options.offline:
-            self.config=None
-            options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
-        #
-        # If applying preinstall, then only do subversion exports
-        #
-        if options.preinstall:
-            Repository.svn_get='export'
-
-    def read_config_files(self, options):
         #
         # Parse config files
         #
+        if options.update:
+            self.config=None
+            options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
         if not self.config is None and (len(options.config_files) == 0 or options.keep_config):
             fp = StringIO.StringIO(self.config)
             self.read_config_file(fp=fp)
@@ -3370,6 +3355,11 @@ class Installer(object):
         print "-----------------------------------------------------------------"
         print " END - Configuration summary"
         print "-----------------------------------------------------------------"
+        #
+        # If applying preinstall, then only do subversion exports
+        #
+        if options.preinstall:
+            Repository.svn_get='export'
 
     def get_homedir(self, options, args):
         #
@@ -3394,8 +3384,6 @@ class Installer(object):
         return None
 
     def setup_installer(self, options):
-        if options.verbose:
-            stime = time.time()
         if options.preinstall:
             print "Creating preinstall zip file in '%s'" % self.home_dir
         elif options.update:
@@ -3460,13 +3448,6 @@ class Installer(object):
         for file in options.zip:
             unzip_file(file, dir=self.abshome_dir)
 
-        #
-        # Read config files now
-        #
-        self.read_config_files(options)
-        #
-        # Setup packages for installation
-        #
         if options.preinstall or not options.offline:
             #self.get_packages(options)
             pass
@@ -3479,13 +3460,8 @@ class Installer(object):
             #
             for pkg in self.sw_packages:
                 pkg.guess_versions(True)
-        if options.verbose:
-            ftime = time.time()
-            print "Timing for 'setup_installer' - %f sec" % (ftime-stime)
 
     def get_packages(self, options):
-        if options.verbose:
-            stime = time.time()
         #
         # Setup the 'admin' directory
         #
@@ -3531,8 +3507,6 @@ class Installer(object):
         # Get package source
         #
         for pkg in self.sw_packages:
-            if options.verbose:
-                pkg_stime = time.time()
             pkg.guess_versions(False)
             if not pkg.install:
                 pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=not (options.trunk or options.stable))
@@ -3550,9 +3524,6 @@ class Installer(object):
             else:
                 if not options.update:
                     pkg.install_release(dir=tmp, install=False, preinstall=options.preinstall, offline=options.offline)
-            if options.verbose:
-                pkg_ftime = time.time()
-                print "Timing to install package %s - %f sec" % (str(pkg.config.name),pkg_ftime-pkg_stime)
         if options.update or not os.path.exists(join(self.abshome_dir,'doc')):
             self.install_auxdirs(options)
         #
@@ -3571,9 +3542,6 @@ class Installer(object):
             os.chdir(self.abshome_dir)
             zip_file(self.default_dirname+'.zip', ['.'])
             sys.exit(0)
-        if options.verbose:
-            ftime = time.time()
-            print "Timing for 'get_packages' - %f sec" % (ftime-stime)
 
     def get_other_packages(self, options):
         #
@@ -3583,8 +3551,6 @@ class Installer(object):
         pass
         
     def install_packages(self, options):
-        if options.verbose:
-            stime = time.time()
         #
         # Set the bin directory
         #
@@ -3607,8 +3573,6 @@ class Installer(object):
         # Install the related packages
         #
         for pkg in self.sw_packages:
-            if options.verbose:
-                pkg_stime = time.time()
             if not pkg.install:
                 pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=not (options.trunk or options.stable))
                 continue
@@ -3631,9 +3595,6 @@ class Installer(object):
                     pkg.update_release(dir=srcdir)
                 else:
                     pkg.install_release(dir=srcdir, preinstall=options.preinstall, offline=options.offline)
-            if options.verbose:
-                pkg_ftime = time.time()
-                print "Timing to install package %s - %f sec" % (str(pkg.config.name),pkg_ftime-pkg_stime)
         #
         # Copy the <env>/Scripts/* files into <env>/bin
         #
@@ -3654,10 +3615,6 @@ class Installer(object):
             print "-----------------------------------------------------------------"
         print ""
         print "Finished installation in '%s'" % self.home_dir
-        #
-        if options.verbose:
-            ftime = time.time()
-            print "Timing for 'install_packages' - %f sec" % (ftime-stime)
 
     def localize_cmd_files(self, dir, force_localization=False):
         """
