@@ -132,6 +132,8 @@ def guess_release(svndir):
             latest_str = version
     if latest_str is None:
         return None
+    if not latest_str[0] in '0123456789':
+        return svndir
     return svndir+"/"+latest_str
 
 
