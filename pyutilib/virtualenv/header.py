@@ -26,13 +26,20 @@ import stat
 using_subversion = True
 
 #
+# Working around error with PYTHONHOME
+#
+if 'PYTHONHOME' in os.environ:
+    del os.environ['PYTHONHOME']
+    print "WARNING: ignoring the value of the PYTHONHOME environment variable!  This value can corrupt the virtual python installation."
+
+
+#
 # The following taken from PyUtilib
 #
 if (sys.platform[0:3] == "win"): #pragma:nocover
    executable_extension=".exe"
 else:                            #pragma:nocover
    executable_extension=""
-
 
 def search_file(filename, search_path=None, implicitExt=executable_extension, executable=False,         isfile=True):
     if search_path is None:
@@ -563,6 +570,7 @@ class Installer(object):
         self.sw_dict = {}
         self.cmd_files = []
         self.auxdir = []
+        self.srcdir = None
         self.config=None
         self.config_file=None
         self.README="""
@@ -651,6 +659,12 @@ class Installer(object):
             action='append',
             dest='zip',
             default=[])
+
+        parser.add_option('--source', '--src',
+            help='Use packages defined in the specified source directory',
+            action='store',
+            dest='source',
+            default=None)
 
         parser.add_option('--use-pythonpath',
             help="By default, the PYTHONPATH is ignored when installing.  This option allows the 'easy_install' tool to search this path for related Python packages, which are then installed.",
@@ -790,6 +804,12 @@ class Installer(object):
             home_dir = args[0]
         self.home_dir = home_dir
         self.abshome_dir = os.path.abspath(home_dir)
+        if options.source is None:
+            self.srcdir = join(self.abshome_dir,'src')
+        else:
+            self.srcdir = os.path.abspath(options.source)
+            if not os.path.exists(self.srcdir):
+                raise ValueError, "Specified source directory does not exist! %s" % self.srcdir
 
     def guess_path(self):
         return None
@@ -849,10 +869,9 @@ class Installer(object):
         # If we're clearing the current installation, then remove a bunch of
         # directories
         #
-        elif options.clear:
-            path = join(self.abshome_dir,'src')
-            if os.path.exists(path):
-                rmtree(path)
+        elif options.clear and not options.source is None:
+            if os.path.exists(self.srcdir):
+                rmtree(self.srcdir)
         #
         # Open up zip files
         #
@@ -896,8 +915,8 @@ class Installer(object):
         #
         if not os.path.exists(join(self.abshome_dir,'dist')):
             os.mkdir(join(self.abshome_dir,'dist'))
-        if not os.path.exists(self.abshome_dir+os.sep+"src"):
-            os.mkdir(self.abshome_dir+os.sep+"src")
+        if not os.path.exists(self.srcdir):
+            os.mkdir(self.srcdir)
         if not os.path.exists(self.abshome_dir+os.sep+"bin"):
             os.mkdir(self.abshome_dir+os.sep+"bin")
         #
@@ -923,7 +942,7 @@ class Installer(object):
                 pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=not (options.trunk or options.stable))
                 continue
             if pkg.dev:
-                tmp = join(self.abshome_dir,'src',pkg.name)
+                tmp = join(self.srcdir,pkg.name)
             else:
                 tmp = join(self.abshome_dir,'dist',pkg.name)
             if options.trunk:
@@ -988,7 +1007,7 @@ class Installer(object):
                 pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=not (options.trunk or options.stable))
                 continue
             if pkg.dev:
-                srcdir = join(self.abshome_dir,'src',pkg.name)
+                srcdir = join(self.srcdir,pkg.name)
             else:
                 srcdir = join(self.abshome_dir,'dist',pkg.name)
             if options.trunk:

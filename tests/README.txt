@@ -42,7 +42,7 @@ NOTE: this uses the ZIP file generated in (3).
 . Verify that tevaspot is checked out in the python/src and foo/src directories
 . Verify differences using
 
-  diff -w -x '.*svn' -r foo python | grep '^diff'
+  diff -w -x '.*svn' -r foo python | grep '^diff' | grep CHANGELOG
 
   . */dist/pyutilib.th/CHANGELOG.txt differs
   . */src/pyutilib.enum/CHANGELOG.txt differs
