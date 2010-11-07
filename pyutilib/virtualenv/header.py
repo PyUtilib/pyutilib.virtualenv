@@ -618,14 +618,20 @@ class Installer(object):
             dest='debug',
             default=False)
 
+        parser.add_option('--release',
+            help='Install release branches of Python software using subversion.',
+            action='store_true',
+            dest='release',
+            default=False)
+
         parser.add_option('--trunk',
-            help='Install trunk branches of Python software.',
+            help='Install trunk branches of Python software using subversion.',
             action='store_true',
             dest='trunk',
             default=False)
 
         parser.add_option('--stable',
-            help='Install stable branches of Python software.',
+            help='Install stable branches of Python software using subversion.',
             action='store_true',
             dest='stable',
             default=False)
@@ -757,6 +763,11 @@ class Installer(object):
                     sys.exit(1000)
         if len(args) == 0:
             args.append(self.abshome_dir)
+        #
+        # Reset the config file if no options are specified
+        #
+        if not self.config_file is None and not (options.trunk or options.stable or options.release):
+            self.config_file = os.path.dirname(self.config_file)+"/pypi.ini"
         #
         # Parse config files
         #
@@ -903,11 +914,13 @@ class Installer(object):
             INPUT=open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'r')
             options.trunk = INPUT.readline().strip() != 'False'
             options.stable = INPUT.readline().strip() != 'False'
+            options.release = INPUT.readline().strip() != 'False'
             INPUT.close()
         else:
             OUTPUT=open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'w')
             print >>OUTPUT, options.trunk
             print >>OUTPUT, options.stable
+            print >>OUTPUT, options.release
             OUTPUT.close()
             self.write_config( join(self.abshome_dir,'admin','config.ini') )
         #
@@ -939,7 +952,7 @@ class Installer(object):
         for pkg in self.sw_packages:
             pkg.guess_versions(False)
             if not pkg.install:
-                pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=not (options.trunk or options.stable))
+                pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=options.release)
                 continue
             if pkg.dev:
                 tmp = join(self.srcdir,pkg.name)
@@ -1004,7 +1017,7 @@ class Installer(object):
         #
         for pkg in self.sw_packages:
             if not pkg.install:
-                pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=not (options.trunk or options.stable))
+                pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=options.release)
                 continue
             if pkg.dev:
                 srcdir = join(self.srcdir,pkg.name)

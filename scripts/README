@@ -1,4 +1,4 @@
 The vpy_install script is created by executing
 
-  vpy_create vpy vpy_install
+  lbin vpy_create vpy vpy_install
 
