@@ -2747,6 +2747,7 @@ if (sys.platform[0:3] == "win"): #pragma:nocover
 else:                            #pragma:nocover
    executable_extension=""
 
+
 def search_file(filename, search_path=None, implicitExt=executable_extension, executable=False,         isfile=True):
     if search_path is None:
         #
@@ -2807,6 +2808,17 @@ def parse_version(s):
 
 #
 # Use pkg_resources to guess version.
+# This allows for parsing version with the syntax:
+#   9.3.2
+#   8.28.rc1
+#
+def guess_release(svndir):
+    if using_subversion:
+        output = commands.getoutput('svn ls '+svndir)
+        if output=="":
+            return None
+        #print output
+        versions = []
 # This allows for parsing version with the syntax:
 #   9.3.2
 #   8.28.rc1
@@ -3115,13 +3127,18 @@ class Repository(object):
         if os.path.exists(dir):
             print "     No checkout required"
             print "-----------------------------------------------------------------"
+        elif not using_subversion:
+                print ""
+                print "Error: Cannot checkout software %s with subversion." % self.name
+                print "A problem was detected executing subversion commands."
+                sys.exit(1)
         else:
             print "-----------------------------------------------------------------"
             try:
                 self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.pkgdir+self.rev, dir])
             except OSError, err:
                 print ""
-                print "Error checkout software %s with subvesion at %s" % (self.name,self.pkgdir+self.rev)
+                print "Error checkout software %s with subversion at %s" % (self.name,self.pkgdir+self.rev)
                 print str(err)
                 sys.exit(1)
         if install:
@@ -3135,7 +3152,8 @@ class Repository(object):
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
             except OSError, err:
                 print ""
-                print "Error installing software %s from source using the setup.py file"
+                print "Error installing software %s from source using the setup.py file." % self.name
+                print "This is probably due to a syntax or configuration error in this package."
                 print str(err)
                 sys.exit(1)
 
@@ -3401,6 +3419,20 @@ class Installer(object):
         verbosity = options.verbose - options.quiet
         self.logger = Logger([(Logger.level_for_integer(2-verbosity), sys.stdout)])
         logger = self.logger
+        #
+        # Determine if the subversion command is available
+        #
+        global using_subversion
+        try:
+            call_subprocess(['svn'+executable_extension,'help'], show_stdout=False)
+        except OSError, err:
+            print ""
+            print "------------------------------------------------"
+            print "WARNING: problems executing subversion commands."
+            print "Subversion is disabled."
+            print "------------------------------------------------"
+            print ""
+            using_subversion = False
         #
         if options.update and (options.stable or options.trunk):
             self.logger.fatal("ERROR: cannot specify --stable or --trunk when specifying the --update option.")
@@ -3838,7 +3870,6 @@ def get_installer():
     except:
         get_installer.installer = configure( create_installer() )
         return get_installer.installer
-    
 
 #
 # Override the default definition of rmtree, to better handle MSWindows errors

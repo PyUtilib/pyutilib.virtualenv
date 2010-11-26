@@ -445,7 +445,8 @@ class Repository(object):
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
             except OSError, err:
                 print ""
-                print "Error installing software %s from source using the setup.py file"
+                print "Error installing software %s from source using the setup.py file." % self.name
+                print "This is probably due to a syntax or configuration error in this package."
                 print str(err)
                 sys.exit(1)
 
