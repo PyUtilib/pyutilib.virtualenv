@@ -32,7 +32,6 @@ if 'PYTHONHOME' in os.environ:
     del os.environ['PYTHONHOME']
     print "WARNING: ignoring the value of the PYTHONHOME environment variable!  This value can corrupt the virtual python installation."
 
-
 #
 # The following taken from PyUtilib
 #
@@ -414,7 +413,10 @@ class Repository(object):
             self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.pkgdir+self.rev, dir])
         if install:
             if self.dev:
-                self.run([self.python, 'setup.py', 'develop'], dir=dir)
+                if offline:
+                    self.run([self.python, 'setup.py', 'develop', '--no-deps'], dir=dir)
+                else:
+                    self.run([self.python, 'setup.py', 'develop'], dir=dir)
             else:
                 self.run([self.python, 'setup.py', 'install'], dir=dir)
 
@@ -465,44 +467,6 @@ class Repository(object):
             self.run([self.python, 'setup.py', 'sdist','-q','--dist-dir=..', '--formats='+format], dir='pkg'+self.name)
             os.chdir('..')
             rmtree('pkg'+self.name)
-
-    def Xsdist_stable(self, format='zip'):
-        if self.stable is None:
-            if not self.pypi is None:
-                self.easy_install()
-            elif not self.release is None:
-                self.install_release()
-            elif not self.trunk is None:
-                self.install_trunk()
-        else:
-            self.pkgdir=self.stable
-            self.pkgroot=self.stable_root
-            print "-----------------------------------------------------------------"
-            print "  Checking out source for package",self.name
-            print "     Subversion dir: "+self.stable
-            print "     Source dir:     "+dir
-            print "-----------------------------------------------------------------"
-            self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.stable, dir])
-            self.run([self.python, 'setup.py', 'develop'], dir=dir)
-
-    def Xsdist_release(self, dir=None):
-        if self.release is None:
-            if not self.pypi is None:
-                self.easy_install()
-            elif not self.stable is None:
-                self.install_stable()
-            elif not self.trunk is None:
-                self.install_trunk()
-        else:
-            self.pkgdir=self.release
-            self.pkgroot=self.release_root
-            print "-----------------------------------------------------------------"
-            print "  Checking out source for package",self.name
-            print "     Subversion dir: "+self.release
-            print "     Source dir:     "+dir
-            print "-----------------------------------------------------------------"
-            self.run([self.svn]+self.svn_username+[Repository.svn_get]+self.rev+['-q',self.release, dir])
-            self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def easy_install(self, install, preinstall, dir, offline):
         try:
@@ -1258,6 +1222,22 @@ def install_pip(*args, **kwds):
 
 install_pip.use_default=True
 
+
+#
+# This is a monkey patch, to catch errors when a directory cannot be created
+# by virtualenv.
+#
+def mkdir(path):
+    if not os.path.exists(path):
+        logger.info('Creating %s', path)
+        try:
+            os.makedirs(path)
+        except Exception, e:
+            print "Cannot create directory '%s'!" % path
+            print "Verify that you have write permissions to this directory."
+            sys.exit(1)
+    else:
+        logger.info('Directory %s already exists', path)
 
 #
 # The following methods will be called by virtualenv
