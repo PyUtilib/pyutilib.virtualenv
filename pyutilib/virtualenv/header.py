@@ -410,15 +410,27 @@ class Repository(object):
             print "-----------------------------------------------------------------"
         else:
             print "-----------------------------------------------------------------"
-            self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.pkgdir+self.rev, dir])
+            try:
+                self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.pkgdir+self.rev, dir])
+            except OSError, err:
+                print ""
+                print "Error checkout software %s with subvesion at %s" % (self.name,self.pkgdir+self.rev)
+                print str(err)
+                sys.exit(1)
         if install:
-            if self.dev:
-                if offline:
-                    self.run([self.python, 'setup.py', 'develop', '--no-deps'], dir=dir)
+            try:
+                if self.dev:
+                    if offline:
+                        self.run([self.python, 'setup.py', 'develop', '--no-deps'], dir=dir)
+                    else:
+                        self.run([self.python, 'setup.py', 'develop'], dir=dir)
                 else:
-                    self.run([self.python, 'setup.py', 'develop'], dir=dir)
-            else:
-                self.run([self.python, 'setup.py', 'install'], dir=dir)
+                    self.run([self.python, 'setup.py', 'install'], dir=dir)
+            except OSError, err:
+                print ""
+                print "Error installing software %s from source using the setup.py file"
+                print str(err)
+                sys.exit(1)
 
     def update_trunk(self, dir=None):
         self.find_pkgroot(trunk=True)
@@ -448,30 +460,9 @@ class Repository(object):
         else:
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
-    def Xsdist_trunk(self, format='zip'):
-        if self.trunk is None:
-            if not self.pypi is None:
-                self.easy_install()
-            elif not self.stable is None:
-                self.sdist_stable(format=format)
-            else:
-                self.sdist_release(format=format)
-        else:
-            self.pkgdir=self.trunk
-            self.pkgroot=self.trunk_root
-            print "-----------------------------------------------------------------"
-            print "  Checking out source for package",self.name
-            print "     Subversion dir: "+self.trunk
-            print "-----------------------------------------------------------------"
-            self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.trunk, 'pkg'+self.name+self.rev])
-            self.run([self.python, 'setup.py', 'sdist','-q','--dist-dir=..', '--formats='+format], dir='pkg'+self.name)
-            os.chdir('..')
-            rmtree('pkg'+self.name)
-
     def easy_install(self, install, preinstall, dir, offline):
         try:
             if install:
-                #self.run([self.easy_install_path, '-q', self.pypi])
                 if offline:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
@@ -480,9 +471,10 @@ class Repository(object):
                 if not os.path.exists(dir):
                     self.run(self.easy_install_path + ['-q', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
         except OSError, err:
-            print "-----------------------------------------------------------------"
-            print "Warning!!! Ignoring easy_install error '%s'" % str(err)
-            print "-----------------------------------------------------------------"
+            print ""
+            print "Error installing package %s with easy_install" % self.name
+            print str(err)
+            sys.exit(1)
 
     def easy_upgrade(self):
         self.run(self.easy_install_path + ['-q', '--upgrade', self.pypi])
@@ -1196,7 +1188,7 @@ def install_setuptools(py_executable, unzip=False):
             print ""
             print "WARNING: you may need to set your HTTP_PROXY environment variable!"
         print "-----------------------------------------------------------------"
-        sys.exit(0)
+        sys.exit(1)
 
 install_setuptools.use_default=True
 
@@ -1218,7 +1210,7 @@ def install_pip(*args, **kwds):
             print ""
             print "WARNING: you may need to set your HTTP_PROXY environment variable!"
         print "-----------------------------------------------------------------"
-        sys.exit(0)
+        sys.exit(1)
 
 install_pip.use_default=True
 
