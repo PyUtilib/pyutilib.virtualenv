@@ -3123,15 +3123,21 @@ class Repository(object):
                 print ""
                 print "Error checkout software %s with subvesion at %s" % (self.name,self.pkgdir+self.rev)
                 print str(err)
-            sys.exit(1)
+                sys.exit(1)
         if install:
-            if self.dev:
-                if offline:
-                    self.run([self.python, 'setup.py', 'develop', '--no-deps'], dir=dir)
+            try:
+                if self.dev:
+                    if offline:
+                        self.run([self.python, 'setup.py', 'develop', '--no-deps'], dir=dir)
+                    else:
+                        self.run([self.python, 'setup.py', 'develop'], dir=dir)
                 else:
-                    self.run([self.python, 'setup.py', 'develop'], dir=dir)
-            else:
-                self.run([self.python, 'setup.py', 'install'], dir=dir)
+                    self.run([self.python, 'setup.py', 'install'], dir=dir)
+            except OSError, err:
+                print ""
+                print "Error installing software %s from source using the setup.py file"
+                print str(err)
+                sys.exit(1)
 
     def update_trunk(self, dir=None):
         self.find_pkgroot(trunk=True)
