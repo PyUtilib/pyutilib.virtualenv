@@ -2739,7 +2739,6 @@ if 'PYTHONHOME' in os.environ:
     del os.environ['PYTHONHOME']
     print "WARNING: ignoring the value of the PYTHONHOME environment variable!  This value can corrupt the virtual python installation."
 
-
 #
 # The following taken from PyUtilib
 #
@@ -3965,6 +3964,22 @@ def install_pip(*args, **kwds):
 
 install_pip.use_default=True
 
+
+#
+# This is a monkey patch, to catch errors when a directory cannot be created
+# by virtualenv.
+#
+def mkdir(path):
+    if not os.path.exists(path):
+        logger.info('Creating %s', path)
+        try:
+            os.makedirs(path)
+        except Exception, e:
+            print "Cannot create directory '%s'!" % path
+            print "Verify that you have write permissions to this directory."
+            sys.exit(1)
+    else:
+        logger.info('Directory %s already exists', path)
 
 #
 # The following methods will be called by virtualenv
