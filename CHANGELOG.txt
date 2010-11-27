@@ -3,10 +3,32 @@
 ===============================
 
 -------------------------------------------------------------------------------
- 1.6
+ 2.0
 -------------------------------------------------------------------------------
 
-- Under development.
+- Perform error checking to confirm that the subversion command
+  can be executed.
+
+- Add error check when subversion is not available but it is necessary to
+  install a package.
+
+- Adding logic to handle installation errors gracefully. Errors result in
+  immediate termination of the installation logic, and they return a
+  nonzero error code.
+
+- Adding the easy_install '--no-deps' option for offline installation.
+
+- Add logic to gracefully terminate when a user does not have
+  permissions needed to create the target directory.
+
+- Adding the --release option to specify subversion checkouts of
+  release branches. Changed default checkout to use a pypi.ini
+  configuration file.
+
+- Adding a --source option to vpy_install, which allows the specification of a
+  source directory.
+
+- Disabling PYTHONHOME if it is defined.
 
 -------------------------------------------------------------------------------
  1.5.1
