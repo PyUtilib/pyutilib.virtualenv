@@ -1030,6 +1030,8 @@ class Installer(object):
         # Copy the <env>/Scripts/* files into <env>/bin
         #
         if os.path.exists(self.abshome_dir+os.sep+"Scripts"):
+            if not os.path.exists(self.abshome_dir+os.sep+"bin"):
+                os.mkdir(self.abshome_dir+os.sep+"bin")
             for file in glob.glob(self.abshome_dir+os.sep+"Scripts"+os.sep+"*"):
                 shutil.copy(file, self.abshome_dir+os.sep+"bin")
         #
