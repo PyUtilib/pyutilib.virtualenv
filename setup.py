@@ -20,7 +20,7 @@ def read(*rnames):
 
 
 setup(name="pyutilib.virtualenv",
-    version='2.0.1',
+    version='2.1',
     maintainer='William E. Hart',
     maintainer_email='wehart@sandia.gov',
     url = 'https://software.sandia.gov/svn/public/pyutilib/pyutilib.virtualenv',
