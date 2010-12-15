@@ -261,19 +261,16 @@ class Repository(object):
 
     def guess_versions(self, offline=False):
         if not self.config.root is None:
-            if using_subversion:
-                rootdir_output = commands.getoutput('svn ls ' + self.config.root)
-            else:
-                if sys.version_info[:2] <= (2,5):
-                    rootdir_output = urllib2.urlopen(self.config.root).read()
+            if not offline:
+                if using_subversion:
+                    rootdir_output = commands.getoutput('svn ls ' + self.config.root)
                 else:
-                    rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
-            try:
-                self.trunk = self.config.root+'/trunk'
-                self.trunk_root = self.trunk
-            except urllib2.HTTPError:
-                self.trunk = None
-                self.trunk_root = None
+                    if sys.version_info[:2] <= (2,5):
+                        rootdir_output = urllib2.urlopen(self.config.root).read()
+                    else:
+                        rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
+            self.trunk = self.config.root+'/trunk'
+            self.trunk_root = self.trunk
             try:
                 if offline or not 'stable' in rootdir_output:
                     raise IOError
