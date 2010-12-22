@@ -203,7 +203,7 @@ class Repository(object):
     svn = "svn"
     dev = []
 
-    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None):
+    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None):
         class _TEMP_(object): pass
         self.config = _TEMP_()
         self.config.name=name
@@ -214,6 +214,7 @@ class Repository(object):
         self.config.tag=tag
         self.config.pyname=pyname
         self.config.pypi=pypi
+        self.config.local=local
         if dev == 'True' or dev is True:
             self.config.dev=True
         else:
@@ -238,6 +239,7 @@ class Repository(object):
         self.release_root = None
         #
         self.pypi = config.pypi
+        self.local = config.local
         if not config.pypi is None:
             self.pyname=config.pypi
         else:
@@ -330,6 +332,8 @@ class Repository(object):
             print >>OUTPUT, 'tag=%s' % config.tag
         elif not config.release is None:
             print >>OUTPUT, 'release=%s' % config.release
+        if not config.local is None:
+            print >>OUTPUT, 'local=%s' % config.local
         if not config.pypi is None:
             print >>OUTPUT, 'pypi=%s' % config.pypi
         elif not config.pyname is None:
@@ -347,7 +351,7 @@ class Repository(object):
             if self.trunk is None:
                 if not self.stable is None:
                     self.find_pkgroot(stable=True)
-                elif self.pypi is None:
+                elif self.pypi is None and self.local is None:
                     self.find_pkgroot(release=True)
                 else:
                     # use easy_install
@@ -363,7 +367,7 @@ class Repository(object):
             if self.stable is None: 
                 if not self.release is None:
                     self.find_pkgroot(release=True)
-                elif self.pypi is None:
+                elif self.pypi is None and self.local is None:
                     self.find_pkgroot(trunk=True)
                 else:
                     # use easy_install
@@ -379,7 +383,7 @@ class Repository(object):
             if self.release is None:
                 if not self.stable is None:
                     self.find_pkgroot(stable=True)
-                elif self.pypi is None:
+                elif self.pypi is None and self.local is None:
                     self.find_pkgroot(trunk=True)
                 else:
                     # use easy_install
@@ -407,13 +411,18 @@ class Repository(object):
         self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
         
     def perform_install(self, dir=None, install=True, preinstall=False, offline=False):
-        if self.pkgdir is None:
+        if self.pkgdir is None and self.local is None:
             self.easy_install(install, preinstall, dir, offline)
             return
+        if self.local:
+            install = True
         print "-----------------------------------------------------------------"
         print "  Installing branch"
         print "  Checking out source for package",self.name
-        print "     Subversion dir: "+self.pkgdir
+        if self.local:
+            print "     Package dir: "+self.local
+        else:
+            print "     Subversion dir: "+self.pkgdir
         if os.path.exists(dir):
             print "     No checkout required"
             print "-----------------------------------------------------------------"
@@ -655,6 +664,13 @@ class Installer(object):
             action='store_false',
             help="Setup the virtual environment to use the global site-packages",
             default=True)
+
+        parser.add_option(
+            '-a', '--add-package',
+            dest='packages',
+            action='append',
+            help='Specify a package that is added to the virtual Python installation.  This option can specify a directory for the Python package source or PyPI package name that is downloaded automatically.  This option can be specified multiple times to declare multiple packages.',
+            default=[])
 
         parser.add_option('--config',
             help='Use an INI config file to specify the packages used in this installation.  Using this option clears the initial configuration, but multiple uses of this option will add package specifications.',
@@ -927,6 +943,11 @@ class Installer(object):
             # When preinstalling, add the setuptools package to the installation list
             #
             self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+        for _pkg in options.packages:
+            if os.path.exists(_pkg):
+                self.sw_packages.append( Repository(_pkg, local=os.path.abspath(_pkg)) )
+            else:
+                self.sw_packages.append( Repository(_pkg, pypi=_pkg) )
         #
         # Add Coopr Forum packages
         #
@@ -939,7 +960,9 @@ class Installer(object):
             if not pkg.install:
                 pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=options.release)
                 continue
-            if pkg.dev:
+            if pkg.local:
+                tmp = pkg.local
+            elif pkg.dev:
                 tmp = join(self.srcdir,pkg.name)
             else:
                 tmp = join(self.abshome_dir,'dist',pkg.name)
@@ -1004,7 +1027,9 @@ class Installer(object):
             if not pkg.install:
                 pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=options.release)
                 continue
-            if pkg.dev:
+            if pkg.local:
+                srcdir = pkg.local
+            elif pkg.dev:
                 srcdir = join(self.srcdir,pkg.name)
             else:
                 srcdir = join(self.abshome_dir,'dist',pkg.name)
