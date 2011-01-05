@@ -2870,7 +2870,7 @@ def zip_file(filename,fdlist):
             for root, dirs, files in os.walk(file):
                 if root.startswith(file+os.sep+'lib') or root.startswith(file+os.sep+'bin'):
                     continue
-                 for fname in files:
+                for fname in files:
                     if fname.endswith('pyc') or fname.endswith('pyo') or fname.endswith('zip'):
                         continue
                     if fname.endswith('exe'):
