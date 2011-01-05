@@ -2868,7 +2868,11 @@ def zip_file(filename,fdlist):
     for file in fdlist:
         if os.path.isdir(file):
             for root, dirs, files in os.walk(file):
-                for fname in files:
+                if root.startswith(file+os.sep+'lib') or root.startswith(file+os.sep+'bin'):
+                    continue
+                 for fname in files:
+                    if fname.endswith('pyc') or fname.endswith('pyo') or fname.endswith('zip'):
+                        continue
                     if fname.endswith('exe'):
                         zf.external_attr = (0777 << 16L) | (010 << 28L)
                     else:
