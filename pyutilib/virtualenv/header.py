@@ -520,7 +520,7 @@ class Repository(object):
 
 if sys.platform.startswith('win'):
     if not is_jython:
-        Repository.python += '.exe'
+        Repository.python += 'w.exe'
     Repository.svn += '.exe'
 
 
