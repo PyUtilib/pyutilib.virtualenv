@@ -3204,7 +3204,7 @@ class Repository(object):
                     self.run(self.easy_install_path + ['-q', self.pypi])
             elif preinstall: 
                 if not os.path.exists(dir):
-                    self.run(self.easy_install_path + ['-q', '--exclude-scripts', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
+                    self.run(self.easy_install_path + ['-q', '--exclude-scripts', '--always-copy', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
         except OSError, err:
             print ""
             print "Error installing package %s with easy_install" % self.name
