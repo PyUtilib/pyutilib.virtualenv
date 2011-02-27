@@ -1055,6 +1055,10 @@ class Installer(object):
                 else:
                     pkg.install_release(dir=srcdir, preinstall=options.preinstall, offline=options.offline)
         #
+        # Localize DOS cmd files
+        #
+        self.localize_cmd_files(self.abshome_dir, options.localize)
+        #
         # Copy the <env>/Scripts/* files into <env>/bin
         #
         if os.path.exists(self.abshome_dir+os.sep+"Scripts"):
@@ -1062,10 +1066,6 @@ class Installer(object):
                 os.mkdir(self.abshome_dir+os.sep+"bin")
             for file in glob.glob(self.abshome_dir+os.sep+"Scripts"+os.sep+"*"):
                 shutil.copy(file, self.abshome_dir+os.sep+"bin")
-        #
-        # Localize DOS cmd files
-        #
-        self.localize_cmd_files(self.abshome_dir, options.localize)
         #
         # Misc notifications
         #
@@ -1084,12 +1084,20 @@ class Installer(object):
         """
         if not (sys.platform.startswith('win') or force_localization):
             return
+        if os.path.exists(dir+os.sep+"Scripts"):
+            bindir = 'Scripts'
+        else:
+            bindir = 'bin'
         for file in self.cmd_files:
-            INPUT = open(join(dir,'bin',file), 'r')
+            fname = join(dir,bindir,file)
+            if not os.path.exists(fname):
+                print "WARNING: Problem while localizing file '%s'.  This file is missing" % fname
+                continue
+            INPUT = open(fname, 'r')
             content = "".join(INPUT.readlines())
             INPUT.close()
             content = content.replace('__VIRTUAL_ENV__',dir)
-            OUTPUT = open(join(dir,'bin',file), 'w')
+            OUTPUT = open(fname, 'w')
             OUTPUT.write(content)
             OUTPUT.close()
 
