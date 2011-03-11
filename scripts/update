@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+#The vpy_install script is created by executing
+#
+
+lbin vpy_create vpy vpy_install
+cp vpy_install ../pyutilib/virtualenv/vpy_install.py
