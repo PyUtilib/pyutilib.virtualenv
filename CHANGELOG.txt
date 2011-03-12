@@ -6,7 +6,20 @@
  2.3
 -------------------------------------------------------------------------------
 
-- Under development.
+- Reworking the localization logic to (a) print warnings when the
+  files are missing and (b) localize files in the Scripts directory if it
+  exists.
+
+- Adding the --always-copy flag to easy_install
+
+- Adding an option to force the checkout during preinstall, regardless of the
+  current installation.
+
+- Adding the --exclude-scripts option to easy_install to avoid a 
+  conflict with the fact that we're already using easy_install when we
+  download setuptools.
+
+- Force the use of pythonw on MS Windows.
 
 -------------------------------------------------------------------------------
  2.2
