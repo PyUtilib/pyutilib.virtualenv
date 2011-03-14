@@ -203,6 +203,7 @@ class Repository(object):
 
     svn_get='checkout'
     easy_install_path = ["easy_install"]
+    pip_path = ["pip"]
     python = "python"
     svn = "svn"
     dev = []
@@ -489,6 +490,7 @@ class Repository(object):
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def easy_install(self, install, preinstall, dir, offline):
+        return self.pip_install(install, preinstall, dir, offline)
         try:
             if install:
                 if offline:
@@ -501,6 +503,22 @@ class Repository(object):
         except OSError, err:
             print ""
             print "Error installing package %s with easy_install" % self.name
+            print str(err)
+            sys.exit(1)
+
+    def pip_install(self, install, preinstall, dir, offline):
+        try:
+            if install:
+                if offline:
+                    self.run([self.python, 'setup.py', 'install'], dir=dir)
+                else:
+                    self.run(self.pip_path + ['-v', self.pypi])
+            elif preinstall: 
+                if not os.path.exists(dir):
+                    self.run(self.pip_path + ['-v', '--no-install', '--download', '.', self.pypi], dir=os.path.dirname(dir))
+        except OSError, err:
+            print ""
+            print "Error installing package %s with pip" % self.name
             print str(err)
             sys.exit(1)
 
@@ -1023,6 +1041,10 @@ class Installer(object):
             Repository.easy_install_path = [Repository.python, os.path.abspath(join(bindir, 'easy_install'))]
         else:
             Repository.easy_install_path = [os.path.abspath(join(bindir, 'easy_install.exe'))]
+        if os.path.exists(os.path.abspath(join(bindir, 'pip'))):
+            Repository.pip_path = [Repository.python, os.path.abspath(join(bindir, 'pip'))]
+        else:
+            Repository.pip_path = [os.path.abspath(join(bindir, 'pip.exe'))]
         #
         if options.preinstall or not options.offline:
             self.get_packages(options)
