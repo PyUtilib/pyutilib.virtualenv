@@ -490,13 +490,13 @@ class Repository(object):
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
     def easy_install(self, install, preinstall, dir, offline):
-        return self.pip_install(install, preinstall, dir, offline)
+        #return self.pip_install(install, preinstall, dir, offline)
         try:
             if install:
                 if offline:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
-                    self.run(self.easy_install_path + ['-q', self.pypi])
+                    self.run(self.easy_install_path + ['-q', self.pypi], dir=os.path.dirname(dir))
             elif preinstall: 
                 if not os.path.exists(dir):
                     self.run(self.easy_install_path + ['-q', '--exclude-scripts', '--always-copy', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
