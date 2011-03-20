@@ -2910,6 +2910,7 @@ class Repository(object):
 
     svn_get='checkout'
     easy_install_path = ["easy_install"]
+    easy_install_flag = '-q'
     pip_path = ["pip"]
     python = "python"
     svn = "svn"
@@ -3203,10 +3204,10 @@ class Repository(object):
                 if offline:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
-                    self.run(self.easy_install_path + ['-q', self.pypi], dir=os.path.dirname(dir))
+                    self.run(self.easy_install_path + [Repository.easy_install_flag, self.pypi], dir=os.path.dirname(dir))
             elif preinstall: 
                 if not os.path.exists(dir):
-                    self.run(self.easy_install_path + ['-q', '--exclude-scripts', '--always-copy', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
+                    self.run(self.easy_install_path + [Repository.easy_install_flag, '--exclude-scripts', '--always-copy', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
         except OSError, err:
             print ""
             print "Error installing package %s with easy_install" % self.name
@@ -3230,7 +3231,7 @@ class Repository(object):
             sys.exit(1)
 
     def easy_upgrade(self):
-        self.run(self.easy_install_path + ['-q', '--upgrade', self.pypi])
+        self.run(self.easy_install_path + [Repository.easy_install_flag, '--upgrade', self.pypi])
 
     def run(self, cmd, dir=None):
         cwd=os.getcwd()
@@ -3238,6 +3239,7 @@ class Repository(object):
             os.chdir(dir)
             cwd=dir
         print "Running command '%s' in directory %s" % (" ".join(cmd), cwd)
+        sys.stdout.flush()
         call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
         if not dir is None:
             os.chdir(cwd)
@@ -3451,6 +3453,8 @@ class Installer(object):
             vpy_main.raise_exceptions=True
         #
         global logger
+        if options.verbose:
+            Repository.easy_install_flag = '-v'
         verbosity = options.verbose - options.quiet
         self.logger = Logger([(Logger.level_for_integer(2-verbosity), sys.stdout)])
         logger = self.logger
@@ -3459,6 +3463,7 @@ class Installer(object):
         #
         global using_subversion
         try:
+            sys.stdout.flush()
             call_subprocess(['svn'+executable_extension,'help'], show_stdout=False)
         except OSError, err:
             print ""
@@ -3843,6 +3848,7 @@ class Installer(object):
                     rmtree( join(self.abshome_dir,todir) )
                 cmd = [Repository.svn,Repository.svn_get,'-q',self.svnjoin(pkgroot,fromdir),join(self.abshome_dir,todir)]
             print "Running command '%s'" % " ".join(cmd)
+            sys.stdout.flush()
             call_subprocess(cmd, filter_stdout=filter_python_develop,show_stdout=True)
 
     def read_config_file(self, file=None, fp=None):
