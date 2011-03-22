@@ -740,7 +740,7 @@ def install_python(home_dir, lib_dir, inc_dir, bin_dir, site_packages, clear):
 
     if clear:
         rmtree(lib_dir)
-        # pyutilib.virtualenv: ignoring comment
+        ## FIXME: why not delete it?
         ## Maybe it should delete everything with #!/path/to/venv/python in it
         logger.notify('Not deleting %s', bin_dir)
 
@@ -837,7 +837,7 @@ def install_python(home_dir, lib_dir, inc_dir, bin_dir, site_packages, clear):
 
     logger.notify('New %s executable in %s', expected_exe, py_executable)
     if sys.executable != py_executable:
-        # pyutilib.virtualenv: ignoring comment
+        ## FIXME: could I just hard link?
         executable = sys.executable
         if sys.platform == 'cygwin' and os.path.exists(executable + '.exe'):
             # Cygwin misreports sys.executable sometimes
@@ -953,7 +953,7 @@ def install_python(home_dir, lib_dir, inc_dir, bin_dir, site_packages, clear):
     if os.path.exists(pydistutils):
         logger.notify('Please make sure you remove any previous custom paths from '
                       'your %s file.' % pydistutils)
-    # pyutilib.virtualenv: ignoring comment
+    ## FIXME: really this should be calculated earlier
     return py_executable
 
 def install_activate(home_dir, bin_dir, prompt=None):
@@ -987,10 +987,10 @@ def install_activate(home_dir, bin_dir, prompt=None):
 def install_distutils(home_dir):
     distutils_path = change_prefix(distutils.__path__[0], home_dir)
     mkdir(distutils_path)
-    # pyutilib.virtualenv: ignoring comment
+    ## FIXME: maybe this prefix setting should only be put in place if
     ## there's a local distutils.cfg with a prefix setting?
     home_dir = os.path.abspath(home_dir)
-    # pyutilib.virtualenv: ignoring comment
+    ## FIXME: this is breaking things, removing for now:
     #distutils_cfg = DISTUTILS_CFG + "\n[install]\nprefix=%s\n" % home_dir
     writefile(os.path.join(distutils_path, '__init__.py'), DISTUTILS_INIT)
     writefile(os.path.join(distutils_path, 'distutils.cfg'), DISTUTILS_CFG, overwrite=False)
@@ -1042,7 +1042,7 @@ def make_environment_relocatable(home_dir):
             'on this environment to update it' % activate_this)
     fixup_scripts(home_dir)
     fixup_pth_and_egg_link(home_dir)
-    # pyutilib.virtualenv: ignoring comment
+    ## FIXME: need to fix up distutils.cfg
 
 OK_ABS_SCRIPTS = ['python', 'python%s' % sys.version[:3],
                   'activate', 'activate.bat', 'activate_this.py']
@@ -3756,8 +3756,8 @@ class Installer(object):
             bindir = join(self.abshome_dir,"bin")
         if is_jython:
             Repository.python = os.path.abspath(join(bindir, 'jython.bat'))
-        elif sys.platform.startswith('win'):
-            Repository.python = os.path.abspath(join(bindir, 'pythonw'))
+        #elif sys.platform.startswith('win'):
+            #Repository.python = os.path.abspath(join(bindir, 'python'))
         else:
             Repository.python = os.path.abspath(join(bindir, 'python'))
         if os.path.exists(os.path.abspath(join(bindir, 'easy_install'))):
@@ -4475,6 +4475,6 @@ xu/Lx8M/UvCLTxW7VULHxB1PRRbrYfvWNY5S8it008jOjcleaMqVBDnUXcWULV2YK9JEQ92OfC96
 if __name__ == '__main__':
     main()
 
-# pyutilib.virtualenv: ignoring comment
+## TODO:
 ## Copy python.exe.manifest
 ## Monkeypatch distutils.sysconfig

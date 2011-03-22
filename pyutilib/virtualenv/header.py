@@ -1048,8 +1048,8 @@ class Installer(object):
             bindir = join(self.abshome_dir,"bin")
         if is_jython:
             Repository.python = os.path.abspath(join(bindir, 'jython.bat'))
-        elif sys.platform.startswith('win'):
-            Repository.python = os.path.abspath(join(bindir, 'pythonw'))
+        #elif sys.platform.startswith('win'):
+            #Repository.python = os.path.abspath(join(bindir, 'python'))
         else:
             Repository.python = os.path.abspath(join(bindir, 'python'))
         if os.path.exists(os.path.abspath(join(bindir, 'easy_install'))):
