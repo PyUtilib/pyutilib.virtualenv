@@ -59,8 +59,8 @@ def main():
     for line in new_text.split('\n'):
         if 'win32api' in line:
             tmp.append( line[:line.index(line.strip())] + 'pass')
-        elif 'TODO' in line or 'FIXME' in line:
-            tmp.append( line[:line.index(line.strip())] + '# pyutilib.virtualenv: ignoring comment')
+        #elif 'TODO' in line or 'FIXME' in line:
+            #tmp.append( line[:line.index(line.strip())] + '# pyutilib.virtualenv: ignoring comment')
         else:
             tmp.append(line)
     new_text = "\n".join(tmp)
