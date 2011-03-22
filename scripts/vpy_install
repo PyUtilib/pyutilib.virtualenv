@@ -2916,7 +2916,7 @@ class Repository(object):
     svn = "svn"
     dev = []
 
-    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None):
+    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None, platform=None):
         class _TEMP_(object): pass
         self.config = _TEMP_()
         self.config.name=name
@@ -2928,6 +2928,7 @@ class Repository(object):
         self.config.pyname=pyname
         self.config.pypi=pypi
         self.config.local=local
+        self.config.platform=platform
         if dev == 'True' or dev is True:
             self.config.dev=True
         else:
@@ -2953,6 +2954,11 @@ class Repository(object):
         #
         self.pypi = config.pypi
         self.local = config.local
+        self.platform = config.platform
+        if config.platform is None:
+            self.platform_re = None
+        else:
+            self.platform_re = re.compile(config.platform)
         if not config.pypi is None:
             self.pyname=config.pypi
         else:
@@ -3057,6 +3063,8 @@ class Repository(object):
             print >>OUTPUT, 'rev=%s' % str(config.rev)
         if not config.username is None:
             print >>OUTPUT, 'username=%s' % str(config.username)
+        if not config.platform is None:
+            print >>OUTPUT, 'platform=%s' % config.platform
 
 
     def find_pkgroot(self, trunk=False, stable=False, release=False):
@@ -3124,6 +3132,8 @@ class Repository(object):
         self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
         
     def perform_install(self, dir=None, install=True, preinstall=False, offline=False):
+        if not self.platform_re is None and not self.platform_re.match(sys.platform):
+            return
         if self.pkgdir is None and self.local is None:
             self.easy_install(install, preinstall, dir, offline)
             return
