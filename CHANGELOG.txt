@@ -3,10 +3,32 @@
 ===============================
 
 -------------------------------------------------------------------------------
- 2.4
+ 2.5
 -------------------------------------------------------------------------------
 
 - Under development.
+
+-------------------------------------------------------------------------------
+ 2.4
+-------------------------------------------------------------------------------
+
+- Disabling the use of pythonw. This doesn't reliably work ... perhaps
+  because of antivirus software. It appears that pythonw.exe is a known
+  target for viruses.
+
+- Disabling the filtering of TODO lines while generating the bootstrap script.
+  This has the unfortunate feature that it can muck with the uuencoded data that
+  the bootstrap script includes. 
+
+- Adding support for a 'platform' option, which is a regular
+  expression that controls package installation.
+
+- Updates to allow the -v option to create verbose output
+  from easy_install, and to flush debugging output
+  before subprocesses are executed.
+
+- Setting the directory in which easy_installed is executed ... to
+  fix a problem installing a package in a directory with the same name.
 
 -------------------------------------------------------------------------------
  2.3
