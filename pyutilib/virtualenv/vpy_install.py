@@ -2740,6 +2740,7 @@ if 'PYTHONHOME' in os.environ:
     del os.environ['PYTHONHOME']
     print "WARNING: ignoring the value of the PYTHONHOME environment variable!  This value can corrupt the virtual python installation."
 
+print "\nNOTE: this Python executable used to create virtual environment:\n\t%s\n" % sys.executable
 #
 # The following taken from PyUtilib
 #
