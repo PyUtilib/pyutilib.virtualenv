@@ -9,7 +9,7 @@
 #  For more information, see the PyUtilib README.txt file.
 #  _________________________________________________________________________
 #
-# This script creates a Python installer script.  Note that this script assumes that 
+# This script creates a Python installer script.  Note that this script assumes that
 # 'virtualenv' is installed in Python.
 #
 
@@ -82,4 +82,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -11,7 +11,7 @@
 def configure(installer):
     installer.config="""
 ; This INI file can be used by vpy_install to create a virtual
-; Python installation that is equivalent to the virtual 
+; Python installation that is equivalent to the virtual
 ; Python installation that is created by spot_install .
 ;
 [installer]
@@ -82,4 +82,3 @@ test=/packages/test/pyunit
     # Return the modified installer
     #
     return installer
-

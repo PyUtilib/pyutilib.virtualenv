@@ -19,4 +19,3 @@ def configure(installer):
     # Return the modified installer
     #
     return installer
-

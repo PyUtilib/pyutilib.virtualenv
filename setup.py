@@ -49,4 +49,3 @@ setup(name="pyutilib.virtualenv",
         vpy_install=pyutilib.virtualenv.vpy_install:main
       """
       )
-

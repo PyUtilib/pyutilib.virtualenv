@@ -68,9 +68,8 @@ def configure(installer):
 #   test       Test directory
 #   util       Utility scripts (including spot_install)
 #
-""" 
+"""
     #
     # Return the modified installer
     #
     return installer
-

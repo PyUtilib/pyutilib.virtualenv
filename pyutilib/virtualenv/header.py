@@ -37,9 +37,9 @@ print "\nNOTE: this Python executable used to create virtual environment:\n\t%s\
 # The following taken from PyUtilib
 #
 if (sys.platform[0:3] == "win"): #pragma:nocover
-   executable_extension=".exe"
+    executable_extension=".exe"
 else:                            #pragma:nocover
-   executable_extension=""
+    executable_extension=""
 
 
 def search_file(filename, search_path=None, implicitExt=executable_extension, executable=False,         isfile=True):
@@ -52,14 +52,14 @@ def search_file(filename, search_path=None, implicitExt=executable_extension, ex
         else:
             search_path = os.defpath.split(os.pathsep)
     for path in search_path:
-      if os.path.exists(os.path.join(path, filename)) and \
-         (not isfile or os.path.isfile(os.path.join(path, filename))):
-         if not executable or os.access(os.path.join(path,filename),os.X_OK):
-            return os.path.abspath(os.path.join(path, filename))
-      if os.path.exists(os.path.join(path, filename+implicitExt)) and \
-         (not isfile or os.path.isfile(os.path.join(path, filename+implicitExt))):
-         if not executable or os.access(os.path.join(path,filename+implicitExt),os.X_OK):
-            return os.path.abspath(os.path.join(path, filename+implicitExt))
+        if os.path.exists(os.path.join(path, filename)) and \
+           (not isfile or os.path.isfile(os.path.join(path, filename))):
+            if not executable or os.access(os.path.join(path,filename),os.X_OK):
+                return os.path.abspath(os.path.join(path, filename))
+        if os.path.exists(os.path.join(path, filename+implicitExt)) and \
+           (not isfile or os.path.isfile(os.path.join(path, filename+implicitExt))):
+            if not executable or os.access(os.path.join(path,filename+implicitExt),os.X_OK):
+                return os.path.abspath(os.path.join(path, filename+implicitExt))
     return None
 
 #
@@ -379,7 +379,7 @@ class Repository(object):
                 return
 
         elif stable:
-            if self.stable is None: 
+            if self.stable is None:
                 if not self.release is None:
                     self.find_pkgroot(release=True)
                 elif self.pypi is None and self.local is None:
@@ -411,20 +411,20 @@ class Repository(object):
 
         else:
             raise IOError, "Must have one of trunk, stable or release specified"
-            
+
 
     def install_trunk(self, dir=None, install=True, preinstall=False, offline=False):
         self.find_pkgroot(trunk=True)
         self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
-        
+
     def install_stable(self, dir=None, install=True, preinstall=False, offline=False):
         self.find_pkgroot(stable=True)
         self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
-        
+
     def install_release(self, dir=None, install=True, preinstall=False, offline=False):
         self.find_pkgroot(release=True)
         self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
-        
+
     def perform_install(self, dir=None, install=True, preinstall=False, offline=False):
         if not self.platform_re is None and not self.platform_re.match(sys.platform):
             return
@@ -444,10 +444,10 @@ class Repository(object):
             print "     No checkout required"
             print "-----------------------------------------------------------------"
         elif not using_subversion:
-                print ""
-                print "Error: Cannot checkout software %s with subversion." % self.name
-                print "A problem was detected executing subversion commands."
-                sys.exit(1)
+            print ""
+            print "Error: Cannot checkout software %s with subversion." % self.name
+            print "A problem was detected executing subversion commands."
+            sys.exit(1)
         else:
             print "-----------------------------------------------------------------"
             try:
@@ -509,7 +509,7 @@ class Repository(object):
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
                     self.run(self.easy_install_path + [Repository.easy_install_flag, self.pypi], dir=os.path.dirname(dir))
-            elif preinstall: 
+            elif preinstall:
                 if not os.path.exists(dir):
                     self.run(self.easy_install_path + [Repository.easy_install_flag, '--exclude-scripts', '--always-copy', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
         except OSError, err:
@@ -525,7 +525,7 @@ class Repository(object):
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
                     self.run(self.pip_path + ['-v', self.pypi])
-            elif preinstall: 
+            elif preinstall:
                 if not os.path.exists(dir):
                     self.run(self.pip_path + ['-v', '--no-install', '--download', '.', self.pypi], dir=os.path.dirname(dir))
         except OSError, err:
@@ -739,11 +739,11 @@ class Installer(object):
         parser.remove_option("--no-site-packages")
         parser.remove_option("--clear")
         #
-        # Add description 
+        # Add description
         #
         parser.description=self.description
         parser.epilog="If DEST_DIR is not specified, then a default installation path is used:  "+self.default_windir+" on Windows and "+self.default_unixdir+" on Linux.  This command uses the Python 'setuptools' package to install Python packages.  This package installs packages by downloading files from the internet.  If you are running this from within a firewall, you may need to set the HTTP_PROXY environment variable to a value like 'http://<proxyhost>:<port>'."
-        
+
 
     def adjust_options(self, options, args):
         #
@@ -798,8 +798,8 @@ class Installer(object):
                 self.logger.fatal(wrapper.fill("ERROR: The 'update' option is specified, but the installation path '%s' does not exist!" % self.home_dir))
                 sys.exit(1000)
             elif os.path.exists(join(self.abshome_dir,'bin')):
-                    self.logger.fatal(wrapper.fill("ERROR: The installation path '%s' already exists!  Use the --update option if you wish to update, or remove this directory to create a fresh installation." % self.home_dir))
-                    sys.exit(1000)
+                self.logger.fatal(wrapper.fill("ERROR: The installation path '%s' already exists!  Use the --update option if you wish to update, or remove this directory to create a fresh installation." % self.home_dir))
+                sys.exit(1000)
         if len(args) == 0:
             args.append(self.abshome_dir)
         #
@@ -890,7 +890,7 @@ class Installer(object):
             print "  using the HTTP_PROXY environment: %s" % proxy
             print ""
         #
-        # Disable the PYTHONPATH, to isolate this installation from 
+        # Disable the PYTHONPATH, to isolate this installation from
         # other Python installations that a user may be working with.
         #
         if not options.use_pythonpath:
@@ -909,7 +909,7 @@ class Installer(object):
             rmtree(self.abshome_dir)
             os.mkdir(self.abshome_dir)
         #
-        # When preinstalling or working offline, disable the 
+        # When preinstalling or working offline, disable the
         # default install_setuptools() function.
         #
         if options.offline:
@@ -1034,11 +1034,11 @@ class Installer(object):
 
     def get_other_packages(self, options):
         #
-        # Used by subclasses of Installer to 
+        # Used by subclasses of Installer to
         # add packages that were requested through other means....
         #
         pass
-        
+
     def install_packages(self, options):
         #
         # Set the bin directory
@@ -1204,7 +1204,7 @@ class Installer(object):
             OUTPUT=open(filename,'w')
             self.write_config(stream=OUTPUT)
             OUTPUT.close()
-        else: 
+        else:
             for repos in self.sw_packages:
                 repos.write_config(stream)
                 print >>stream, ""
@@ -1213,7 +1213,7 @@ class Installer(object):
                 for file in self.cmd_files:
                     print >>stream, file+"="
                 print >>stream, "\n"
-        
+
 
 
 def configure(installer):
@@ -1246,12 +1246,12 @@ def get_installer():
 # that are associated with read-only files
 #
 def handleRemoveReadonly(func, path, exc):
-  excvalue = exc[1]
-  if func in (os.rmdir, os.remove) and excvalue.errno == errno.EACCES:
-      os.chmod(path, stat.S_IRWXU| stat.S_IRWXG| stat.S_IRWXO) # 0777
-      func(path)
-  else:
-      raise
+    excvalue = exc[1]
+    if func in (os.rmdir, os.remove) and excvalue.errno == errno.EACCES:
+        os.chmod(path, stat.S_IRWXU| stat.S_IRWXG| stat.S_IRWXO) # 0777
+        func(path)
+    else:
+        raise
 
 def rmtree(dir):
     if os.path.exists(dir):
@@ -1351,8 +1351,7 @@ def adjust_options(options, args):
     installer.get_homedir(options, args)
     installer.adjust_options(options, args)
     installer.setup_installer(options)
-    
+
 def after_install(options, home_dir):
     installer = get_installer()
     installer.install_packages(options)
-

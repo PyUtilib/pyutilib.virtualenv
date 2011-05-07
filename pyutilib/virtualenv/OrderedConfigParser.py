@@ -61,4 +61,3 @@ class OrderedConfigParser(ConfigParser.ConfigParser):
     def optionxform(self, option):
         """Do not convert to lower case"""
         return option
-
