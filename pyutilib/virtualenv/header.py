@@ -719,6 +719,12 @@ class Installer(object):
             dest='keep_config',
             default=False)
 
+        parser.add_option('--without-externals',
+            help="Ignore the 'externals' section of the config file.",
+            action='store_false',
+            dest='follow_externals',
+            default=True)
+
         parser.add_option('--localize',
             help='Force localization of DOS scripts on Linux platforms',
             action='store_true',
@@ -815,12 +821,12 @@ class Installer(object):
             options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
         if not self.config is None and (len(options.config_files) == 0 or options.keep_config):
             fp = StringIO.StringIO(self.config)
-            self.read_config_file(fp=fp)
+            self.read_config_file(fp=fp, follow_externals=options.follow_externals)
             fp.close()
         if not self.config_file is None and (len(options.config_files) == 0 or options.keep_config):
-            self.read_config_file(file=self.config_file)
+            self.read_config_file(file=self.config_file, follow_externals=options.follow_externals)
         for file in options.config_files:
-            self.read_config_file(file=file)
+            self.read_config_file(file=file, follow_externals=options.follow_externals)
         print "-----------------------------------------------------------------"
         print "Finished processing configuration information."
         print "-----------------------------------------------------------------"
@@ -1155,7 +1161,7 @@ class Installer(object):
             sys.stdout.flush()
             call_subprocess(cmd, filter_stdout=filter_python_develop,show_stdout=True)
 
-    def read_config_file(self, file=None, fp=None):
+    def read_config_file(self, file=None, fp=None, follow_externals=True):
         """
         Read a config file.
         """
@@ -1183,11 +1189,14 @@ class Installer(object):
         if 'installer' in sections:
             for option, value in parser.items('installer'):
                 setattr(self, option, apply_template(value, os.environ) )
+        if follow_externals and 'externals' in sections:
+            for option, value in parser.items('externals'):
+                self.read_config_file(file=value, follow_externals=follow_externals)
         if 'localize' in sections:
             for option, value in parser.items('localize'):
                 self.add_dos_cmd(option)
         for sec in sections:
-            if sec in ['installer', 'localize']:
+            if sec in ['installer', 'localize', 'externals']:
                 continue
             if sec.endswith(':auxdir'):
                 auxdir = sec[:-7]
