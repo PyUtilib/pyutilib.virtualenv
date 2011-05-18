@@ -1294,10 +1294,12 @@ def main():
 #
 default_install_setuptools = install_setuptools
 
-def install_setuptools(py_executable, unzip=False):
+
+def install_setuptools(py_executable, unzip=False,
+                       search_dirs=None, never_download=False):
     try:
         if install_setuptools.use_default:
-            default_install_setuptools(py_executable, unzip)
+            default_install_setuptools(py_executable, unzip, search_dirs, never_download)
     except OSError, err:
         print "-----------------------------------------------------------------"
         print "Error installing the 'setuptools' package!"
