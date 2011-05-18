@@ -3,7 +3,7 @@
 """Create a "virtual" Python installation
 """
 
-# If you change the version here, change it in setup.py 
+# If you change the version here, change it in setup.py
 # and docs/conf.py as well.
 virtualenv_version = "1.6"
 
@@ -1137,7 +1137,7 @@ def install_python(home_dir, lib_dir, inc_dir, bin_dir, site_packages, clear):
             logger.fatal('ERROR: The executable %s could not be run: %s' % (py_executable, e))
             sys.exit(100)
         else:
-          raise e
+            raise e
 
     proc_stdout = proc_stdout.strip().decode(sys.getdefaultencoding())
     proc_stdout = os.path.normcase(os.path.abspath(proc_stdout))
@@ -4282,7 +4282,7 @@ def after_install(options, home_dir):
 def convert(s):
     b = base64.b64decode(s.encode('ascii'))
     return zlib.decompress(b).decode('utf-8')
-    
+
 ##file site.py
 SITE_PY = convert("""
 eJzVPP1z2zaWv/OvwMqTIZXKdD66nR2n7o2TOK3v3MTbpLO5dT06SoIk1hTJEqQV7c3d337vAwAB
