@@ -313,7 +313,7 @@ SectionEnd
                 continue
             logger.info('Modifying MSI for %s' % pkg.name)
             pkg.load_msi()
-            pkg.change_uuid()
+            #pkg.change_uuid()
             pkg.add_registry_keys()
         os.chdir(self.home_dir)
     
@@ -456,13 +456,13 @@ Section "%(name)s"
   DetailPrint "--------------------------------------------------------------"
   DetailPrint "Installing %(name)s Package"
   DetailPrint "--------------------------------------------------------------"
-  ReadRegStr $2 "HKLM" "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\%(uuid)s" "UninstallString"
+  ReadRegStr $2 "HKLM" "Software\\%(name)s" "ProductCode"
   StrCmp "$2" "" install 0
   DetailPrint "%(name)s is already installed on this machine!"
   DetailPrint "Attempting to uninstall package before re-installing."
-  ExecWait '"$2" ' $0
+  nsExec::ExecToLog 'msiexec.exe /X$2 /passive' $0
 install:
-  nsExec::ExecToLog 'msiexec.exe /I \"$INSTDIR\\%(msi_file)s\" /passive'
+  nsExec::ExecToLog 'msiexec.exe /I \"$INSTDIR\\%(msi_file)s\" /passive' $0
 done:
 SectionEnd
 """
@@ -470,7 +470,8 @@ SectionEnd
   DetailPrint "--------------------------------------------------------------"
   DetailPrint "Removing %(name)s Package"
   DetailPrint "--------------------------------------------------------------"
-  nsExec::ExecToLog 'msiexec /X %(uuid)s /passive'
+  ReadRegStr $2 "HKLM" "Software\\%(name)s" "ProductCode"
+  nsExec::ExecToLog 'msiexec /X$2 /passive' $0
 """
     
     def __init__(self, name, root_dir=None, output_dir=None, is_tpl=False,
@@ -600,18 +601,8 @@ SectionEnd
         else:
             comp = self.components[0]
         records = []
-        records.append( ('PkgKey32',2,'SOFTWARE\\'+program+'\\python',self.name,
-                         '[ProductCode]',comp) )
-        records.append( ('RegKey32',2,key,None,'['+finp+']',comp) )
-        records.append( ('RegKey32.pp',2,key,'ParentPath','[TARGETDIR]',comp) )
+        records.append( ('RegKey32',2,key,'ProductCode','[ProductCode]',comp) )
         records.append( ('RegKey32.ver',2,key,'Version','[ProductVersion]',comp) )
-        for ver in ['2.0','2.1','2.2','2.3','2.4','2.5','2.6','2.7','2.8','2.9',
-                    '3.0','3.1','3.2','3.3','3.4','3.5','3.6','3.7','3.8','3.9',
-                    'X']:
-            records.append( ('RegKey32.Py'+ver,2,key+'\\Py'+ver,None,
-                             '['+finp+ver+']',comp+ver) )
-            records.append( ('RegKey32.Py'+ver+'.ip',2,key+'\\Py'+ver+'\\InstallPath',
-                             None,'[TARGETDIR'+ver+']',comp+ver) )
         try:
             msilib.add_data(self.msi_db, "Registry", records)
             logger.info('Added registry keys to HKLM\\SOFTWARE\\%s'%self.name)
@@ -627,10 +618,12 @@ SectionEnd
         
     def get_nsis_install_code(self):
         msi_file = os.path.split(self.msi_file)[1]
+        if self.is_tpl: req_text = '' 
+        else: req_text = 'SectionIn RO'
         return self.nsis_code % {'name': self.name,
                                  'uuid': self.uuid,
                                  'msi_file': msi_file,
-                                 'req_text': 'SectionIn RO' }
+                                 'req_text': req_text }
         
     def get_nsis_uninstall_code(self):
         if self.is_tpl: return ""
