@@ -208,6 +208,7 @@ Section "Uninstall"
 SectionEnd
 
 """
+
     data_head = """
 /*
  * data.nsh
@@ -306,7 +307,7 @@ SectionEnd
         os.chdir(self.home_dir)
     
     def modify_package_installers(self):
-        logger.notify('Modifying installers with consistent UUIDs and registry keys')
+        logger.notify('Adding registry keys')
         for pkg in self.package_list:
             if pkg.msi_file is None: 
                 logger.debug('Skipping %s' % pkg.name)
@@ -349,7 +350,7 @@ SectionEnd
         elif isinstance(file,str):
             fid = open(os.path.abspath(self.nsis_config['nsi_includes']+os.sep+file),'wt')
         # Do Subsection for Details
-        fid.write('SubSection "Python Packages - %s"\n'%self.config['product_name'])
+        fid.write('SubSection "Python %s"\n'%self.config['product_name'])
         for pkg in self.package_list:
             if not pkg.is_tpl:
                 fid.write(pkg.get_nsis_install_code())
@@ -458,10 +459,18 @@ Section "%(name)s"
   DetailPrint "--------------------------------------------------------------"
   ReadRegStr $2 "HKLM" "Software\\%(name)s" "ProductCode"
   StrCmp "$2" "" install 0
-  DetailPrint "%(name)s is already installed on this machine!"
-  DetailPrint "Attempting to uninstall package before re-installing."
+  DetailPrint "%(name)s is already installed on this machine! Checking version..."
+  ReadRegStr $VER "HKLM" "Software\\%(name)s" "Version"
+  ${VersionCompare} '%(version)s' $VER $OUT
+  StrCmp $OUT '1' 0 install
+  StrCmp $OUT '2' 0 uninstall
+  DetailPrint "%(name)s version %(version)s is alread installed. Skipping."
+  StrCmp $OUT '0' 0 done
+uninstall:
+  DetailPrint "Attempting to uninstall package before installing new version."
   nsExec::ExecToLog 'msiexec.exe /X$2 /passive' $0
 install:
+  DetailPrint "Installing %(name)s version %(version)s"
   nsExec::ExecToLog 'msiexec.exe /I \"$INSTDIR\\%(msi_file)s\" /passive' $0
 done:
 SectionEnd
@@ -623,7 +632,8 @@ SectionEnd
         return self.nsis_code % {'name': self.name,
                                  'uuid': self.uuid,
                                  'msi_file': msi_file,
-                                 'req_text': req_text }
+                                 'req_text': req_text,
+                                 'version': self.properties['ProductVersion']}
         
     def get_nsis_uninstall_code(self):
         if self.is_tpl: return ""
