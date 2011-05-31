@@ -444,6 +444,7 @@ class Package(object):
     uuid = None
     python_exe = 'python.exe'
     setup_file = 'setup.py'
+    version = '0.0.0.0'
     output_dir = None
     msi_file = None
     msi_db = None
@@ -455,24 +456,38 @@ Section "%(name)s"
   %(req_text)s
   DetailPrint ""
   DetailPrint "--------------------------------------------------------------"
-  DetailPrint "Installing %(name)s Package"
+  DetailPrint "Package: Python %(name)s"
   DetailPrint "--------------------------------------------------------------"
+  DetailPrint ""
   ReadRegStr $2 "HKLM" "Software\\%(name)s" "ProductCode"
-  StrCmp "$2" "" install 0
+  StrCmp "$2" "" install
   DetailPrint "%(name)s is already installed on this machine! Checking version..."
-  ReadRegStr $VER "HKLM" "Software\\%(name)s" "Version"
-  ${VersionCompare} '%(version)s' $VER $OUT
-  StrCmp $OUT '1' 0 install
-  StrCmp $OUT '2' 0 uninstall
-  DetailPrint "%(name)s version %(version)s is alread installed. Skipping."
-  StrCmp $OUT '0' 0 done
+  ReadRegStr $3 "HKLM" "Software\\%(name)s" "Version"
+  DetailPrint " Package %(name)s version $3 is installed on this machine."
+  ${VersionCompare} '%(version)s' $3 $4
+  ;DetailPrint "Comparing version %(version)s to $3 with result $4"
+  StrCmp $4 '0' current
+  StrCmp $4 '1' uninstall newer
+current:
+  DetailPrint "Congratulations! You already have the most current version of"
+  DetailPrint " %(name)s."
+  Goto done
+newer:
+  DetailPrint "Hmm. Your version is newer than the one bundled here: %(version)s < $3"
+  DetailPrint "We are going to skip this package for now. You can always install it"
+  DetailPrint " by hand later from this program's 'Program Files' directory."
+  Goto done
 uninstall:
-  DetailPrint "Attempting to uninstall package before installing new version."
+  DetailPrint "Seems like you have an older version of this package. We will try"
+  DetailPrint " to uninstall the old version before we install our new one, just"
+  DetailPrint " to be safe."
   nsExec::ExecToLog 'msiexec.exe /X$2 /passive' $0
 install:
-  DetailPrint "Installing %(name)s version %(version)s"
+  DetailPrint "Installing %(name)s-%(version)s"
   nsExec::ExecToLog 'msiexec.exe /I \"$INSTDIR\\%(msi_file)s\" /passive' $0
 done:
+  DetailPrint "Package %(name)s complete."
+  DetailPrint ""
 SectionEnd
 """
     unins_code = """
@@ -537,6 +552,8 @@ SectionEnd
                 rec = a.GetString(1)
                 val = a.GetString(2)
                 self.properties[rec] = val
+                if rec == 'ProductVersion':
+                    self.version = val
         except: # All done - yes there's probably a better way
             pass
         view.Close()
@@ -633,7 +650,7 @@ SectionEnd
                                  'uuid': self.uuid,
                                  'msi_file': msi_file,
                                  'req_text': req_text,
-                                 'version': self.properties['ProductVersion']}
+                                 'version': self.version}
         
     def get_nsis_uninstall_code(self):
         if self.is_tpl: return ""
