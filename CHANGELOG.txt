@@ -6,7 +6,13 @@
  2.5
 -------------------------------------------------------------------------------
 
-- Under development
+- Adding create_setup script to create a Windows installer
+
+- Updates due to a new version os virtualenv
+
+- Adding the ability to define config files that reference other config files.
+
+- The --without-externals flag ignores the external links.
 
 -------------------------------------------------------------------------------
  2.4.1
