@@ -330,13 +330,11 @@ SectionEnd
         # Get data from vpy_preinstall
         dirs = glob.glob(self.home_dir+os.sep+'setup_python/*')
         omit_list = self.python_config['omit_list'].split()
-        for d in dirs:
-            subd = os.path.split(d)[1]
-            if not subd in omit_list:
-                if os.path.isdir(os.path.abspath(d)):
-                    fid.write('  File /r %s\\*\n'%d)
-                else:
-                    fid.write('  File %s\n'%d)
+        str_for_files = ''
+        for subd in omit_list:
+            str_for_files += '/x %s '%subd
+        str_for_files += os.path.abspath(self.home_dir+os.sep+'setup_python')
+        fid.write('  File /r %s\n'%str_for_files)
         
         # Get Binary sections data
         
@@ -481,10 +479,10 @@ uninstall:
   DetailPrint "Seems like you have an older version of this package. We will try"
   DetailPrint " to uninstall the old version before we install our new one, just"
   DetailPrint " to be safe."
-  nsExec::ExecToLog 'msiexec.exe /X$2 /passive' $0
+  nsExec::ExecToLog 'msiexec.exe /X$2 /quiet' $0
 install:
   DetailPrint "Installing %(name)s-%(version)s"
-  nsExec::ExecToLog 'msiexec.exe /I \"$INSTDIR\\%(msi_file)s\" /passive' $0
+  nsExec::ExecToLog 'msiexec.exe /I \"$INSTDIR\\%(msi_file)s\" /quiet' $0
 done:
   DetailPrint "Package %(name)s complete."
   DetailPrint ""
