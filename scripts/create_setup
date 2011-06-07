@@ -334,7 +334,7 @@ SectionEnd
             subd = os.path.split(d)[1]
             if not subd in omit_list:
                 if os.path.isdir(os.path.abspath(d)):
-                    fid.write('  File /r %s\n'%d)
+                    fid.write('  File /r %s\\\n'%d)
                 else:
                     fid.write('  File %s\n'%d)
         
