@@ -333,10 +333,10 @@ SectionEnd
         for d in dirs:
             subd = os.path.split(d)[1]
             if not subd in omit_list:
-                if not os.path.isdir(subd):
-                    fid.write('  File %s\n'%d)
-                else:
+                if os.path.isdir(os.path.abspath(subd)):
                     fid.write('  File /r %s\n'%d)
+                else:
+                    fid.write('  File %s\n'%d)
         
         # Get Binary sections data
         
