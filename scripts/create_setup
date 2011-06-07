@@ -370,9 +370,9 @@ SectionEnd
             fid = sys.stdout
         elif isinstance(file,str):
             fid = open(os.path.abspath(self.nsis_config['nsi_includes']+os.sep+file),'wt')
-        fid.write(self.uninstall_head)
         for pkg in self.package_list:
             fid.write(pkg.get_nsis_uninstall_code())
+        fid.write(self.uninstall_head)
         fid.write(self.uninstall_tail)
         if file is not None:
             fid.close()
@@ -494,11 +494,13 @@ done:
 SectionEnd
 """
     unins_code = """
+Section "un.%(name)s"
   DetailPrint "--------------------------------------------------------------"
   DetailPrint "Removing %(name)s Package"
   DetailPrint "--------------------------------------------------------------"
   ReadRegStr $2 "HKLM" "Software\\%(name)s" "ProductCode"
   nsExec::ExecToLog 'msiexec /X$2 /quiet' $0
+SectionEnd
 """
     
     def __init__(self, name, root_dir=None, output_dir=None, is_tpl=False,
