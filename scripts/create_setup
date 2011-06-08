@@ -287,9 +287,9 @@ SectionEnd
                 py_pkg.uuid = self.uuid_list[pkg]
             self.package_list.append(py_pkg)
             logger.notify('Discovered package %s as a component' % pkg)
-        tpls = _find_packages(root+'/dist', exclude=['virtualenv'])
+        tpls = _find_packages(root+'/dist', exclude=['virtualenv', 'setuptools']) + ['tpls']
         for pkg in tpls:
-            if pkg in ['virtualenv']:
+            if pkg in ['virtualenv', 'setuptools']:
                 continue
             py_pkg = Package(pkg, root_dir=root+'/dist/'+pkg, is_tpl=True,
                              python=self.python_config['python_exe'])
