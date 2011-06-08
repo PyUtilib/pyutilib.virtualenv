@@ -3078,18 +3078,7 @@ def parse_version(s):
 #   8.28.rc1
 #
 def guess_release(svndir):
-    if using_subversion:
-        output = commands.getoutput('svn ls '+svndir)
-        if output=="":
-            return None
-        #print output
-        versions = []
-# This allows for parsing version with the syntax:
-#   9.3.2
-#   8.28.rc1
-#
-def guess_release(svndir):
-    if using_subversion:
+    if using_subversion and not sys.platform.startswith('win'):
         output = commands.getoutput('svn ls '+svndir)
         if output=="":
             return None
@@ -3248,7 +3237,7 @@ class Repository(object):
     def guess_versions(self, offline=False):
         if not self.config.root is None:
             if not offline:
-                if using_subversion:
+                if using_subversion and not sys.platform.startswith('win'):
                     rootdir_output = commands.getoutput('svn ls ' + self.config.root)
                 else:
                     if sys.version_info[:2] <= (2,5):
@@ -3911,6 +3900,7 @@ class Installer(object):
         else:
             self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
             self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
+            self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
             self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
             #
             # Configure the package versions, for offline installs
@@ -3957,6 +3947,7 @@ class Installer(object):
             #
             # When preinstalling, add the setuptools package to the installation list
             #
+            self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
             self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
         for _pkg in options.packages:
             if os.path.exists(_pkg):
