@@ -2994,7 +2994,10 @@ import glob
 import errno
 import stat
 
-using_subversion = True
+if sys.platform == 'win32':
+    using_subversion = False
+else:
+    using_subversion = True
 
 #
 # Working around error with PYTHONHOME
