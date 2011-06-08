@@ -2994,10 +2994,7 @@ import glob
 import errno
 import stat
 
-if sys.platform == 'win32':
-    using_subversion = False
-else:
-    using_subversion = True
+using_subversion = True
 
 #
 # Working around error with PYTHONHOME
@@ -3081,18 +3078,7 @@ def parse_version(s):
 #   8.28.rc1
 #
 def guess_release(svndir):
-    if using_subversion:
-        output = commands.getoutput('svn ls '+svndir)
-        if output=="":
-            return None
-        #print output
-        versions = []
-# This allows for parsing version with the syntax:
-#   9.3.2
-#   8.28.rc1
-#
-def guess_release(svndir):
-    if using_subversion:
+    if using_subversion and not sys.platform.startswith('win'):
         output = commands.getoutput('svn ls '+svndir)
         if output=="":
             return None
@@ -3251,7 +3237,7 @@ class Repository(object):
     def guess_versions(self, offline=False):
         if not self.config.root is None:
             if not offline:
-                if using_subversion:
+                if using_subversion and not sys.platform.startswith('win'):
                     rootdir_output = commands.getoutput('svn ls ' + self.config.root)
                 else:
                     if sys.version_info[:2] <= (2,5):
