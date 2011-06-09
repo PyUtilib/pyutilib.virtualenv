@@ -106,7 +106,7 @@ def main():
     # Run tests in testing directory
 
 
-kl_software_config = ['product_name', 'product_version', 'product_authors',
+kl_software_config = ['product_name', 'product_authors',
                       'copyright_year', 'copyright_holder', 'copyright_legal',
                       'license_style', 'license_file']
 kl_python_config = ['python_exe', 'vpy_config_file', 'vpy_options', 
@@ -414,9 +414,7 @@ SectionEnd
                 self.binaries[sec] = bin_cfg
             else:
                 logger.warn('Unknown section [%s] in configuration!' % sec)
-        name = '_'.join([self.config['product_name'],
-                         self.config['product_version'],
-                         'setup.exe'])
+        name = self.config['product_name']
         if self.name is None:
             self.name = name
         self.python_config['omit_list'] += ' bin dist python.zip Lib Scripts src '
