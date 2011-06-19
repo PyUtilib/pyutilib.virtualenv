@@ -3,6 +3,12 @@
 ===============================
 
 -------------------------------------------------------------------------------
+ 2.6
+-------------------------------------------------------------------------------
+
+- Under development.
+
+-------------------------------------------------------------------------------
  2.5
 -------------------------------------------------------------------------------
 
@@ -13,6 +19,13 @@
 - Adding the ability to define config files that reference other config files.
 
 - The --without-externals flag ignores the external links.
+
+- Reformatting with reindent.
+
+- Disabled the use of subversion to guess revision numbers on windows.
+
+- Allow 'distribute' and 'pip' to be included in the distribution.  This
+  facilitates the installation on windows.
 
 -------------------------------------------------------------------------------
  2.4.1
