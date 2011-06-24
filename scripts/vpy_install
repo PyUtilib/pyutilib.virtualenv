@@ -1867,7 +1867,7 @@ class OrderedDict(dict):
         >>> d
         OrderedDict([(9, 8), (1, 2), (2, 3), (3, 4)])
         """
-        if isinstance(key, types.SliceType):
+        if isinstance(key, slice):
             if not isinstance(val, OrderedDict):
                 # NOTE: allow a list of tuples?
                 raise TypeError('slice assignment requires an OrderedDict')
@@ -1927,7 +1927,7 @@ class OrderedDict(dict):
         >>> type(b[2:4])
         <class '__main__.OrderedDict'>
         """
-        if isinstance(key, types.SliceType):
+        if isinstance(key, slice):
             # NOTE: does this raise the error we want?
             keys = self._sequence[key]
             # NOTE: efficiency?
@@ -2123,7 +2123,7 @@ class OrderedDict(dict):
         TypeError: pop expected at most 2 arguments, got 3
         """
         if len(args) > 1:
-            raise TypeError, ('pop expected at most 2 arguments, got %s' %
+            raise TypeError('pop expected at most 2 arguments, got %s' %
                 (len(args) + 1))
         if key in self:
             val = self[key]
@@ -2412,7 +2412,7 @@ class Keys(object):
         You can only do slice assignment if the new set of keys is a reordering
         of the original set.
         """
-        if isinstance(index, types.SliceType):
+        if isinstance(index, slice):
             # NOTE: efficiency?
             # check length is the same
             indexes = range(len(self._main._sequence))[index]
@@ -2492,7 +2492,7 @@ class Items(object):
 
     def __getitem__(self, index):
         """Fetch the item at position i."""
-        if isinstance(index, types.SliceType):
+        if isinstance(index, slice):
             # fetching a slice returns an OrderedDict
             return self._main[index].items()
         key = self._main._sequence[index]
@@ -2500,7 +2500,7 @@ class Items(object):
 
     def __setitem__(self, index, item):
         """Set item at position i to item."""
-        if isinstance(index, types.SliceType):
+        if isinstance(index, slice):
             # NOTE: item must be an iterable (list of tuples)
             self._main[index] = OrderedDict(item)
         else:
@@ -2517,7 +2517,7 @@ class Items(object):
     def __delitem__(self, i):
         """Delete the item at position i."""
         key = self._main._sequence[i]
-        if isinstance(i, types.SliceType):
+        if isinstance(i, slice):
             for k in key:
                 # NOTE: efficiency?
                 del self._main[k]
@@ -2602,7 +2602,7 @@ class Values(object):
 
     def __getitem__(self, index):
         """Fetch the value at position i."""
-        if isinstance(index, types.SliceType):
+        if isinstance(index, slice):
             return [self._main[key] for key in self._main._sequence[index]]
         else:
             return self._main[self._main._sequence[index]]
@@ -2614,7 +2614,7 @@ class Values(object):
         You can only do slice assignment to values if you supply a sequence of
         equal length to the slice you are replacing.
         """
-        if isinstance(index, types.SliceType):
+        if isinstance(index, slice):
             keys = self._main._sequence[index]
             if len(keys) != len(value):
                 raise ValueError('attempt to assign sequence of size %s '
@@ -2910,24 +2910,28 @@ class SequenceOrderedDict(OrderedDict):
 #  _________________________________________________________________________
 #
 
-import ConfigParser
-import StringIO
+if sys.version_info[0] < 3:
+    from ConfigParser import ConfigParser
+    from StringIO import StringIO
+else:
+    from configparser import ConfigParser
+    from io import StringIO
 
 if not 'OrderedDict' in dir():
     from odict import OrderedDict
 
 
-class OrderedConfigParser(ConfigParser.ConfigParser):
+class OrderedConfigParser(ConfigParser):
     """
     Customization of ConfigParser to (a) use an ordered dictionary and (b)
     keep the original case of the data keys.
     """
 
     def __init__(self):
-        if sys.version >= (2,6,0):
-            ConfigParser.ConfigParser.__init__(self, dict_type=OrderedDict)
+        if sys.version_info >= (2,6,0):
+            ConfigParser.__init__(self, dict_type=OrderedDict)
         else:
-            ConfigParser.ConfigParser.__init__(self)
+            ConfigParser.__init__(self)
             self._defaults = OrderedDict()
             self._sections = OrderedDict()
 
@@ -2936,7 +2940,7 @@ class OrderedConfigParser(ConfigParser.ConfigParser):
         In old version of Python, we prefetch the sections, to
         ensure that the data structures we are using are OrderedDict.
         """
-        if sys.version >= (2,6,0):
+        if sys.version_info >= (2,6,0):
             return
         while True:
             line = fp.readline()
@@ -2958,7 +2962,7 @@ class OrderedConfigParser(ConfigParser.ConfigParser):
         """
         self._get_sections(fp)
         fp.seek(0)
-        return ConfigParser.ConfigParser._read(self, fp, fpname)
+        return ConfigParser._read(self, fp, fpname)
 
     def optionxform(self, option):
         """Do not convert to lower case"""
@@ -2982,9 +2986,12 @@ class OrderedConfigParser(ConfigParser.ConfigParser):
 # This script was created with the virtualenv_install script.
 #
 
-import commands
 import re
-import urllib2
+if sys.version_info[0] < 3:
+    from urllib2 import urlopen, HTTPError
+else:
+    from urllib.request import urlopen
+    from urllib.error import HTTPError
 import zipfile
 import shutil
 import string
@@ -3001,9 +3008,9 @@ using_subversion = True
 #
 if 'PYTHONHOME' in os.environ:
     del os.environ['PYTHONHOME']
-    print "WARNING: ignoring the value of the PYTHONHOME environment variable!  This value can corrupt the virtual python installation."
+    sys.stdout.write("\nWARNING: ignoring the value of the PYTHONHOME environment variable!  This value can corrupt the virtual python installation.\n\n")
 
-print "\nNOTE: this Python executable used to create virtual environment:\n\t%s\n" % sys.executable
+sys.stdout.write("\nNOTE: this Python executable used to create virtual environment:\n\t%s\n\n" % (sys.executable,))
 #
 # The following taken from PyUtilib
 #
@@ -3079,7 +3086,8 @@ def parse_version(s):
 #
 def guess_release(svndir):
     if using_subversion and not sys.platform.startswith('win'):
-        output = commands.getoutput('svn ls '+svndir)
+        proc = subprocess.Popen(('svn','ls',svndir), stdout=subprocess.PIPE)
+        output = proc.communicate()[0]
         if output=="":
             return None
         #print output
@@ -3091,9 +3099,9 @@ def guess_release(svndir):
         #print versions
     else:
         if sys.version_info[:2] <= (2,5):
-            output = urllib2.urlopen(svndir).read()
+            output = urlopen(svndir).read()
         else:
-            output = urllib2.urlopen(svndir, timeout=30).read()
+            output = urlopen(svndir, timeout=30).read()
         if output=="":
             return None
         links = re.findall('\<li>\<a href[^>]+>[^\<]+\</a>',output)
@@ -3128,9 +3136,20 @@ def zip_file(filename,fdlist):
                     if fname.endswith('pyc') or fname.endswith('pyo') or fname.endswith('zip'):
                         continue
                     if fname.endswith('exe'):
-                        zf.external_attr = (0777 << 16L) | (010 << 28L)
+                        # NB: octal literal format changed between
+                        # Python 2.x and 3.x.  This is the only
+                        # generally portable alternative.
+                        #
+                        # NB: "long" not needed, as Python guarantees
+                        # ints are at least 31 bits.
+                        #
+                        #zf.external_attr = (0777 << 16L) | (010 << 28L)
+                        zf.external_attr = (int('777',8) << 16) | \
+                                           (int('10',8) << 28)
                     else:
-                        zf.external_attr = (0660 << 16L) | (010 << 28L)
+                        #zf.external_attr = (0660 << 16L) | (010 << 28L)
+                        zf.external_attr = (int('660',8) << 16) | \
+                                           (int('10',8) << 28)
                     zf.write(join(root,fname))
         else:
             zf.write(file)
@@ -3238,12 +3257,14 @@ class Repository(object):
         if not self.config.root is None:
             if not offline:
                 if using_subversion and not sys.platform.startswith('win'):
-                    rootdir_output = commands.getoutput('svn ls ' + self.config.root)
+                    proc = subprocess.Popen( ('svn','ls',self.config.root),
+                                             stdout=subprocess.PIPE)
+                    rootdir_output = proc.communicate()[0]
                 else:
                     if sys.version_info[:2] <= (2,5):
-                        rootdir_output = urllib2.urlopen(self.config.root).read()
+                        rootdir_output = urlopen(self.config.root).read()
                     else:
-                        rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
+                        rootdir_output = urlopen(self.config.root, timeout=30).read()
             self.trunk = self.config.root+'/trunk'
             self.trunk_root = self.trunk
             try:
@@ -3251,7 +3272,7 @@ class Repository(object):
                     raise IOError
                 self.stable = guess_release(self.config.root+'/stable')
                 self.stable_root = self.stable
-            except (urllib2.HTTPError,IOError):
+            except (HTTPError,IOError):
                 self.stable = None
                 self.stable_root = None
             try:
@@ -3260,14 +3281,14 @@ class Repository(object):
                 self.release = guess_release(self.config.root+'/releases')
                 self.tag = None
                 self.release_root = self.release
-            except (urllib2.HTTPError,IOError):
+            except (HTTPError,IOError):
                 try:
                     if offline or not 'tags' in rootdir_output:
                         raise IOError
                     self.release = guess_release(self.config.root+'/tags')
                     self.tag = self.release
                     self.release_root = self.release
-                except (urllib2.HTTPError,IOError):
+                except (HTTPError,IOError):
                     self.release = None
                     self.release_root = None
         if not self.config.trunk is None:
@@ -3294,31 +3315,31 @@ class Repository(object):
 
     def write_config(self, OUTPUT):
         config = self.config
-        print >>OUTPUT, '[%s]' % config.name
+        OUTPUT.write('[%s]' % (config.name,))
         if not config.root is None:
-            print >>OUTPUT, 'root=%s' % config.root
+            OUTPUT.write('root=%s' % (config.root,))
         if not config.trunk is None:
-            print >>OUTPUT, 'trunk=%s' % config.trunk
+            OUTPUT.write('trunk=%s' % (config.trunk,))
         if not config.stable is None:
-            print >>OUTPUT, 'stable=%s' % config.stable
+            OUTPUT.write('stable=%s' % (config.stable,))
         if not config.tag is None:
-            print >>OUTPUT, 'tag=%s' % config.tag
+            OUTPUT.write('tag=%s' % (config.tag,))
         elif not config.release is None:
-            print >>OUTPUT, 'release=%s' % config.release
+            OUTPUT.write('release=%s' % (config.release,))
         if not config.local is None:
-            print >>OUTPUT, 'local=%s' % config.local
+            OUTPUT.write('local=%s' % (config.local,))
         if not config.pypi is None:
-            print >>OUTPUT, 'pypi=%s' % config.pypi
+            OUTPUT.write('pypi=%s' % (config.pypi,))
         elif not config.pyname is None:
-            print >>OUTPUT, 'pypi=%s' % config.pyname
-        print >>OUTPUT, 'dev=%s' % str(config.dev)
-        print >>OUTPUT, 'install=%s' % str(config.install)
+            OUTPUT.write('pypi=%s' % (config.pyname,))
+        OUTPUT.write('dev=%s' % (str(config.dev),))
+        OUTPUT.write('install=%s' % (str(config.install),))
         if not config.rev is None:
-            print >>OUTPUT, 'rev=%s' % str(config.rev)
+            OUTPUT.write('rev=%s' % (str(config.rev),))
         if not config.username is None:
-            print >>OUTPUT, 'username=%s' % str(config.username)
+            OUTPUT.write('username=%s' % (str(config.username),))
         if not config.platform is None:
-            print >>OUTPUT, 'platform=%s' % config.platform
+            OUTPUT.write('platform=%s' % (config.platform,))
 
 
     def find_pkgroot(self, trunk=False, stable=False, release=False):
@@ -3370,7 +3391,7 @@ class Repository(object):
                 self.pkgroot = self.release_root
 
         else:
-            raise IOError, "Must have one of trunk, stable or release specified"
+            raise IOError("Must have one of trunk, stable or release specified")
 
 
     def install_trunk(self, dir=None, install=True, preinstall=False, offline=False):
@@ -3393,29 +3414,29 @@ class Repository(object):
             return
         if self.local:
             install = True
-        print "-----------------------------------------------------------------"
-        print "  Installing branch"
-        print "  Checking out source for package",self.name
+        sys.stdout.write("-----------------------------------------------------------------\n")
+        sys.stdout.write("  Installing branch\n")
+        sys.stdout.write("  Checking out source for package %s\n" % (self.name,))
         if self.local:
-            print "     Package dir: "+self.local
+            sys.stdout.write("     Package dir: "+self.local+"\n")
         else:
-            print "     Subversion dir: "+self.pkgdir
+            sys.stdout.write("     Subversion dir: "+self.pkgdir+"\n")
         if os.path.exists(dir):
-            print "     No checkout required"
-            print "-----------------------------------------------------------------"
+            sys.stdout.write("     No checkout required\n")
+            sys.stdout.write("-----------------------------------------------------------------\n")
         elif not using_subversion:
-            print ""
-            print "Error: Cannot checkout software %s with subversion." % self.name
-            print "A problem was detected executing subversion commands."
+            sys.stdout.write("\n")
+            sys.stdout.write("Error: Cannot checkout software %s with subversion.\n" % (self.name,))
+            sys.stdout.write("A problem was detected executing subversion commands.\n")
             sys.exit(1)
         else:
-            print "-----------------------------------------------------------------"
+            sys.stdout.write("-----------------------------------------------------------------\n")
             try:
                 self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.pkgdir+self.rev, dir])
-            except OSError, err:
-                print ""
-                print "Error checkout software %s with subversion at %s" % (self.name,self.pkgdir+self.rev)
-                print str(err)
+            except OSError , err:
+                sys.stdout.write("\n")
+                sys.stdout.write("Error checkout software %s with subversion at %s\n" % (self.name,self.pkgdir+self.rev))
+                sys.stdout.write(str(err)+"\n")
                 sys.exit(1)
         if install:
             try:
@@ -3426,11 +3447,11 @@ class Repository(object):
                         self.run([self.python, 'setup.py', 'develop'], dir=dir)
                 else:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
-            except OSError, err:
-                print ""
-                print "Error installing software %s from source using the setup.py file." % self.name
-                print "This is probably due to a syntax or configuration error in this package."
-                print str(err)
+            except OSError , err:
+                sys.stdout.write("\n")
+                sys.stdout.write("Error installing software %s from source using the setup.py file.\n" % (self.name,))
+                sys.stdout.write("This is probably due to a syntax or configuration error in this package.\n")
+                sys.stdout.write(str(err)+"\n")
                 sys.exit(1)
 
     def update_trunk(self, dir=None):
@@ -3449,12 +3470,12 @@ class Repository(object):
         if self.pkgdir is None:
             self.easy_upgrade()
             return
-        print "-----------------------------------------------------------------"
-        print "  Updating branch"
-        print "  Updating source for package",self.name
-        print "     Subversion dir: "+self.pkgdir
-        print "     Source dir:     "+dir
-        print "-----------------------------------------------------------------"
+        sys.stdout.write("-----------------------------------------------------------------\n")
+        sys.stdout.write("  Updating branch\n")
+        sys.stdout.write("  Updating source for package " + self.name + "\n")
+        sys.stdout.write("     Subversion dir: "+self.pkgdir+"\n")
+        sys.stdout.write("     Source dir:     "+dir+"\n")
+        sys.stdout.write("-----------------------------------------------------------------\n")
         self.run([self.svn,'update','-q']+self.revarg+[dir])
         if self.dev:
             self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -3472,10 +3493,10 @@ class Repository(object):
             elif preinstall:
                 if not os.path.exists(dir):
                     self.run(self.easy_install_path + [Repository.easy_install_flag, '--exclude-scripts', '--always-copy', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
-        except OSError, err:
-            print ""
-            print "Error installing package %s with easy_install" % self.name
-            print str(err)
+        except OSError , err:
+            sys.stdout.write("\n")
+            sys.stdout.write("Error installing package %s with easy_install\n" % (self.name,))
+            sys.stdout.write(str(err)+"\n")
             sys.exit(1)
 
     def pip_install(self, install, preinstall, dir, offline):
@@ -3488,10 +3509,10 @@ class Repository(object):
             elif preinstall:
                 if not os.path.exists(dir):
                     self.run(self.pip_path + ['-v', '--no-install', '--download', '.', self.pypi], dir=os.path.dirname(dir))
-        except OSError, err:
-            print ""
-            print "Error installing package %s with pip" % self.name
-            print str(err)
+        except OSError , err:
+            sys.stdout.write("\n")
+            sys.stdout.write("Error installing package %s with pip\n" % (self.name,))
+            sys.stdout.write(str(err)+"\n")
             sys.exit(1)
 
     def easy_upgrade(self):
@@ -3502,7 +3523,7 @@ class Repository(object):
         if not dir is None:
             os.chdir(dir)
             cwd=dir
-        print "Running command '%s' in directory %s" % (" ".join(cmd), cwd)
+        sys.stdout.write("Running command '%s' in directory %s\n" % (" ".join(cmd), cwd))
         sys.stdout.flush()
         call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
         if not dir is None:
@@ -3572,7 +3593,7 @@ class Installer(object):
 
     def add_repository(self, *args, **kwds):
         if not 'root' in kwds and not 'pypi' in kwds and not 'release' in kwds and not 'trunk' in kwds and not 'stable' in kwds:
-            raise IOError, "No repository info specified for repository "+args[0]
+            raise IOError("No repository info specified for repository "+args[0])
         repos = Repository( *args, **kwds)
         self.sw_dict[repos.name] = repos
         self.sw_packages.append( repos )
@@ -3735,13 +3756,13 @@ class Installer(object):
         try:
             sys.stdout.flush()
             call_subprocess(['svn'+executable_extension,'help'], show_stdout=False)
-        except OSError, err:
-            print ""
-            print "------------------------------------------------"
-            print "WARNING: problems executing subversion commands."
-            print "Subversion is disabled."
-            print "------------------------------------------------"
-            print ""
+        except OSError:
+            sys.stdout.write("\n")
+            sys.stdout.write("------------------------------------------------\n")
+            sys.stdout.write("WARNING: problems executing subversion commands.\n")
+            sys.stdout.write("Subversion is disabled.\n")
+            sys.stdout.write("------------------------------------------------\n")
+            sys.stdout.write("\n")
             using_subversion = False
         #
         if options.update and (options.stable or options.trunk):
@@ -3780,22 +3801,22 @@ class Installer(object):
             self.config=None
             options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
         if not self.config is None and (len(options.config_files) == 0 or options.keep_config):
-            fp = StringIO.StringIO(self.config)
+            fp = StringIO(self.config)
             self.read_config_file(fp=fp, follow_externals=options.follow_externals)
             fp.close()
         if not self.config_file is None and (len(options.config_files) == 0 or options.keep_config):
             self.read_config_file(file=self.config_file, follow_externals=options.follow_externals)
         for file in options.config_files:
             self.read_config_file(file=file, follow_externals=options.follow_externals)
-        print "-----------------------------------------------------------------"
-        print "Finished processing configuration information."
-        print "-----------------------------------------------------------------"
-        print " START - Configuration summary"
-        print "-----------------------------------------------------------------"
+        sys.stdout.write("-----------------------------------------------------------------\n")
+        sys.stdout.write("Finished processing configuration information.\n")
+        sys.stdout.write("-----------------------------------------------------------------\n")
+        sys.stdout.write(" START - Configuration summary\n")
+        sys.stdout.write("-----------------------------------------------------------------\n")
         self.write_config(stream=sys.stdout)
-        print "-----------------------------------------------------------------"
-        print " END - Configuration summary"
-        print "-----------------------------------------------------------------"
+        sys.stdout.write("-----------------------------------------------------------------\n")
+        sys.stdout.write(" END - Configuration summary\n")
+        sys.stdout.write("-----------------------------------------------------------------\n")
         #
         # If applying preinstall, then only do subversion exports
         #
@@ -3825,18 +3846,18 @@ class Installer(object):
         else:
             self.srcdir = os.path.abspath(options.source)
             if not os.path.exists(self.srcdir):
-                raise ValueError, "Specified source directory does not exist! %s" % self.srcdir
+                raise ValueError("Specified source directory does not exist! %s" % (self.srcdir,))
 
     def guess_path(self):
         return None
 
     def setup_installer(self, options):
         if options.preinstall:
-            print "Creating preinstall zip file in '%s'" % self.home_dir
+            sys.stdout.write("Creating preinstall zip file in '%s'\n" % (self.home_dir,))
         elif options.update:
-            print "Updating existing installation in '%s'" % self.home_dir
+            sys.stdout.write("Updating existing installation in '%s'\n" % (self.home_dir,))
         else:
-            print "Starting fresh installation in '%s'" % self.home_dir
+            sys.stdout.write("Starting fresh installation in '%s'\n" % (self.home_dir,))
         #
         # Setup HTTP proxy
         #
@@ -3853,8 +3874,8 @@ class Installer(object):
                 proxy = os.environ.get('http_proxy', '')
             os.environ['HTTP_PROXY'] = proxy
             os.environ['http_proxy'] = proxy
-            print "  using the HTTP_PROXY environment: %s" % proxy
-            print ""
+            sys.stdout.write("  using the HTTP_PROXY environment: %s\n" % (proxy,))
+            sys.stdout.write("\n")
         #
         # Disable the PYTHONPATH, to isolate this installation from
         # other Python installations that a user may be working with.
@@ -3869,9 +3890,9 @@ class Installer(object):
         # that contains the full installation.
         #
         if options.preinstall:
-            print "-----------------------------------------------------------------"
-            print " STARTING preinstall in directory %s" % self.home_dir
-            print "-----------------------------------------------------------------"
+            sys.stdout.write("-----------------------------------------------------------------\n")
+            sys.stdout.write(" STARTING preinstall in directory %s\n" % (self.home_dir,))
+            sys.stdout.write("-----------------------------------------------------------------\n")
             rmtree(self.abshome_dir)
             os.mkdir(self.abshome_dir)
         #
@@ -3924,9 +3945,9 @@ class Installer(object):
             INPUT.close()
         else:
             OUTPUT=open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'w')
-            print >>OUTPUT, options.trunk
-            print >>OUTPUT, options.stable
-            print >>OUTPUT, options.release
+            OUTPUT.write(str(options.trunk))
+            OUTPUT.write(str(options.stable))
+            OUTPUT.write(str(options.release))
             OUTPUT.close()
             self.write_config( join(self.abshome_dir,'admin','config.ini') )
         #
@@ -3987,15 +4008,15 @@ class Installer(object):
         # Create a README.txt file
         #
         OUTPUT=open(join(self.abshome_dir,"README.txt"),"w")
-        print >>OUTPUT, self.README.strip()
+        OUTPUT.write(self.README.strip())
         OUTPUT.close()
         #
         # Finalize preinstall
         #
         if options.preinstall:
-            print "-----------------------------------------------------------------"
-            print " FINISHED preinstall in directory %s" % self.home_dir
-            print "-----------------------------------------------------------------"
+            sys.stdout.write("-----------------------------------------------------------------\n")
+            sys.stdout.write(" FINISHED preinstall in directory %s\n" % (self.home_dir,))
+            sys.stdout.write("-----------------------------------------------------------------\n")
             os.chdir(self.abshome_dir)
             zip_file(self.default_dirname+'.zip', ['.'])
             sys.exit(0)
@@ -4076,12 +4097,12 @@ class Installer(object):
         # Misc notifications
         #
         if not options.update:
-            print ""
-            print "-----------------------------------------------------------------"
-            print "  Add %s to the PATH environment variable" % (self.home_dir+os.sep+"bin")
-            print "-----------------------------------------------------------------"
-        print ""
-        print "Finished installation in '%s'" % self.home_dir
+            sys.stdout.write("\n")
+            sys.stdout.write("-----------------------------------------------------------------\n")
+            sys.stdout.write("  Add %s to the PATH environment variable\n" % (self.home_dir+os.sep+"bin"))
+            sys.stdout.write("-----------------------------------------------------------------\n")
+        sys.stdout.write("\n")
+        sys.stdout.write("Finished installation in '%s'\n" % (self.home_dir,))
 
     def localize_cmd_files(self, dir, force_localization=False):
         """
@@ -4097,7 +4118,7 @@ class Installer(object):
         for file in self.cmd_files:
             fname = join(dir,bindir,file)
             if not os.path.exists(fname):
-                print "WARNING: Problem while localizing file '%s'.  This file is missing" % fname
+                sys.stdout.write("WARNING: Problem while localizing file '%s'.  This file is missing\n" % (fname,))
                 continue
             INPUT = open(fname, 'r')
             content = "".join(INPUT.readlines())
@@ -4119,7 +4140,7 @@ class Installer(object):
                 if options.clear:
                     rmtree( join(self.abshome_dir,todir) )
                 cmd = [Repository.svn,Repository.svn_get,'-q',self.svnjoin(pkgroot,fromdir),join(self.abshome_dir,todir)]
-            print "Running command '%s'" % " ".join(cmd)
+            sys.stdout.write("Running command '%s'\n" % (" ".join(cmd),))
             sys.stdout.flush()
             call_subprocess(cmd, filter_stdout=filter_python_develop,show_stdout=True)
 
@@ -4135,18 +4156,18 @@ class Installer(object):
                 file = os.path.dirname(self.config_file)+"/"+file
             try:
                 if sys.version_info[:2] <= (2,5):
-                    output = urllib2.urlopen(file).read()
+                    output = urlopen(file).read()
                 else:
-                    output = urllib2.urlopen(file, timeout=30).read()
-            except Exception, err:
-                print "Problems opening configuration url:",file
+                    output = urlopen(file, timeout=30).read()
+            except Exception:
+                sys.stdout.write("Problems opening configuration url:\n", (file,))
                 raise
-            fp = StringIO.StringIO(output)
+            fp = StringIO(output)
             parser.readfp(fp, file)
             fp.close()
         else:
             if not file in parser.read(file):
-                raise IOError, "Error while parsing file %s." % file
+                raise IOError("Error while parsing file %s." % (file,))
         sections = parser.sections()
         if 'installer' in sections:
             for option, value in parser.items('installer'):
@@ -4178,12 +4199,12 @@ class Installer(object):
         else:
             for repos in self.sw_packages:
                 repos.write_config(stream)
-                print >>stream, ""
+                stream.write("\n")
             if len(self.cmd_files) > 0:
-                print >>stream, "[localize]"
+                stream.write("[localize]\n")
                 for file in self.cmd_files:
-                    print >>stream, file+"="
-                print >>stream, "\n"
+                    stream.write(file+"=\n")
+                stream.write("\n")
 
 
 
@@ -4244,11 +4265,11 @@ def main():
             os.environ['TEMPDIR'] = '/tmp'
     try:
         vpy_main()
-    except Exception, err:
+    except Exception , err:
         if vpy_main.raise_exceptions:
             raise
-        print ""
-        print "ERROR:",str(err)
+        sys.stdout.write("\n")
+        sys.stdout.write("ERROR: "+str(err))
 
 #
 # This is a monkey patch, to control the execution of the install_setuptools()
@@ -4262,13 +4283,13 @@ def install_setuptools(py_executable, unzip=False,
     try:
         if install_setuptools.use_default:
             default_install_setuptools(py_executable, unzip, search_dirs, never_download)
-    except OSError, err:
-        print "-----------------------------------------------------------------"
-        print "Error installing the 'setuptools' package!"
+    except OSError:
+        sys.stdout.write("-----------------------------------------------------------------\n")
+        sys.stdout.write("Error installing the 'setuptools' package!\n")
         if os.environ['HTTP_PROXY'] == '':
-            print ""
-            print "WARNING: you may need to set your HTTP_PROXY environment variable!"
-        print "-----------------------------------------------------------------"
+            sys.stdout.write("\n")
+            sys.stdout.write("WARNING: you may need to set your HTTP_PROXY environment variable!\n")
+        sys.stdout.write("-----------------------------------------------------------------\n")
         sys.exit(1)
 
 install_setuptools.use_default=True
@@ -4284,13 +4305,13 @@ def install_pip(*args, **kwds):
     try:
         if install_pip.use_default:
             default_install_pip(*args, **kwds)
-    except OSError, err:
-        print "-----------------------------------------------------------------"
-        print "Error installing the 'pip' package!"
+    except OSError:
+        sys.stdout.write("-----------------------------------------------------------------\n")
+        sys.stdout.write("Error installing the 'pip' package!\n")
         if os.environ['HTTP_PROXY'] == '':
-            print ""
-            print "WARNING: you may need to set your HTTP_PROXY environment variable!"
-        print "-----------------------------------------------------------------"
+            sys.stdout.write("\n")
+            sys.stdout.write("WARNING: you may need to set your HTTP_PROXY environment variable!\n")
+        sys.stdout.write("-----------------------------------------------------------------\n")
         sys.exit(1)
 
 install_pip.use_default=True
@@ -4305,9 +4326,9 @@ def mkdir(path):
         logger.info('Creating %s', path)
         try:
             os.makedirs(path)
-        except Exception, e:
-            print "Cannot create directory '%s'!" % path
-            print "Verify that you have write permissions to this directory."
+        except Exception:
+            sys.stdout.write("Cannot create directory '%s'!\n" % (path,))
+            sys.stdout.write("Verify that you have write permissions to this directory.\n")
             sys.exit(1)
     else:
         logger.info('Directory %s already exists', path)
