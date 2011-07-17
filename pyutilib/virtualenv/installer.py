@@ -19,13 +19,17 @@ import virtualenv
 import sys
 import stat
 
+if sys.version_info < (3,):
+    files = ['odict.py']
+else:
+    files = []
 # The files that are integrated into a virtualenv installer
-files = ['odict.py', 'OrderedConfigParser.py', 'header.py']
+files += ['OrderedConfigParser.py', 'header.py']
 
 def main():
     if len(sys.argv) != 3:
-        print "vpy_create <config-file> <name>"
-        print "vpy_create vpy <name>"
+        sys.stdout.write("vpy_create <config-file> <name>\n")
+        sys.stdout.write("vpy_create vpy <name>\n")
         sys.exit(1)
 
     script_name = sys.argv[2]
@@ -70,11 +74,11 @@ def main():
         f.close()
     else:
         cur_text = ''
-    print 'Updating %s' % script_name,
+    sys.stdout.write('Updating %s' % script_name)
     if cur_text == new_text:
-        print '... no changes.'
+        sys.stdout.write('... no changes.\n')
     else:
-        print '... script changed.'
+        sys.stdout.write('... script changed.\n')
         f = open(script_name, 'w')
         f.write(new_text)
         f.close()
