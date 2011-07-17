@@ -1019,6 +1019,10 @@ class Installer(object):
         print >>OUTPUT, self.README.strip()
         OUTPUT.close()
         #
+        # Finalize package export
+        #
+        self.finalize_packages(options)
+        #
         # Finalize preinstall
         #
         if options.preinstall:
@@ -1033,6 +1037,12 @@ class Installer(object):
         #
         # Used by subclasses of Installer to
         # add packages that were requested through other means....
+        #
+        pass
+
+    def finalize_packages(self, options):
+        #
+        # Perform final steps need to get packages
         #
         pass
 
