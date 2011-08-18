@@ -199,7 +199,7 @@ class Repository(object):
     svn = "svn"
     dev = []
 
-    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None, platform=None):
+    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None, platform=None, branch=None):
         class _TEMP_(object): pass
         self.config = _TEMP_()
         self.config.name=name
@@ -208,6 +208,7 @@ class Repository(object):
         self.config.stable=stable
         self.config.release=release
         self.config.tag=tag
+        self.config.branch=branch
         self.config.pyname=pyname
         self.config.pypi=pypi
         self.config.local=local
@@ -229,6 +230,7 @@ class Repository(object):
         self.root = config.root
         self.trunk = None
         self.trunk_root = None
+        self.branch = None
         self.stable = None
         self.stable_root = None
         self.release = None
@@ -273,7 +275,10 @@ class Repository(object):
                         rootdir_output = urllib2.urlopen(self.config.root).read()
                     else:
                         rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
-            self.trunk = self.config.root+'/trunk'
+            if self.config.branch:
+                self.trunk = self.config.root+'/branches/'+self.config.branch
+            else:
+                self.trunk = self.config.root+'/trunk'
             self.trunk_root = self.trunk
             try:
                 if offline or not 'stable' in rootdir_output:
@@ -341,6 +346,8 @@ class Repository(object):
         elif not config.pyname is None:
             print >>OUTPUT, 'pypi=%s' % config.pyname
         print >>OUTPUT, 'dev=%s' % str(config.dev)
+        if not config.branch is None:
+            print >>OUTPUT, 'branch=%s' % str(config.branch)
         print >>OUTPUT, 'install=%s' % str(config.install)
         if not config.rev is None:
             print >>OUTPUT, 'rev=%s' % str(config.rev)
@@ -603,6 +610,11 @@ class Installer(object):
         if not 'root' in kwds and not 'pypi' in kwds and not 'release' in kwds and not 'trunk' in kwds and not 'stable' in kwds:
             raise IOError, "No repository info specified for repository "+args[0]
         repos = Repository( *args, **kwds)
+        if repos.name in self.sw_dict:
+            for i in range(len(self.sw_packages)):
+                if self.sw_packages[i].name == repos.name:
+                    self.sw_packages.pop(i)
+                    break
         self.sw_dict[repos.name] = repos
         self.sw_packages.append( repos )
 
