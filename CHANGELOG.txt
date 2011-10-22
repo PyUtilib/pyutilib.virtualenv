@@ -3,10 +3,30 @@
 ===============================
 
 -------------------------------------------------------------------------------
- 2.6
+ 2.7
 -------------------------------------------------------------------------------
 
 - Under development.
+
+-------------------------------------------------------------------------------
+ 2.6
+-------------------------------------------------------------------------------
+
+- Updates to get vpy_install closer to being compatible with Python 3.x.
+
+- Update to the create-setup command to properly install to a python directory
+  instead of the root C:
+
+- Adding another function to control the process of getting packages.
+
+- Changes to add a 'branch' option to configurations. When used with —trunk,
+  this checks out the specified branch in the 'branches' directory.
+
+- Adding a 'version' component to configurations, which can be used to
+  specify a string that is evaluated to verify the Python version that
+  is used.  For example:
+
+    version=sys.version ≥ (2,5)
 
 -------------------------------------------------------------------------------
  2.5
