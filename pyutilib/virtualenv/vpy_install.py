@@ -3201,7 +3201,7 @@ class Repository(object):
     svn = "svn"
     dev = []
 
-    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None, platform=None, branch=None):
+    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None, platform=None, version=None, branch=None):
         class _TEMP_(object): pass
         self.config = _TEMP_()
         self.config.name=name
@@ -3215,6 +3215,7 @@ class Repository(object):
         self.config.pypi=pypi
         self.config.local=local
         self.config.platform=platform
+        self.config.version=version
         if dev == 'True' or dev is True:
             self.config.dev=True
         else:
@@ -3246,6 +3247,7 @@ class Repository(object):
             self.platform_re = None
         else:
             self.platform_re = re.compile(config.platform)
+        self.version = config.version
         if not config.pypi is None:
             self.pyname=config.pypi
         else:
@@ -3357,6 +3359,8 @@ class Repository(object):
             print >>OUTPUT, 'username=%s' % str(config.username)
         if not config.platform is None:
             print >>OUTPUT, 'platform=%s' % config.platform
+        if not config.version is None:
+            print >>OUTPUT, 'version=%s' % config.version
 
 
     def find_pkgroot(self, trunk=False, stable=False, release=False):
@@ -3425,6 +3429,8 @@ class Repository(object):
 
     def perform_install(self, dir=None, install=True, preinstall=False, offline=False):
         if not self.platform_re is None and not self.platform_re.match(sys.platform):
+            return
+        if not self.version is None and not eval(self.version):
             return
         if self.pkgdir is None and self.local is None:
             self.easy_install(install, preinstall, dir, offline)
@@ -4070,8 +4076,6 @@ class Installer(object):
             bindir = join(self.abshome_dir,"bin")
         if is_jython:
             Repository.python = os.path.abspath(join(bindir, 'jython.bat'))
-        #elif sys.platform.startswith('win'):
-            #Repository.python = os.path.abspath(join(bindir, 'python'))
         else:
             Repository.python = os.path.abspath(join(bindir, 'python'))
         if os.path.exists(os.path.abspath(join(bindir, 'easy_install'))):
