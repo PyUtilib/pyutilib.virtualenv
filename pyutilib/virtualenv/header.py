@@ -199,31 +199,29 @@ class Repository(object):
     svn = "svn"
     dev = []
 
-    def __init__(self, name, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None, platform=None, version=None, branch=None):
-        class _TEMP_(object): pass
+    def __init__(self, name, **kwds):
+        class _TEMP_(object):
+            def __init__(self, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None, platform=None, version=None, branch=None):
+                import inspect
+                args, varargs, varkw, defaults = inspect.getargspec(self.__init__)
+                for i in range(len(args)-1):
+                    kwd = args[i+1]
+                    setattr(self, kwd, defaults[i])
         self.config = _TEMP_()
-        self.config.name=name
-        self.config.root=root
-        self.config.trunk=trunk
-        self.config.stable=stable
-        self.config.release=release
-        self.config.tag=tag
-        self.config.branch=branch
-        self.config.pyname=pyname
-        self.config.pypi=pypi
-        self.config.local=local
-        self.config.platform=platform
-        self.config.version=version
-        if dev == 'True' or dev is True:
-            self.config.dev=True
-        else:
-            self.config.dev=False
-        self.config.username=username
-        if install == 'False' or install is False:
-            self.config.install=False
-        else:
-            self.config.install=True
-        self.config.rev=rev
+        self.config.name = name
+        for kwd in kwds:
+            if kwd == 'dev':
+                if kwds[kwd] == 'True' or kwds[kwd] is True:
+                    self.config.dev = True
+                else:
+                    self.config.dev = False
+            elif kwd == 'install':
+                if kwds[kwd] == 'False' or kwds[kwd] is False:
+                    self.config.install = False
+                else:
+                    self.config.install = True
+            else:
+                setattr(self.config, kwd, kwds[kwd])
         self.initialize(self.config)
 
     def initialize(self, config):
