@@ -166,8 +166,9 @@ def zip_file(filename,fdlist):
     zf.close()
 
 
-def unzip_file(filename, dir=None):
+def unzip_file(filename, dir=None, verbose=False):
     fname = os.path.abspath(filename)
+    logger.info("Unzipping from file '%s'" % fname)
     zf = zipfile.ZipFile(fname, 'r')
     if dir is None:
         dir = os.getcwd()
@@ -186,6 +187,7 @@ def unzip_file(filename, dir=None):
             OUTPUT.write(zf.read(name))
             OUTPUT.close()
     zf.close()
+    logger.info("Unzipping done.")
 
 
 
@@ -408,7 +410,7 @@ class Repository(object):
                 self.pkgroot = self.release_root
 
         else:
-            raise IOError, "Must have one of trunk, stable or release specified"
+            raise IOError, "Must have one of trunk, stable or release specified: %s" % self.name
 
 
     def install_trunk(self, dir=None, install=True, preinstall=False, offline=False):
@@ -819,29 +821,6 @@ class Installer(object):
         if not self.config_file is None and not (options.trunk or options.stable or options.release):
             self.config_file = os.path.dirname(self.config_file)+"/pypi.ini"
         #
-        # Parse config files
-        #
-        if options.update:
-            self.config=None
-            options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
-        if not self.config is None and (len(options.config_files) == 0 or options.keep_config):
-            fp = StringIO.StringIO(self.config)
-            self.read_config_file(fp=fp, follow_externals=options.follow_externals)
-            fp.close()
-        if not self.config_file is None and (len(options.config_files) == 0 or options.keep_config):
-            self.read_config_file(file=self.config_file, follow_externals=options.follow_externals)
-        for file in options.config_files:
-            self.read_config_file(file=file, follow_externals=options.follow_externals)
-        print "-----------------------------------------------------------------"
-        print "Finished processing configuration information."
-        print "-----------------------------------------------------------------"
-        print " START - Configuration summary"
-        print "-----------------------------------------------------------------"
-        self.write_config(stream=sys.stdout)
-        print "-----------------------------------------------------------------"
-        print " END - Configuration summary"
-        print "-----------------------------------------------------------------"
-        #
         # If applying preinstall, then only do subversion exports
         #
         if options.preinstall:
@@ -938,7 +917,30 @@ class Installer(object):
         #
         for file in options.zip:
             unzip_file(file, dir=self.abshome_dir)
-
+        #
+        # Parse config files
+        #
+        if options.update or options.release:
+            self.config=None
+            options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
+        if not self.config is None and (len(options.config_files) == 0 or options.keep_config):
+            fp = StringIO.StringIO(self.config)
+            self.read_config_file(fp=fp, follow_externals=options.follow_externals)
+            fp.close()
+        if not self.config_file is None and (len(options.config_files) == 0 or options.keep_config):
+            self.read_config_file(file=self.config_file, follow_externals=options.follow_externals)
+        for file in options.config_files:
+            self.read_config_file(file=file, follow_externals=options.follow_externals)
+        print "-----------------------------------------------------------------"
+        print "Finished processing configuration information."
+        print "-----------------------------------------------------------------"
+        print " START - Configuration summary"
+        print "-----------------------------------------------------------------"
+        self.write_config(stream=sys.stdout)
+        print "-----------------------------------------------------------------"
+        print " END - Configuration summary"
+        print "-----------------------------------------------------------------"
+        #
         if options.preinstall or not options.offline:
             #self.get_packages(options)
             pass
