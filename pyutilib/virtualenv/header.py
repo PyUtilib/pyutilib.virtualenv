@@ -921,8 +921,9 @@ class Installer(object):
         # Parse config files
         #
         if options.update or options.release:
-            self.config=None
-            options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
+            if os.path.exists(join(self.abshome_dir, 'admin', 'config.ini')):
+                self.config=None
+                options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
         if not self.config is None and (len(options.config_files) == 0 or options.keep_config):
             fp = StringIO.StringIO(self.config)
             self.read_config_file(fp=fp, follow_externals=options.follow_externals)
