@@ -218,7 +218,7 @@ SectionEnd
 
 Section "" SEC02
 
-  SetOutPath "$INSTDIR\\dist"
+  SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
 """
     data_tail = """
@@ -486,7 +486,7 @@ uninstall:
   nsExec::ExecToLog 'msiexec.exe /X$2 /quiet' $0
 install:
   DetailPrint "Installing %(name)s-%(version)s"
-  nsExec::ExecToLog 'msiexec.exe /I \"$INSTDIR\\dist\\%(msi_file)s\" /quiet TARGETDIR="$9"' $0
+  nsExec::ExecToLog 'msiexec.exe /I \"$INSTDIR\\%(msi_file)s\" /quiet TARGETDIR="$9"' $0
 done:
   DetailPrint "Package %(name)s complete."
   DetailPrint ""
