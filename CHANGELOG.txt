@@ -3,10 +3,23 @@
 ===============================
 
 -------------------------------------------------------------------------------
- 2.7
+ 2.8
 -------------------------------------------------------------------------------
 
 - Under development.
+
+-------------------------------------------------------------------------------
+ 2.7
+-------------------------------------------------------------------------------
+
+- Updating the installer logic to be 'future proof'. Now, if we add
+  new configuration attributes, they will be ignored. This allows
+  us to create releases, update *.ini files, and not worry about
+  whether the old installers still work…
+
+- Defer the reading of config files until after ZIP files are opened up.
+
+- Allow the —release option to be used with —preinstall.
 
 -------------------------------------------------------------------------------
  2.6
