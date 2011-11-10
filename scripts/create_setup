@@ -262,6 +262,7 @@ SectionEnd
     def run_vpy_install(self, verbosity=0):
         args = [ self.python_config['python_exe'],
                  self.python_config['vpy_command'],
+		 '--debug',
                  '--preinstall',
                  '--config='+self.python_config['vpy_config_file']
                ]
