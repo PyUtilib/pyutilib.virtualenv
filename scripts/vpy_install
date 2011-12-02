@@ -3783,7 +3783,7 @@ class Installer(object):
         global using_subversion
         try:
             sys.stdout.flush()
-            call_subprocess(['svn'+executable_extension,'help'], show_stdout=False)
+            call_subprocess(['svn'+executable_extension,'--version'], show_stdout=False)
         except OSError, err:
             print ""
             print "------------------------------------------------"
@@ -3851,7 +3851,15 @@ class Installer(object):
         else:
             self.srcdir = os.path.abspath(options.source)
             if not os.path.exists(self.srcdir):
-                raise ValueError, "Specified source directory does not exist! %s" % self.srcdir
+                raise ValueError(
+                    "Specified source directory does not exist! %s"
+                    % self.srcdir )
+        if os.path.abspath(sys.executable).startswith(self.abshome_dir):
+            raise ValueError(
+                "Python executable used to create the virtual environment:"
+                "\n\t    %s\n\tfound within the target installation directory:"
+                "\n\t    %s\n\tCowardly refusing to continue installation."
+                % ( os.path.abspath(sys.executable), self.abshome_dir ) )
 
     def guess_path(self):
         return None
