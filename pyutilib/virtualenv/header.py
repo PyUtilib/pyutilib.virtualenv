@@ -203,7 +203,7 @@ class Repository(object):
 
     def __init__(self, name, **kwds):
         class _TEMP_(object):
-            def __init__(self, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None, platform=None, version=None, branch=None):
+            def __init__(self, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None, platform=None, version=None, branch=None, exit=True):
                 import inspect
                 args, varargs, varkw, defaults = inspect.getargspec(self.__init__)
                 for i in range(len(args)-1):
@@ -227,7 +227,6 @@ class Repository(object):
         self.initialize(self.config)
 
     def initialize(self, config):
-        self.abort=True
         self.name = config.name
         self.root = config.root
         self.trunk = None
@@ -360,6 +359,7 @@ class Repository(object):
             print >>OUTPUT, 'platform=%s' % config.platform
         if not config.version is None:
             print >>OUTPUT, 'version=%s' % config.version
+        print >>OUTPUT, 'exit=%s' % config.exit
 
 
     def find_pkgroot(self, trunk=False, stable=False, release=False):
@@ -450,7 +450,7 @@ class Repository(object):
             print ""
             print "Error: Cannot checkout software %s with subversion." % self.name
             print "A problem was detected executing subversion commands."
-            if self.exit:
+            if self.config.exit:
                 sys.exit(1)
             return
         else:
@@ -461,7 +461,7 @@ class Repository(object):
                 print ""
                 print "Error checkout software %s with subversion at %s" % (self.name,self.pkgdir+self.rev)
                 print str(err)
-                if self.exit:
+                if self.config.exit:
                     sys.exit(1)
                 return
         if install:
@@ -478,7 +478,7 @@ class Repository(object):
                 print "Error installing software %s from source using the setup.py file." % self.name
                 print "This is probably due to a syntax or configuration error in this package."
                 print str(err)
-                if self.exit:
+                if self.config.exit:
                     sys.exit(1)
 
     def update_trunk(self, dir=None):
@@ -524,7 +524,7 @@ class Repository(object):
             print ""
             print "Error installing package %s with easy_install" % self.name
             print str(err)
-            if self.exit:
+            if self.config.exit:
                 sys.exit(1)
 
     def pip_install(self, install, preinstall, dir, offline):
@@ -541,7 +541,7 @@ class Repository(object):
             print ""
             print "Error installing package %s with pip" % self.name
             print str(err)
-            if self.exit:
+            if self.config.exit:
                 sys.exit(1)
 
     def easy_upgrade(self):
