@@ -451,6 +451,7 @@ class Repository(object):
             print "Error: Cannot checkout software %s with subversion." % self.name
             print "A problem was detected executing subversion commands."
             if self.config.exit:
+                print "Aborting installer!"
                 sys.exit(1)
             return
         else:
@@ -462,6 +463,7 @@ class Repository(object):
                 print "Error checkout software %s with subversion at %s" % (self.name,self.pkgdir+self.rev)
                 print str(err)
                 if self.config.exit:
+                    print "Aborting installer!"
                     sys.exit(1)
                 return
         if install:
@@ -479,6 +481,7 @@ class Repository(object):
                 print "This is probably due to a syntax or configuration error in this package."
                 print str(err)
                 if self.config.exit:
+                    print "Aborting installer!"
                     sys.exit(1)
 
     def update_trunk(self, dir=None):
@@ -525,6 +528,7 @@ class Repository(object):
             print "Error installing package %s with easy_install" % self.name
             print str(err)
             if self.config.exit:
+                print "Aborting installer!"
                 sys.exit(1)
 
     def pip_install(self, install, preinstall, dir, offline):
@@ -542,6 +546,7 @@ class Repository(object):
             print "Error installing package %s with pip" % self.name
             print str(err)
             if self.config.exit:
+                print "Aborting installer!"
                 sys.exit(1)
 
     def easy_upgrade(self):
