@@ -222,6 +222,11 @@ class Repository(object):
                     self.config.install = False
                 else:
                     self.config.install = True
+            elif kwd == 'exit':
+                if kwds[kwd] == 'False' or kwds[kwd] is False:
+                    self.config.exit = False
+                else:
+                    self.config.exit = True
             else:
                 setattr(self.config, kwd, kwds[kwd])
         self.initialize(self.config)
