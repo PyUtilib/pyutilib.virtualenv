@@ -227,6 +227,7 @@ class Repository(object):
         self.initialize(self.config)
 
     def initialize(self, config):
+        self.abort=True
         self.name = config.name
         self.root = config.root
         self.trunk = None
@@ -449,7 +450,9 @@ class Repository(object):
             print ""
             print "Error: Cannot checkout software %s with subversion." % self.name
             print "A problem was detected executing subversion commands."
-            sys.exit(1)
+            if self.exit:
+                sys.exit(1)
+            return
         else:
             print "-----------------------------------------------------------------"
             try:
@@ -458,7 +461,9 @@ class Repository(object):
                 print ""
                 print "Error checkout software %s with subversion at %s" % (self.name,self.pkgdir+self.rev)
                 print str(err)
-                sys.exit(1)
+                if self.exit:
+                    sys.exit(1)
+                return
         if install:
             try:
                 if self.dev:
@@ -473,7 +478,8 @@ class Repository(object):
                 print "Error installing software %s from source using the setup.py file." % self.name
                 print "This is probably due to a syntax or configuration error in this package."
                 print str(err)
-                sys.exit(1)
+                if self.exit:
+                    sys.exit(1)
 
     def update_trunk(self, dir=None):
         self.find_pkgroot(trunk=True)
@@ -518,7 +524,8 @@ class Repository(object):
             print ""
             print "Error installing package %s with easy_install" % self.name
             print str(err)
-            sys.exit(1)
+            if self.exit:
+                sys.exit(1)
 
     def pip_install(self, install, preinstall, dir, offline):
         try:
@@ -534,7 +541,8 @@ class Repository(object):
             print ""
             print "Error installing package %s with pip" % self.name
             print str(err)
-            sys.exit(1)
+            if self.exit:
+                sys.exit(1)
 
     def easy_upgrade(self):
         self.run(self.easy_install_path + [Repository.easy_install_flag, '--upgrade', self.pypi])
