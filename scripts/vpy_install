@@ -3601,6 +3601,7 @@ class Repository(object):
             if self.config.exit:
                 print "Aborting installer!"
                 sys.exit(1)
+            print "Not aborting installer..."
             return
         else:
             print "-----------------------------------------------------------------"
@@ -3613,6 +3614,7 @@ class Repository(object):
                 if self.config.exit:
                     print "Aborting installer!"
                     sys.exit(1)
+                print "Not aborting installer..."
                 return
         if install:
             try:
@@ -3631,6 +3633,7 @@ class Repository(object):
                 if self.config.exit:
                     print "Aborting installer!"
                     sys.exit(1)
+                print "Not aborting installer..."
 
     def update_trunk(self, dir=None):
         self.find_pkgroot(trunk=True)
@@ -3678,6 +3681,7 @@ class Repository(object):
             if self.config.exit:
                 print "Aborting installer!"
                 sys.exit(1)
+            print "Not aborting installer..."
 
     def pip_install(self, install, preinstall, dir, offline):
         try:
@@ -3696,6 +3700,7 @@ class Repository(object):
             if self.config.exit:
                 print "Aborting installer!"
                 sys.exit(1)
+            print "Not aborting installer..."
 
     def easy_upgrade(self):
         self.run(self.easy_install_path + [Repository.easy_install_flag, '--upgrade', self.pypi])
