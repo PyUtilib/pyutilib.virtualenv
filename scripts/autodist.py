@@ -2,7 +2,7 @@
 
 import site
 from sys import version_info as py_ver, path as sys_path
-from os import environ
+from os import environ, pathsep
 from os.path import join, abspath, dirname, split, \
      exists as path_exists, sep as path_sep
 from inspect import getfile, currentframe
@@ -39,7 +39,8 @@ def configure_packages(verbose=True):
     originalDir = os.getcwd()
     srcDir = join(baseDir, 'dist', 'python')
     localBinDir = join(baseDir,'bin',scriptDir)
-    prefix = '--prefix=%s' % (baseDir,)
+    prefix  = '--prefix=%s' % (targetDir,)
+    libs    = '--install-lib=%s' % (targetDir,)
     scripts = '--install-scripts=%s' % (localBinDir,)
     stars = "\n"+"*"*72+"\n"
 
@@ -61,7 +62,8 @@ def configure_packages(verbose=True):
               "sys.argv = sys.argv[:1] + ['%s','--script-dir=%s']; "\
               "sys.exit(bootstrap())" % \
               (abspath(join(srcDir,'dist','setuptools')), prefix, localBinDir)
-        proc = Popen([sys.executable, "-c", CMD], stdout=OUT, stderr=PIPE)
+        Write("Command: %s\n" % CMD)
+        proc = Popen([sys.executable, "-c", CMD], stdout=OUT, stderr=OUT)
         proc.communicate()
         if proc.returncode:
             raise Exception("ERROR installing setuptools")
@@ -81,10 +83,12 @@ def configure_packages(verbose=True):
                   % (setupFile,) )
             continue
         os.chdir(join(srcDir,package))
-        proc = Popen([sys.executable, setupFile, 'install', prefix, scripts],
-                     stdout=OUT, stderr=PIPE)
+        CMD = [sys.executable, setupFile, 'install', libs, scripts]
+        Write("Command: %s\n" % CMD)
+        proc = Popen(CMD, stdout=OUT, stderr=OUT)
         proc.communicate()
         if proc.returncode:
+            OUT.flush()
             raise Exception("ERROR: %s did not install correctly\n"
                             % (package,))
         os.chdir(originalDir)
@@ -119,7 +123,7 @@ def run_script(name):
 # Set up our local site-packages
 pythonpath = environ.get('PYTHONPATH',None)
 if pythonpath:
-    environ['PYTHONPATH'] = targetDir+":"+pythonpath
+    environ['PYTHONPATH'] = pathsep.join((targetDir,pythonpath))
 else:
     environ['PYTHONPATH'] = targetDir
 sys_path.insert(1,targetDir)
