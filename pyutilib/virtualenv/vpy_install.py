@@ -3273,7 +3273,10 @@ def guess_release(svndir):
     if using_subversion and not sys.platform.startswith('win'):
         output = subprocess.Popen(['svn','ls',svndir], stdout=subprocess.PIPE).communicate()[0]
         if sys.version_info[:2] >= (3,0):
-            output = output.decode(sys.stdout.encoding)
+            if sys.stdout.encoding is None:
+                output = output.decode('utf-8')
+            else:
+                output = output.decode(sys.stdout.encoding)
         if output=="":
             return None
         versions = []
@@ -3286,7 +3289,10 @@ def guess_release(svndir):
             output = urllib2.urlopen(svndir).read()
         else:
             output = urllib2.urlopen(svndir, timeout=30).read()
-            output = output.decode(sys.stdout.encoding)
+            if sys.stdout.encoding is None:
+                output = output.decode('utf-8')
+            else:
+                output = output.decode(sys.stdout.encoding)
         if output=="":
             return None
         links = re.findall('\<li>\<a href[^>]+>[^\<]+\</a>',output)
@@ -3459,7 +3465,10 @@ class Repository(object):
                     else:
                         rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
                 if sys.version_info[:2] >= (3,0):
-                    rootdir_output = rootdir_output.decode(sys.stdout.encoding)
+                    if sys.stdout.encoding is None:
+                        rootdir_output = rootdir_output.decode('utf-8')
+                    else:
+                        rootdir_output = rootdir_output.decode(sys.stdout.encoding)
             if self.config.branch:
                 self.trunk = self.config.root+'/branches/'+self.config.branch
             else:
@@ -4411,7 +4420,10 @@ class Installer(object):
                     output = urllib2.urlopen(file).read()
                 else:
                     output = urllib2.urlopen(file, timeout=30).read()
-                    output = output.decode(sys.stdout.encoding)
+                    if sys.stdout.encoding is None:
+                        output = output.decode('utf-8')
+                    else:
+                        output = output.decode(sys.stdout.encoding)
             except Exception:
                 print("Problems opening configuration url: "+file)
                 raise
