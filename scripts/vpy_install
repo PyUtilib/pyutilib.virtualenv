@@ -4453,7 +4453,9 @@ class Installer(object):
             else:
                 options = {}
                 for option, value in parser.items(sec):
-                    options[option] = apply_template(value, os.environ)
+                    # NB: option may come back unicode; if it does,
+                    # convert it to a string (otherwise, **options can fail)
+                    options[str(option)] = apply_template(value, os.environ)
                 self.add_repository(sec, **options)
 
     def write_config(self, filename=None, stream=None):
