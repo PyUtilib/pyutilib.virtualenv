@@ -8,11 +8,18 @@
 #  _________________________________________________________________________
 #
 
-import ConfigParser
-import StringIO
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
-if not 'OrderedDict' in dir():
-    from odict import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    if not '_OrderedDict' in dir():
+        from odict import OrderedDict
+    else:
+        OrderedDict = _OrderedDict
 
 
 class OrderedConfigParser(ConfigParser.ConfigParser):
@@ -22,7 +29,7 @@ class OrderedConfigParser(ConfigParser.ConfigParser):
     """
 
     def __init__(self):
-        if sys.version >= (2,6,0):
+        if sys.version_info >= (2,6,0):
             ConfigParser.ConfigParser.__init__(self, dict_type=OrderedDict)
         else:
             ConfigParser.ConfigParser.__init__(self)
@@ -34,7 +41,7 @@ class OrderedConfigParser(ConfigParser.ConfigParser):
         In old version of Python, we prefetch the sections, to
         ensure that the data structures we are using are OrderedDict.
         """
-        if sys.version >= (2,6,0):
+        if sys.version_info >= (2,6,0):
             return
         while True:
             line = fp.readline()

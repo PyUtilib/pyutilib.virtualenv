@@ -26,7 +26,7 @@ __revision__ = '$Id: odict.py 129 2005-09-12 18:15:28Z teknico $'
 
 __version__ = '0.2.2'
 
-__all__ = ['OrderedDict', 'SequenceOrderedDict']
+__all__ = ['_OrderedDict', 'Sequence_OrderedDict']
 
 import sys
 INTP_VER = sys.version_info[:2]
@@ -35,21 +35,21 @@ if INTP_VER < (2, 2):
 
 import types, warnings
 
-class OrderedDict(dict):
+class _OrderedDict(dict):
     """
     A class of dictionary that keeps the insertion order of keys.
 
     All appropriate methods return keys, items, or values in an ordered way.
 
     All normal dictionary methods are available. Update and comparison is
-    restricted to other OrderedDict objects.
+    restricted to other _OrderedDict objects.
 
     Various sequence methods are available, including the ability to explicitly
     mutate the key ordering.
 
     __contains__ tests:
 
-    >>> d = OrderedDict(((1, 3),))
+    >>> d = _OrderedDict(((1, 3),))
     >>> 1 in d
     1
     >>> 4 in d
@@ -57,22 +57,22 @@ class OrderedDict(dict):
 
     __getitem__ tests:
 
-    >>> OrderedDict(((1, 3), (3, 2), (2, 1)))[2]
+    >>> _OrderedDict(((1, 3), (3, 2), (2, 1)))[2]
     1
-    >>> OrderedDict(((1, 3), (3, 2), (2, 1)))[4]
+    >>> _OrderedDict(((1, 3), (3, 2), (2, 1)))[4]
     Traceback (most recent call last):
     KeyError: 4
 
     __len__ tests:
 
-    >>> len(OrderedDict())
+    >>> len(_OrderedDict())
     0
-    >>> len(OrderedDict(((1, 3), (3, 2), (2, 1))))
+    >>> len(_OrderedDict(((1, 3), (3, 2), (2, 1))))
     3
 
     get tests:
 
-    >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+    >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
     >>> d.get(1)
     3
     >>> d.get(4) is None
@@ -80,11 +80,11 @@ class OrderedDict(dict):
     >>> d.get(4, 5)
     5
     >>> d
-    OrderedDict([(1, 3), (3, 2), (2, 1)])
+    _OrderedDict([(1, 3), (3, 2), (2, 1)])
 
     has_key tests:
 
-    >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+    >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
     >>> d.has_key(1)
     1
     >>> d.has_key(4)
@@ -97,25 +97,25 @@ class OrderedDict(dict):
         nor from kwargs, since items order is undefined in those cases.
 
         If the ``strict`` keyword argument is ``True`` (``False`` is the
-        default) then when doing slice assignment - the ``OrderedDict`` you are
+        default) then when doing slice assignment - the ``_OrderedDict`` you are
         assigning from *must not* contain any keys in the remaining dict.
 
-        >>> OrderedDict()
-        OrderedDict([])
-        >>> OrderedDict({1: 1})
+        >>> _OrderedDict()
+        _OrderedDict([])
+        >>> _OrderedDict({1: 1})
         Traceback (most recent call last):
         TypeError: undefined order, cannot get items from dict
-        >>> OrderedDict({1: 1}.items())
-        OrderedDict([(1, 1)])
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> _OrderedDict({1: 1}.items())
+        _OrderedDict([(1, 1)])
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d
-        OrderedDict([(1, 3), (3, 2), (2, 1)])
-        >>> OrderedDict(d)
-        OrderedDict([(1, 3), (3, 2), (2, 1)])
+        _OrderedDict([(1, 3), (3, 2), (2, 1)])
+        >>> _OrderedDict(d)
+        _OrderedDict([(1, 3), (3, 2), (2, 1)])
         """
         self.strict = strict
         dict.__init__(self)
-        if isinstance(init_val, OrderedDict):
+        if isinstance(init_val, _OrderedDict):
             self._sequence = init_val.keys()
             dict.update(self, init_val)
         elif isinstance(init_val, dict):
@@ -129,19 +129,19 @@ class OrderedDict(dict):
 
     def __delitem__(self, key):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> del d[3]
         >>> d
-        OrderedDict([(1, 3), (2, 1)])
+        _OrderedDict([(1, 3), (2, 1)])
         >>> del d[3]
         Traceback (most recent call last):
         KeyError: 3
         >>> d[3] = 2
         >>> d
-        OrderedDict([(1, 3), (2, 1), (3, 2)])
+        _OrderedDict([(1, 3), (2, 1), (3, 2)])
         >>> del d[0:1]
         >>> d
-        OrderedDict([(2, 1), (3, 2)])
+        _OrderedDict([(2, 1), (3, 2)])
         """
         if isinstance(key, types.SliceType):
             # NOTE: efficiency?
@@ -157,21 +157,21 @@ class OrderedDict(dict):
 
     def __eq__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> d == OrderedDict(d)
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d == _OrderedDict(d)
         True
-        >>> d == OrderedDict(((1, 3), (2, 1), (3, 2)))
+        >>> d == _OrderedDict(((1, 3), (2, 1), (3, 2)))
         False
-        >>> d == OrderedDict(((1, 0), (3, 2), (2, 1)))
+        >>> d == _OrderedDict(((1, 0), (3, 2), (2, 1)))
         False
-        >>> d == OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> d == _OrderedDict(((0, 3), (3, 2), (2, 1)))
         False
         >>> d == dict(d)
         False
         >>> d == False
         False
         """
-        if isinstance(other, OrderedDict):
+        if isinstance(other, _OrderedDict):
             # NOTE: efficiency?
             #   Generate both item lists for each compare
             return (self.items() == other.items())
@@ -180,60 +180,60 @@ class OrderedDict(dict):
 
     def __lt__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> c = OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> c = _OrderedDict(((0, 3), (3, 2), (2, 1)))
         >>> c < d
         True
         >>> d < c
         False
         >>> d < dict(c)
         Traceback (most recent call last):
-        TypeError: Can only compare with other OrderedDicts
+        TypeError: Can only compare with other _OrderedDicts
         """
-        if not isinstance(other, OrderedDict):
-            raise TypeError('Can only compare with other OrderedDicts')
+        if not isinstance(other, _OrderedDict):
+            raise TypeError('Can only compare with other _OrderedDicts')
         # NOTE: efficiency?
         #   Generate both item lists for each compare
         return (self.items() < other.items())
 
     def __le__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> c = OrderedDict(((0, 3), (3, 2), (2, 1)))
-        >>> e = OrderedDict(d)
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> c = _OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> e = _OrderedDict(d)
         >>> c <= d
         True
         >>> d <= c
         False
         >>> d <= dict(c)
         Traceback (most recent call last):
-        TypeError: Can only compare with other OrderedDicts
+        TypeError: Can only compare with other _OrderedDicts
         >>> d <= e
         True
         """
-        if not isinstance(other, OrderedDict):
-            raise TypeError('Can only compare with other OrderedDicts')
+        if not isinstance(other, _OrderedDict):
+            raise TypeError('Can only compare with other _OrderedDicts')
         # NOTE: efficiency?
         #   Generate both item lists for each compare
         return (self.items() <= other.items())
 
     def __ne__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> d != OrderedDict(d)
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d != _OrderedDict(d)
         False
-        >>> d != OrderedDict(((1, 3), (2, 1), (3, 2)))
+        >>> d != _OrderedDict(((1, 3), (2, 1), (3, 2)))
         True
-        >>> d != OrderedDict(((1, 0), (3, 2), (2, 1)))
+        >>> d != _OrderedDict(((1, 0), (3, 2), (2, 1)))
         True
-        >>> d == OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> d == _OrderedDict(((0, 3), (3, 2), (2, 1)))
         False
         >>> d != dict(d)
         True
         >>> d != False
         True
         """
-        if isinstance(other, OrderedDict):
+        if isinstance(other, _OrderedDict):
             # NOTE: efficiency?
             #   Generate both item lists for each compare
             return not (self.items() == other.items())
@@ -242,39 +242,39 @@ class OrderedDict(dict):
 
     def __gt__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> c = OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> c = _OrderedDict(((0, 3), (3, 2), (2, 1)))
         >>> d > c
         True
         >>> c > d
         False
         >>> d > dict(c)
         Traceback (most recent call last):
-        TypeError: Can only compare with other OrderedDicts
+        TypeError: Can only compare with other _OrderedDicts
         """
-        if not isinstance(other, OrderedDict):
-            raise TypeError('Can only compare with other OrderedDicts')
+        if not isinstance(other, _OrderedDict):
+            raise TypeError('Can only compare with other _OrderedDicts')
         # NOTE: efficiency?
         #   Generate both item lists for each compare
         return (self.items() > other.items())
 
     def __ge__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> c = OrderedDict(((0, 3), (3, 2), (2, 1)))
-        >>> e = OrderedDict(d)
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> c = _OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> e = _OrderedDict(d)
         >>> c >= d
         False
         >>> d >= c
         True
         >>> d >= dict(c)
         Traceback (most recent call last):
-        TypeError: Can only compare with other OrderedDicts
+        TypeError: Can only compare with other _OrderedDicts
         >>> e >= d
         True
         """
-        if not isinstance(other, OrderedDict):
-            raise TypeError('Can only compare with other OrderedDicts')
+        if not isinstance(other, _OrderedDict):
+            raise TypeError('Can only compare with other _OrderedDicts')
         # NOTE: efficiency?
         #   Generate both item lists for each compare
         return (self.items() >= other.items())
@@ -283,15 +283,15 @@ class OrderedDict(dict):
         """
         Used for __repr__ and __str__
 
-        >>> r1 = repr(OrderedDict((('a', 'b'), ('c', 'd'), ('e', 'f'))))
+        >>> r1 = repr(_OrderedDict((('a', 'b'), ('c', 'd'), ('e', 'f'))))
         >>> r1
-        "OrderedDict([('a', 'b'), ('c', 'd'), ('e', 'f')])"
-        >>> r2 = repr(OrderedDict((('a', 'b'), ('e', 'f'), ('c', 'd'))))
+        "_OrderedDict([('a', 'b'), ('c', 'd'), ('e', 'f')])"
+        >>> r2 = repr(_OrderedDict((('a', 'b'), ('e', 'f'), ('c', 'd'))))
         >>> r2
-        "OrderedDict([('a', 'b'), ('e', 'f'), ('c', 'd')])"
-        >>> r1 == str(OrderedDict((('a', 'b'), ('c', 'd'), ('e', 'f'))))
+        "_OrderedDict([('a', 'b'), ('e', 'f'), ('c', 'd')])"
+        >>> r1 == str(_OrderedDict((('a', 'b'), ('c', 'd'), ('e', 'f'))))
         True
-        >>> r2 == str(OrderedDict((('a', 'b'), ('e', 'f'), ('c', 'd'))))
+        >>> r2 == str(_OrderedDict((('a', 'b'), ('e', 'f'), ('c', 'd'))))
         True
         """
         return '%s([%s])' % (self.__class__.__name__, ', '.join(
@@ -299,66 +299,66 @@ class OrderedDict(dict):
 
     def __setitem__(self, key, val):
         """
-        Allows slice assignment, so long as the slice is an OrderedDict
-        >>> d = OrderedDict()
+        Allows slice assignment, so long as the slice is an _OrderedDict
+        >>> d = _OrderedDict()
         >>> d['a'] = 'b'
         >>> d['b'] = 'a'
         >>> d[3] = 12
         >>> d
-        OrderedDict([('a', 'b'), ('b', 'a'), (3, 12)])
-        >>> d[:] = OrderedDict(((1, 2), (2, 3), (3, 4)))
+        _OrderedDict([('a', 'b'), ('b', 'a'), (3, 12)])
+        >>> d[:] = _OrderedDict(((1, 2), (2, 3), (3, 4)))
         >>> d
-        OrderedDict([(1, 2), (2, 3), (3, 4)])
-        >>> d[::2] = OrderedDict(((7, 8), (9, 10)))
+        _OrderedDict([(1, 2), (2, 3), (3, 4)])
+        >>> d[::2] = _OrderedDict(((7, 8), (9, 10)))
         >>> d
-        OrderedDict([(7, 8), (2, 3), (9, 10)])
-        >>> d = OrderedDict(((0, 1), (1, 2), (2, 3), (3, 4)))
-        >>> d[1:3] = OrderedDict(((1, 2), (5, 6), (7, 8)))
+        _OrderedDict([(7, 8), (2, 3), (9, 10)])
+        >>> d = _OrderedDict(((0, 1), (1, 2), (2, 3), (3, 4)))
+        >>> d[1:3] = _OrderedDict(((1, 2), (5, 6), (7, 8)))
         >>> d
-        OrderedDict([(0, 1), (1, 2), (5, 6), (7, 8), (3, 4)])
-        >>> d = OrderedDict(((0, 1), (1, 2), (2, 3), (3, 4)), strict=True)
-        >>> d[1:3] = OrderedDict(((1, 2), (5, 6), (7, 8)))
+        _OrderedDict([(0, 1), (1, 2), (5, 6), (7, 8), (3, 4)])
+        >>> d = _OrderedDict(((0, 1), (1, 2), (2, 3), (3, 4)), strict=True)
+        >>> d[1:3] = _OrderedDict(((1, 2), (5, 6), (7, 8)))
         >>> d
-        OrderedDict([(0, 1), (1, 2), (5, 6), (7, 8), (3, 4)])
+        _OrderedDict([(0, 1), (1, 2), (5, 6), (7, 8), (3, 4)])
 
-        >>> a = OrderedDict(((0, 1), (1, 2), (2, 3)), strict=True)
+        >>> a = _OrderedDict(((0, 1), (1, 2), (2, 3)), strict=True)
         >>> a[3] = 4
         >>> a
-        OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> a[::1] = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> a[::1] = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
         >>> a
-        OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> a[:2] = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)])
+        _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> a[:2] = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)])
         Traceback (most recent call last):
         ValueError: slice assignment must be from unique keys
-        >>> a = OrderedDict(((0, 1), (1, 2), (2, 3)))
+        >>> a = _OrderedDict(((0, 1), (1, 2), (2, 3)))
         >>> a[3] = 4
         >>> a
-        OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> a[::1] = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> a[::1] = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
         >>> a
-        OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> a[:2] = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> a[:2] = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
         >>> a
-        OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> a[::-1] = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> a[::-1] = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
         >>> a
-        OrderedDict([(3, 4), (2, 3), (1, 2), (0, 1)])
+        _OrderedDict([(3, 4), (2, 3), (1, 2), (0, 1)])
 
-        >>> d = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> d = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
         >>> d[:1] = 3
         Traceback (most recent call last):
-        TypeError: slice assignment requires an OrderedDict
+        TypeError: slice assignment requires an _OrderedDict
 
-        >>> d = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> d[:1] = OrderedDict([(9, 8)])
+        >>> d = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> d[:1] = _OrderedDict([(9, 8)])
         >>> d
-        OrderedDict([(9, 8), (1, 2), (2, 3), (3, 4)])
+        _OrderedDict([(9, 8), (1, 2), (2, 3), (3, 4)])
         """
         if isinstance(key, types.SliceType):
-            if not isinstance(val, OrderedDict):
+            if not isinstance(val, _OrderedDict):
                 # NOTE: allow a list of tuples?
-                raise TypeError('slice assignment requires an OrderedDict')
+                raise TypeError('slice assignment requires an _OrderedDict')
             keys = self._sequence[key]
             # NOTE: Could use ``range(*key.indices(len(self._sequence)))``
             indexes = range(len(self._sequence))[key]
@@ -406,20 +406,20 @@ class OrderedDict(dict):
 
     def __getitem__(self, key):
         """
-        Allows slicing. Returns an OrderedDict if you slice.
-        >>> b = OrderedDict([(7, 0), (6, 1), (5, 2), (4, 3), (3, 4), (2, 5), (1, 6)])
+        Allows slicing. Returns an _OrderedDict if you slice.
+        >>> b = _OrderedDict([(7, 0), (6, 1), (5, 2), (4, 3), (3, 4), (2, 5), (1, 6)])
         >>> b[::-1]
-        OrderedDict([(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1), (7, 0)])
+        _OrderedDict([(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1), (7, 0)])
         >>> b[2:5]
-        OrderedDict([(5, 2), (4, 3), (3, 4)])
+        _OrderedDict([(5, 2), (4, 3), (3, 4)])
         >>> type(b[2:4])
-        <class '__main__.OrderedDict'>
+        <class '__main__._OrderedDict'>
         """
         if isinstance(key, types.SliceType):
             # NOTE: does this raise the error we want?
             keys = self._sequence[key]
             # NOTE: efficiency?
-            return OrderedDict([(entry, self[entry]) for entry in keys])
+            return _OrderedDict([(entry, self[entry]) for entry in keys])
         else:
             return dict.__getitem__(self, key)
 
@@ -444,7 +444,7 @@ class OrderedDict(dict):
         """
         Implemented so that access to ``sequence`` raises a warning.
 
-        >>> d = OrderedDict()
+        >>> d = _OrderedDict()
         >>> d.sequence
         []
         """
@@ -457,14 +457,14 @@ class OrderedDict(dict):
             return self._sequence
         else:
             # raise the appropriate error
-            raise AttributeError("OrderedDict has no '%s' attribute" % name)
+            raise AttributeError("_OrderedDict has no '%s' attribute" % name)
 
     def __deepcopy__(self, memo):
         """
-        To allow deepcopy to work with OrderedDict.
+        To allow deepcopy to work with _OrderedDict.
 
         >>> from copy import deepcopy
-        >>> a = OrderedDict([(1, 1), (2, 2), (3, 3)])
+        >>> a = _OrderedDict([(1, 1), (2, 2), (3, 3)])
         >>> a['test'] = {}
         >>> b = deepcopy(a)
         >>> b == a
@@ -482,17 +482,17 @@ class OrderedDict(dict):
 
     def copy(self):
         """
-        >>> OrderedDict(((1, 3), (3, 2), (2, 1))).copy()
-        OrderedDict([(1, 3), (3, 2), (2, 1)])
+        >>> _OrderedDict(((1, 3), (3, 2), (2, 1))).copy()
+        _OrderedDict([(1, 3), (3, 2), (2, 1)])
         """
-        return OrderedDict(self)
+        return _OrderedDict(self)
 
     def items(self):
         """
         ``items`` returns a list of tuples representing all the
         ``(key, value)`` pairs in the dictionary.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.items()
         [(1, 3), (3, 2), (2, 1)]
         >>> d.clear()
@@ -503,9 +503,9 @@ class OrderedDict(dict):
 
     def keys(self):
         """
-        Return a list of keys in the ``OrderedDict``.
+        Return a list of keys in the ``_OrderedDict``.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.keys()
         [1, 3, 2]
         """
@@ -513,12 +513,12 @@ class OrderedDict(dict):
 
     def values(self, values=None):
         """
-        Return a list of all the values in the OrderedDict.
+        Return a list of all the values in the _OrderedDict.
 
         Optionally you can pass in a list of values, which will replace the
-        current list. The value list must be the same len as the OrderedDict.
+        current list. The value list must be the same len as the _OrderedDict.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.values()
         [3, 2, 1]
         """
@@ -526,7 +526,7 @@ class OrderedDict(dict):
 
     def iteritems(self):
         """
-        >>> ii = OrderedDict(((1, 3), (3, 2), (2, 1))).iteritems()
+        >>> ii = _OrderedDict(((1, 3), (3, 2), (2, 1))).iteritems()
         >>> ii.next()
         (1, 3)
         >>> ii.next()
@@ -546,7 +546,7 @@ class OrderedDict(dict):
 
     def iterkeys(self):
         """
-        >>> ii = OrderedDict(((1, 3), (3, 2), (2, 1))).iterkeys()
+        >>> ii = _OrderedDict(((1, 3), (3, 2), (2, 1))).iterkeys()
         >>> ii.next()
         1
         >>> ii.next()
@@ -563,7 +563,7 @@ class OrderedDict(dict):
 
     def itervalues(self):
         """
-        >>> iv = OrderedDict(((1, 3), (3, 2), (2, 1))).itervalues()
+        >>> iv = _OrderedDict(((1, 3), (3, 2), (2, 1))).itervalues()
         >>> iv.next()
         3
         >>> iv.next()
@@ -584,10 +584,10 @@ class OrderedDict(dict):
 
     def clear(self):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.clear()
         >>> d
-        OrderedDict([])
+        _OrderedDict([])
         """
         dict.clear(self)
         self._sequence = []
@@ -596,11 +596,11 @@ class OrderedDict(dict):
         """
         No dict.pop in Python 2.2, gotta reimplement it
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.pop(3)
         2
         >>> d
-        OrderedDict([(1, 3), (2, 1)])
+        _OrderedDict([(1, 3), (2, 1)])
         >>> d.pop(4)
         Traceback (most recent call last):
         KeyError: 4
@@ -611,7 +611,7 @@ class OrderedDict(dict):
         TypeError: pop expected at most 2 arguments, got 3
         """
         if len(args) > 1:
-            raise TypeError, ('pop expected at most 2 arguments, got %s' %
+            raise TypeError('pop expected at most 2 arguments, got %s' %
                 (len(args) + 1))
         if key in self:
             val = self[key]
@@ -628,14 +628,14 @@ class OrderedDict(dict):
         Delete and return an item specified by index, not a random one as in
         dict. The index is -1 by default (the last item).
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.popitem()
         (2, 1)
         >>> d
-        OrderedDict([(1, 3), (3, 2)])
+        _OrderedDict([(1, 3), (3, 2)])
         >>> d.popitem(0)
         (1, 3)
-        >>> OrderedDict().popitem()
+        >>> _OrderedDict().popitem()
         Traceback (most recent call last):
         KeyError: 'popitem(): dictionary is empty'
         >>> d.popitem(2)
@@ -652,17 +652,17 @@ class OrderedDict(dict):
 
     def setdefault(self, key, defval = None):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.setdefault(1)
         3
         >>> d.setdefault(4) is None
         True
         >>> d
-        OrderedDict([(1, 3), (3, 2), (2, 1), (4, None)])
+        _OrderedDict([(1, 3), (3, 2), (2, 1), (4, None)])
         >>> d.setdefault(5, 0)
         0
         >>> d
-        OrderedDict([(1, 3), (3, 2), (2, 1), (4, None), (5, 0)])
+        _OrderedDict([(1, 3), (3, 2), (2, 1), (4, None), (5, 0)])
         """
         if key in self:
             return self[key]
@@ -672,12 +672,12 @@ class OrderedDict(dict):
 
     def update(self, from_od):
         """
-        Update from another OrderedDict or sequence of (key, value) pairs
+        Update from another _OrderedDict or sequence of (key, value) pairs
 
-        >>> d = OrderedDict(((1, 0), (0, 1)))
-        >>> d.update(OrderedDict(((1, 3), (3, 2), (2, 1))))
+        >>> d = _OrderedDict(((1, 0), (0, 1)))
+        >>> d.update(_OrderedDict(((1, 3), (3, 2), (2, 1))))
         >>> d
-        OrderedDict([(1, 3), (0, 1), (3, 2), (2, 1)])
+        _OrderedDict([(1, 3), (0, 1), (3, 2), (2, 1)])
         >>> d.update({4: 4})
         Traceback (most recent call last):
         TypeError: undefined order, cannot get items from dict
@@ -685,7 +685,7 @@ class OrderedDict(dict):
         Traceback (most recent call last):
         TypeError: cannot convert dictionary update sequence element "4" to a 2-item sequence
         """
-        if isinstance(from_od, OrderedDict):
+        if isinstance(from_od, _OrderedDict):
             for key, val in from_od.items():
                 self[key] = val
         elif isinstance(from_od, dict):
@@ -710,7 +710,7 @@ class OrderedDict(dict):
         since if new_key exists, it is ambiguous as to what happens to the
         associated values, and the position of new_key in the sequence.
 
-        >>> od = OrderedDict()
+        >>> od = _OrderedDict()
         >>> od['a'] = 1
         >>> od['b'] = 2
         >>> od.items()
@@ -745,13 +745,13 @@ class OrderedDict(dict):
         It takes a list of tuples - of the same sort returned by the ``items``
         method.
 
-        >>> d = OrderedDict()
+        >>> d = _OrderedDict()
         >>> d.setitems(((3, 1), (2, 3), (1, 2)))
         >>> d
-        OrderedDict([(3, 1), (2, 3), (1, 2)])
+        _OrderedDict([(3, 1), (2, 3), (1, 2)])
         """
         self.clear()
-        # NOTE: this allows you to pass in an OrderedDict as well :-)
+        # NOTE: this allows you to pass in an _OrderedDict as well :-)
         self.update(items)
 
     def setkeys(self, keys):
@@ -763,12 +763,12 @@ class OrderedDict(dict):
         If you pass in new keys that don't match, a ``KeyError`` will be
         raised.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.keys()
         [1, 3, 2]
         >>> d.setkeys((1, 2, 3))
         >>> d
-        OrderedDict([(1, 3), (2, 1), (3, 2)])
+        _OrderedDict([(1, 3), (2, 1), (3, 2)])
         >>> d.setkeys(['a', 'b', 'c'])
         Traceback (most recent call last):
         KeyError: 'Keylist is not the same as current keylist.'
@@ -789,31 +789,31 @@ class OrderedDict(dict):
     def setvalues(self, values):
         """
         You can pass in a list of values, which will replace the
-        current list. The value list must be the same len as the OrderedDict.
+        current list. The value list must be the same len as the _OrderedDict.
 
         (Or a ``ValueError`` is raised.)
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.setvalues((1, 2, 3))
         >>> d
-        OrderedDict([(1, 1), (3, 2), (2, 3)])
+        _OrderedDict([(1, 1), (3, 2), (2, 3)])
         >>> d.setvalues([6])
         Traceback (most recent call last):
-        ValueError: Value list is not the same length as the OrderedDict.
+        ValueError: Value list is not the same length as the _OrderedDict.
         """
         if len(values) != len(self):
             # NOTE: correct error to raise?
             raise ValueError('Value list is not the same length as the '
-                'OrderedDict.')
+                '_OrderedDict.')
         self.update(zip(self, values))
 
 ### Sequence Methods ###
 
     def index(self, key):
         """
-        Return the position of the specified key in the OrderedDict.
+        Return the position of the specified key in the _OrderedDict.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.index(3)
         1
         >>> d.index(4)
@@ -827,18 +827,18 @@ class OrderedDict(dict):
         Takes ``index``, ``key``, and ``value`` as arguments.
 
         Sets ``key`` to ``value``, so that ``key`` is at position ``index`` in
-        the OrderedDict.
+        the _OrderedDict.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.insert(0, 4, 0)
         >>> d
-        OrderedDict([(4, 0), (1, 3), (3, 2), (2, 1)])
+        _OrderedDict([(4, 0), (1, 3), (3, 2), (2, 1)])
         >>> d.insert(0, 2, 1)
         >>> d
-        OrderedDict([(2, 1), (4, 0), (1, 3), (3, 2)])
+        _OrderedDict([(2, 1), (4, 0), (1, 3), (3, 2)])
         >>> d.insert(8, 8, 1)
         >>> d
-        OrderedDict([(2, 1), (4, 0), (1, 3), (3, 2), (8, 1)])
+        _OrderedDict([(2, 1), (4, 0), (1, 3), (3, 2), (8, 1)])
         """
         if key in self:
             # NOTE: efficiency?
@@ -848,35 +848,35 @@ class OrderedDict(dict):
 
     def reverse(self):
         """
-        Reverse the order of the OrderedDict.
+        Reverse the order of the _OrderedDict.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.reverse()
         >>> d
-        OrderedDict([(2, 1), (3, 2), (1, 3)])
+        _OrderedDict([(2, 1), (3, 2), (1, 3)])
         """
         self._sequence.reverse()
 
     def sort(self, *args, **kwargs):
         """
-        Sort the key order in the OrderedDict.
+        Sort the key order in the _OrderedDict.
 
         This method takes the same arguments as the ``list.sort`` method on
         your version of Python.
 
-        >>> d = OrderedDict(((4, 1), (2, 2), (3, 3), (1, 4)))
+        >>> d = _OrderedDict(((4, 1), (2, 2), (3, 3), (1, 4)))
         >>> d.sort()
         >>> d
-        OrderedDict([(1, 4), (2, 2), (3, 3), (4, 1)])
+        _OrderedDict([(1, 4), (2, 2), (3, 3), (4, 1)])
         """
         self._sequence.sort(*args, **kwargs)
 
 class Keys(object):
     # NOTE: should this object be a subclass of list?
     """
-    Custom object for accessing the keys of an OrderedDict.
+    Custom object for accessing the keys of an _OrderedDict.
 
-    Can be called like the normal ``OrderedDict.keys`` method, but also
+    Can be called like the normal ``_OrderedDict.keys`` method, but also
     supports indexing and sequence methods.
     """
 
@@ -965,9 +965,9 @@ class Keys(object):
 
 class Items(object):
     """
-    Custom object for accessing the items of an OrderedDict.
+    Custom object for accessing the items of an _OrderedDict.
 
-    Can be called like the normal ``OrderedDict.items`` method, but also
+    Can be called like the normal ``_OrderedDict.items`` method, but also
     supports indexing and sequence methods.
     """
 
@@ -981,7 +981,7 @@ class Items(object):
     def __getitem__(self, index):
         """Fetch the item at position i."""
         if isinstance(index, types.SliceType):
-            # fetching a slice returns an OrderedDict
+            # fetching a slice returns an _OrderedDict
             return self._main[index].items()
         key = self._main._sequence[index]
         return (key, self._main[key])
@@ -990,7 +990,7 @@ class Items(object):
         """Set item at position i to item."""
         if isinstance(index, types.SliceType):
             # NOTE: item must be an iterable (list of tuples)
-            self._main[index] = OrderedDict(item)
+            self._main[index] = _OrderedDict(item)
         else:
             # NOTE: Does this raise a sensible error?
             orig = self._main.keys[index]
@@ -1075,9 +1075,9 @@ class Items(object):
 
 class Values(object):
     """
-    Custom object for accessing the values of an OrderedDict.
+    Custom object for accessing the values of an _OrderedDict.
 
-    Can be called like the normal ``OrderedDict.values`` method, but also
+    Can be called like the normal ``_OrderedDict.values`` method, but also
     supports indexing and sequence methods.
     """
 
@@ -1163,9 +1163,9 @@ class Values(object):
     def remove(self, item): raise TypeError('Can\'t remove items from values')
     def extend(self, other): raise TypeError('Can\'t extend values')
 
-class SequenceOrderedDict(OrderedDict):
+class Sequence_OrderedDict(_OrderedDict):
     """
-    Experimental version of OrderedDict that has a custom object for ``keys``,
+    Experimental version of _OrderedDict that has a custom object for ``keys``,
     ``values``, and ``items``.
 
     These are callable sequence objects that work as methods, or can be
@@ -1173,16 +1173,16 @@ class SequenceOrderedDict(OrderedDict):
 
     Test for ``keys``, ``items`` and ``values``.
 
-    >>> d = SequenceOrderedDict(((1, 2), (2, 3), (3, 4)))
+    >>> d = Sequence_OrderedDict(((1, 2), (2, 3), (3, 4)))
     >>> d
-    SequenceOrderedDict([(1, 2), (2, 3), (3, 4)])
+    Sequence_OrderedDict([(1, 2), (2, 3), (3, 4)])
     >>> d.keys
     [1, 2, 3]
     >>> d.keys()
     [1, 2, 3]
     >>> d.setkeys((3, 2, 1))
     >>> d
-    SequenceOrderedDict([(3, 4), (2, 3), (1, 2)])
+    Sequence_OrderedDict([(3, 4), (2, 3), (1, 2)])
     >>> d.setkeys((1, 2, 3))
     >>> d.keys[0]
     1
@@ -1194,18 +1194,18 @@ class SequenceOrderedDict(OrderedDict):
     2
     >>> d.keys[0:2] = [2, 1]
     >>> d
-    SequenceOrderedDict([(2, 3), (1, 2), (3, 4)])
+    Sequence_OrderedDict([(2, 3), (1, 2), (3, 4)])
     >>> d.keys.reverse()
     >>> d.keys
     [3, 1, 2]
     >>> d.keys = [1, 2, 3]
     >>> d
-    SequenceOrderedDict([(1, 2), (2, 3), (3, 4)])
+    Sequence_OrderedDict([(1, 2), (2, 3), (3, 4)])
     >>> d.keys = [3, 1, 2]
     >>> d
-    SequenceOrderedDict([(3, 4), (1, 2), (2, 3)])
-    >>> a = SequenceOrderedDict()
-    >>> b = SequenceOrderedDict()
+    Sequence_OrderedDict([(3, 4), (1, 2), (2, 3)])
+    >>> a = Sequence_OrderedDict()
+    >>> b = Sequence_OrderedDict()
     >>> a.keys == b.keys
     1
     >>> a['a'] = 3
@@ -1234,26 +1234,26 @@ class SequenceOrderedDict(OrderedDict):
     >>> d.keys.sort()
     >>> d.keys
     [1, 2, 3]
-    >>> d = SequenceOrderedDict(((1, 2), (2, 3), (3, 4)), strict=True)
+    >>> d = Sequence_OrderedDict(((1, 2), (2, 3), (3, 4)), strict=True)
     >>> d.keys[::-1] = [1, 2, 3]
     >>> d
-    SequenceOrderedDict([(3, 4), (2, 3), (1, 2)])
+    Sequence_OrderedDict([(3, 4), (2, 3), (1, 2)])
     >>> d.keys[:2]
     [3, 2]
     >>> d.keys[:2] = [1, 3]
     Traceback (most recent call last):
     KeyError: 'Keylist is not the same as current keylist.'
 
-    >>> d = SequenceOrderedDict(((1, 2), (2, 3), (3, 4)))
+    >>> d = Sequence_OrderedDict(((1, 2), (2, 3), (3, 4)))
     >>> d
-    SequenceOrderedDict([(1, 2), (2, 3), (3, 4)])
+    Sequence_OrderedDict([(1, 2), (2, 3), (3, 4)])
     >>> d.values
     [2, 3, 4]
     >>> d.values()
     [2, 3, 4]
     >>> d.setvalues((4, 3, 2))
     >>> d
-    SequenceOrderedDict([(1, 4), (2, 3), (3, 2)])
+    Sequence_OrderedDict([(1, 4), (2, 3), (3, 2)])
     >>> d.values[::-1]
     [2, 3, 4]
     >>> d.values[0]
@@ -1265,7 +1265,7 @@ class SequenceOrderedDict(OrderedDict):
     TypeError: Can't delete items from values
     >>> d.values[::2] = [2, 4]
     >>> d
-    SequenceOrderedDict([(1, 2), (2, 3), (3, 4)])
+    Sequence_OrderedDict([(1, 2), (2, 3), (3, 4)])
     >>> 7 in d.values
     0
     >>> len(d.values)
@@ -1291,16 +1291,16 @@ class SequenceOrderedDict(OrderedDict):
     TypeError: Can't append items to values
     >>> d.values = (1, 2, 3)
     >>> d
-    SequenceOrderedDict([(1, 1), (2, 2), (3, 3)])
+    Sequence_OrderedDict([(1, 1), (2, 2), (3, 3)])
 
-    >>> d = SequenceOrderedDict(((1, 2), (2, 3), (3, 4)))
+    >>> d = Sequence_OrderedDict(((1, 2), (2, 3), (3, 4)))
     >>> d
-    SequenceOrderedDict([(1, 2), (2, 3), (3, 4)])
+    Sequence_OrderedDict([(1, 2), (2, 3), (3, 4)])
     >>> d.items()
     [(1, 2), (2, 3), (3, 4)]
     >>> d.setitems([(3, 4), (2 ,3), (1, 2)])
     >>> d
-    SequenceOrderedDict([(3, 4), (2, 3), (1, 2)])
+    Sequence_OrderedDict([(3, 4), (2, 3), (1, 2)])
     >>> d.items[0]
     (3, 4)
     >>> d.items[:-1]
@@ -1310,10 +1310,10 @@ class SequenceOrderedDict(OrderedDict):
     [(3, 4), (6, 3), (1, 2)]
     >>> d.items[1:2] = [(9, 9)]
     >>> d
-    SequenceOrderedDict([(3, 4), (9, 9), (1, 2)])
+    Sequence_OrderedDict([(3, 4), (9, 9), (1, 2)])
     >>> del d.items[1:2]
     >>> d
-    SequenceOrderedDict([(3, 4), (1, 2)])
+    Sequence_OrderedDict([(3, 4), (1, 2)])
     >>> (3, 4) in d.items
     1
     >>> (4, 3) in d.items
@@ -1358,7 +1358,7 @@ class SequenceOrderedDict(OrderedDict):
     """
 
     def __init__(self, init_val=(), strict=True):
-        OrderedDict.__init__(self, init_val, strict=strict)
+        _OrderedDict.__init__(self, init_val, strict=strict)
         self._keys = self.keys
         self._values = self.values
         self._items = self.items
@@ -1379,6 +1379,6 @@ class SequenceOrderedDict(OrderedDict):
             try:
                 fun = self._att_dict[name]
             except KeyError:
-                OrderedDict.__setattr__(self, name, value)
+                _OrderedDict.__setattr__(self, name, value)
             else:
                 fun(value)

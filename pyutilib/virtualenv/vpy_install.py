@@ -1715,7 +1715,7 @@ __revision__ = '$Id: odict.py 129 2005-09-12 18:15:28Z teknico $'
 
 __version__ = '0.2.2'
 
-__all__ = ['OrderedDict', 'SequenceOrderedDict']
+__all__ = ['_OrderedDict', 'Sequence_OrderedDict']
 
 import sys
 INTP_VER = sys.version_info[:2]
@@ -1724,21 +1724,21 @@ if INTP_VER < (2, 2):
 
 import types, warnings
 
-class OrderedDict(dict):
+class _OrderedDict(dict):
     """
     A class of dictionary that keeps the insertion order of keys.
 
     All appropriate methods return keys, items, or values in an ordered way.
 
     All normal dictionary methods are available. Update and comparison is
-    restricted to other OrderedDict objects.
+    restricted to other _OrderedDict objects.
 
     Various sequence methods are available, including the ability to explicitly
     mutate the key ordering.
 
     __contains__ tests:
 
-    >>> d = OrderedDict(((1, 3),))
+    >>> d = _OrderedDict(((1, 3),))
     >>> 1 in d
     1
     >>> 4 in d
@@ -1746,22 +1746,22 @@ class OrderedDict(dict):
 
     __getitem__ tests:
 
-    >>> OrderedDict(((1, 3), (3, 2), (2, 1)))[2]
+    >>> _OrderedDict(((1, 3), (3, 2), (2, 1)))[2]
     1
-    >>> OrderedDict(((1, 3), (3, 2), (2, 1)))[4]
+    >>> _OrderedDict(((1, 3), (3, 2), (2, 1)))[4]
     Traceback (most recent call last):
     KeyError: 4
 
     __len__ tests:
 
-    >>> len(OrderedDict())
+    >>> len(_OrderedDict())
     0
-    >>> len(OrderedDict(((1, 3), (3, 2), (2, 1))))
+    >>> len(_OrderedDict(((1, 3), (3, 2), (2, 1))))
     3
 
     get tests:
 
-    >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+    >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
     >>> d.get(1)
     3
     >>> d.get(4) is None
@@ -1769,11 +1769,11 @@ class OrderedDict(dict):
     >>> d.get(4, 5)
     5
     >>> d
-    OrderedDict([(1, 3), (3, 2), (2, 1)])
+    _OrderedDict([(1, 3), (3, 2), (2, 1)])
 
     has_key tests:
 
-    >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+    >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
     >>> d.has_key(1)
     1
     >>> d.has_key(4)
@@ -1786,25 +1786,25 @@ class OrderedDict(dict):
         nor from kwargs, since items order is undefined in those cases.
 
         If the ``strict`` keyword argument is ``True`` (``False`` is the
-        default) then when doing slice assignment - the ``OrderedDict`` you are
+        default) then when doing slice assignment - the ``_OrderedDict`` you are
         assigning from *must not* contain any keys in the remaining dict.
 
-        >>> OrderedDict()
-        OrderedDict([])
-        >>> OrderedDict({1: 1})
+        >>> _OrderedDict()
+        _OrderedDict([])
+        >>> _OrderedDict({1: 1})
         Traceback (most recent call last):
         TypeError: undefined order, cannot get items from dict
-        >>> OrderedDict({1: 1}.items())
-        OrderedDict([(1, 1)])
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> _OrderedDict({1: 1}.items())
+        _OrderedDict([(1, 1)])
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d
-        OrderedDict([(1, 3), (3, 2), (2, 1)])
-        >>> OrderedDict(d)
-        OrderedDict([(1, 3), (3, 2), (2, 1)])
+        _OrderedDict([(1, 3), (3, 2), (2, 1)])
+        >>> _OrderedDict(d)
+        _OrderedDict([(1, 3), (3, 2), (2, 1)])
         """
         self.strict = strict
         dict.__init__(self)
-        if isinstance(init_val, OrderedDict):
+        if isinstance(init_val, _OrderedDict):
             self._sequence = init_val.keys()
             dict.update(self, init_val)
         elif isinstance(init_val, dict):
@@ -1818,19 +1818,19 @@ class OrderedDict(dict):
 
     def __delitem__(self, key):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> del d[3]
         >>> d
-        OrderedDict([(1, 3), (2, 1)])
+        _OrderedDict([(1, 3), (2, 1)])
         >>> del d[3]
         Traceback (most recent call last):
         KeyError: 3
         >>> d[3] = 2
         >>> d
-        OrderedDict([(1, 3), (2, 1), (3, 2)])
+        _OrderedDict([(1, 3), (2, 1), (3, 2)])
         >>> del d[0:1]
         >>> d
-        OrderedDict([(2, 1), (3, 2)])
+        _OrderedDict([(2, 1), (3, 2)])
         """
         if isinstance(key, types.SliceType):
             # NOTE: efficiency?
@@ -1846,21 +1846,21 @@ class OrderedDict(dict):
 
     def __eq__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> d == OrderedDict(d)
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d == _OrderedDict(d)
         True
-        >>> d == OrderedDict(((1, 3), (2, 1), (3, 2)))
+        >>> d == _OrderedDict(((1, 3), (2, 1), (3, 2)))
         False
-        >>> d == OrderedDict(((1, 0), (3, 2), (2, 1)))
+        >>> d == _OrderedDict(((1, 0), (3, 2), (2, 1)))
         False
-        >>> d == OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> d == _OrderedDict(((0, 3), (3, 2), (2, 1)))
         False
         >>> d == dict(d)
         False
         >>> d == False
         False
         """
-        if isinstance(other, OrderedDict):
+        if isinstance(other, _OrderedDict):
             # NOTE: efficiency?
             #   Generate both item lists for each compare
             return (self.items() == other.items())
@@ -1869,60 +1869,60 @@ class OrderedDict(dict):
 
     def __lt__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> c = OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> c = _OrderedDict(((0, 3), (3, 2), (2, 1)))
         >>> c < d
         True
         >>> d < c
         False
         >>> d < dict(c)
         Traceback (most recent call last):
-        TypeError: Can only compare with other OrderedDicts
+        TypeError: Can only compare with other _OrderedDicts
         """
-        if not isinstance(other, OrderedDict):
-            raise TypeError('Can only compare with other OrderedDicts')
+        if not isinstance(other, _OrderedDict):
+            raise TypeError('Can only compare with other _OrderedDicts')
         # NOTE: efficiency?
         #   Generate both item lists for each compare
         return (self.items() < other.items())
 
     def __le__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> c = OrderedDict(((0, 3), (3, 2), (2, 1)))
-        >>> e = OrderedDict(d)
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> c = _OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> e = _OrderedDict(d)
         >>> c <= d
         True
         >>> d <= c
         False
         >>> d <= dict(c)
         Traceback (most recent call last):
-        TypeError: Can only compare with other OrderedDicts
+        TypeError: Can only compare with other _OrderedDicts
         >>> d <= e
         True
         """
-        if not isinstance(other, OrderedDict):
-            raise TypeError('Can only compare with other OrderedDicts')
+        if not isinstance(other, _OrderedDict):
+            raise TypeError('Can only compare with other _OrderedDicts')
         # NOTE: efficiency?
         #   Generate both item lists for each compare
         return (self.items() <= other.items())
 
     def __ne__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> d != OrderedDict(d)
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d != _OrderedDict(d)
         False
-        >>> d != OrderedDict(((1, 3), (2, 1), (3, 2)))
+        >>> d != _OrderedDict(((1, 3), (2, 1), (3, 2)))
         True
-        >>> d != OrderedDict(((1, 0), (3, 2), (2, 1)))
+        >>> d != _OrderedDict(((1, 0), (3, 2), (2, 1)))
         True
-        >>> d == OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> d == _OrderedDict(((0, 3), (3, 2), (2, 1)))
         False
         >>> d != dict(d)
         True
         >>> d != False
         True
         """
-        if isinstance(other, OrderedDict):
+        if isinstance(other, _OrderedDict):
             # NOTE: efficiency?
             #   Generate both item lists for each compare
             return not (self.items() == other.items())
@@ -1931,39 +1931,39 @@ class OrderedDict(dict):
 
     def __gt__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> c = OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> c = _OrderedDict(((0, 3), (3, 2), (2, 1)))
         >>> d > c
         True
         >>> c > d
         False
         >>> d > dict(c)
         Traceback (most recent call last):
-        TypeError: Can only compare with other OrderedDicts
+        TypeError: Can only compare with other _OrderedDicts
         """
-        if not isinstance(other, OrderedDict):
-            raise TypeError('Can only compare with other OrderedDicts')
+        if not isinstance(other, _OrderedDict):
+            raise TypeError('Can only compare with other _OrderedDicts')
         # NOTE: efficiency?
         #   Generate both item lists for each compare
         return (self.items() > other.items())
 
     def __ge__(self, other):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
-        >>> c = OrderedDict(((0, 3), (3, 2), (2, 1)))
-        >>> e = OrderedDict(d)
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> c = _OrderedDict(((0, 3), (3, 2), (2, 1)))
+        >>> e = _OrderedDict(d)
         >>> c >= d
         False
         >>> d >= c
         True
         >>> d >= dict(c)
         Traceback (most recent call last):
-        TypeError: Can only compare with other OrderedDicts
+        TypeError: Can only compare with other _OrderedDicts
         >>> e >= d
         True
         """
-        if not isinstance(other, OrderedDict):
-            raise TypeError('Can only compare with other OrderedDicts')
+        if not isinstance(other, _OrderedDict):
+            raise TypeError('Can only compare with other _OrderedDicts')
         # NOTE: efficiency?
         #   Generate both item lists for each compare
         return (self.items() >= other.items())
@@ -1972,15 +1972,15 @@ class OrderedDict(dict):
         """
         Used for __repr__ and __str__
 
-        >>> r1 = repr(OrderedDict((('a', 'b'), ('c', 'd'), ('e', 'f'))))
+        >>> r1 = repr(_OrderedDict((('a', 'b'), ('c', 'd'), ('e', 'f'))))
         >>> r1
-        "OrderedDict([('a', 'b'), ('c', 'd'), ('e', 'f')])"
-        >>> r2 = repr(OrderedDict((('a', 'b'), ('e', 'f'), ('c', 'd'))))
+        "_OrderedDict([('a', 'b'), ('c', 'd'), ('e', 'f')])"
+        >>> r2 = repr(_OrderedDict((('a', 'b'), ('e', 'f'), ('c', 'd'))))
         >>> r2
-        "OrderedDict([('a', 'b'), ('e', 'f'), ('c', 'd')])"
-        >>> r1 == str(OrderedDict((('a', 'b'), ('c', 'd'), ('e', 'f'))))
+        "_OrderedDict([('a', 'b'), ('e', 'f'), ('c', 'd')])"
+        >>> r1 == str(_OrderedDict((('a', 'b'), ('c', 'd'), ('e', 'f'))))
         True
-        >>> r2 == str(OrderedDict((('a', 'b'), ('e', 'f'), ('c', 'd'))))
+        >>> r2 == str(_OrderedDict((('a', 'b'), ('e', 'f'), ('c', 'd'))))
         True
         """
         return '%s([%s])' % (self.__class__.__name__, ', '.join(
@@ -1988,66 +1988,66 @@ class OrderedDict(dict):
 
     def __setitem__(self, key, val):
         """
-        Allows slice assignment, so long as the slice is an OrderedDict
-        >>> d = OrderedDict()
+        Allows slice assignment, so long as the slice is an _OrderedDict
+        >>> d = _OrderedDict()
         >>> d['a'] = 'b'
         >>> d['b'] = 'a'
         >>> d[3] = 12
         >>> d
-        OrderedDict([('a', 'b'), ('b', 'a'), (3, 12)])
-        >>> d[:] = OrderedDict(((1, 2), (2, 3), (3, 4)))
+        _OrderedDict([('a', 'b'), ('b', 'a'), (3, 12)])
+        >>> d[:] = _OrderedDict(((1, 2), (2, 3), (3, 4)))
         >>> d
-        OrderedDict([(1, 2), (2, 3), (3, 4)])
-        >>> d[::2] = OrderedDict(((7, 8), (9, 10)))
+        _OrderedDict([(1, 2), (2, 3), (3, 4)])
+        >>> d[::2] = _OrderedDict(((7, 8), (9, 10)))
         >>> d
-        OrderedDict([(7, 8), (2, 3), (9, 10)])
-        >>> d = OrderedDict(((0, 1), (1, 2), (2, 3), (3, 4)))
-        >>> d[1:3] = OrderedDict(((1, 2), (5, 6), (7, 8)))
+        _OrderedDict([(7, 8), (2, 3), (9, 10)])
+        >>> d = _OrderedDict(((0, 1), (1, 2), (2, 3), (3, 4)))
+        >>> d[1:3] = _OrderedDict(((1, 2), (5, 6), (7, 8)))
         >>> d
-        OrderedDict([(0, 1), (1, 2), (5, 6), (7, 8), (3, 4)])
-        >>> d = OrderedDict(((0, 1), (1, 2), (2, 3), (3, 4)), strict=True)
-        >>> d[1:3] = OrderedDict(((1, 2), (5, 6), (7, 8)))
+        _OrderedDict([(0, 1), (1, 2), (5, 6), (7, 8), (3, 4)])
+        >>> d = _OrderedDict(((0, 1), (1, 2), (2, 3), (3, 4)), strict=True)
+        >>> d[1:3] = _OrderedDict(((1, 2), (5, 6), (7, 8)))
         >>> d
-        OrderedDict([(0, 1), (1, 2), (5, 6), (7, 8), (3, 4)])
+        _OrderedDict([(0, 1), (1, 2), (5, 6), (7, 8), (3, 4)])
 
-        >>> a = OrderedDict(((0, 1), (1, 2), (2, 3)), strict=True)
+        >>> a = _OrderedDict(((0, 1), (1, 2), (2, 3)), strict=True)
         >>> a[3] = 4
         >>> a
-        OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> a[::1] = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> a[::1] = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
         >>> a
-        OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> a[:2] = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)])
+        _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> a[:2] = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)])
         Traceback (most recent call last):
         ValueError: slice assignment must be from unique keys
-        >>> a = OrderedDict(((0, 1), (1, 2), (2, 3)))
+        >>> a = _OrderedDict(((0, 1), (1, 2), (2, 3)))
         >>> a[3] = 4
         >>> a
-        OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> a[::1] = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> a[::1] = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
         >>> a
-        OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> a[:2] = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> a[:2] = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
         >>> a
-        OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> a[::-1] = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> a[::-1] = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
         >>> a
-        OrderedDict([(3, 4), (2, 3), (1, 2), (0, 1)])
+        _OrderedDict([(3, 4), (2, 3), (1, 2), (0, 1)])
 
-        >>> d = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> d = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
         >>> d[:1] = 3
         Traceback (most recent call last):
-        TypeError: slice assignment requires an OrderedDict
+        TypeError: slice assignment requires an _OrderedDict
 
-        >>> d = OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
-        >>> d[:1] = OrderedDict([(9, 8)])
+        >>> d = _OrderedDict([(0, 1), (1, 2), (2, 3), (3, 4)])
+        >>> d[:1] = _OrderedDict([(9, 8)])
         >>> d
-        OrderedDict([(9, 8), (1, 2), (2, 3), (3, 4)])
+        _OrderedDict([(9, 8), (1, 2), (2, 3), (3, 4)])
         """
         if isinstance(key, types.SliceType):
-            if not isinstance(val, OrderedDict):
+            if not isinstance(val, _OrderedDict):
                 # NOTE: allow a list of tuples?
-                raise TypeError('slice assignment requires an OrderedDict')
+                raise TypeError('slice assignment requires an _OrderedDict')
             keys = self._sequence[key]
             # NOTE: Could use ``range(*key.indices(len(self._sequence)))``
             indexes = range(len(self._sequence))[key]
@@ -2095,20 +2095,20 @@ class OrderedDict(dict):
 
     def __getitem__(self, key):
         """
-        Allows slicing. Returns an OrderedDict if you slice.
-        >>> b = OrderedDict([(7, 0), (6, 1), (5, 2), (4, 3), (3, 4), (2, 5), (1, 6)])
+        Allows slicing. Returns an _OrderedDict if you slice.
+        >>> b = _OrderedDict([(7, 0), (6, 1), (5, 2), (4, 3), (3, 4), (2, 5), (1, 6)])
         >>> b[::-1]
-        OrderedDict([(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1), (7, 0)])
+        _OrderedDict([(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1), (7, 0)])
         >>> b[2:5]
-        OrderedDict([(5, 2), (4, 3), (3, 4)])
+        _OrderedDict([(5, 2), (4, 3), (3, 4)])
         >>> type(b[2:4])
-        <class '__main__.OrderedDict'>
+        <class '__main__._OrderedDict'>
         """
         if isinstance(key, types.SliceType):
             # NOTE: does this raise the error we want?
             keys = self._sequence[key]
             # NOTE: efficiency?
-            return OrderedDict([(entry, self[entry]) for entry in keys])
+            return _OrderedDict([(entry, self[entry]) for entry in keys])
         else:
             return dict.__getitem__(self, key)
 
@@ -2133,7 +2133,7 @@ class OrderedDict(dict):
         """
         Implemented so that access to ``sequence`` raises a warning.
 
-        >>> d = OrderedDict()
+        >>> d = _OrderedDict()
         >>> d.sequence
         []
         """
@@ -2146,14 +2146,14 @@ class OrderedDict(dict):
             return self._sequence
         else:
             # raise the appropriate error
-            raise AttributeError("OrderedDict has no '%s' attribute" % name)
+            raise AttributeError("_OrderedDict has no '%s' attribute" % name)
 
     def __deepcopy__(self, memo):
         """
-        To allow deepcopy to work with OrderedDict.
+        To allow deepcopy to work with _OrderedDict.
 
         >>> from copy import deepcopy
-        >>> a = OrderedDict([(1, 1), (2, 2), (3, 3)])
+        >>> a = _OrderedDict([(1, 1), (2, 2), (3, 3)])
         >>> a['test'] = {}
         >>> b = deepcopy(a)
         >>> b == a
@@ -2171,17 +2171,17 @@ class OrderedDict(dict):
 
     def copy(self):
         """
-        >>> OrderedDict(((1, 3), (3, 2), (2, 1))).copy()
-        OrderedDict([(1, 3), (3, 2), (2, 1)])
+        >>> _OrderedDict(((1, 3), (3, 2), (2, 1))).copy()
+        _OrderedDict([(1, 3), (3, 2), (2, 1)])
         """
-        return OrderedDict(self)
+        return _OrderedDict(self)
 
     def items(self):
         """
         ``items`` returns a list of tuples representing all the
         ``(key, value)`` pairs in the dictionary.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.items()
         [(1, 3), (3, 2), (2, 1)]
         >>> d.clear()
@@ -2192,9 +2192,9 @@ class OrderedDict(dict):
 
     def keys(self):
         """
-        Return a list of keys in the ``OrderedDict``.
+        Return a list of keys in the ``_OrderedDict``.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.keys()
         [1, 3, 2]
         """
@@ -2202,12 +2202,12 @@ class OrderedDict(dict):
 
     def values(self, values=None):
         """
-        Return a list of all the values in the OrderedDict.
+        Return a list of all the values in the _OrderedDict.
 
         Optionally you can pass in a list of values, which will replace the
-        current list. The value list must be the same len as the OrderedDict.
+        current list. The value list must be the same len as the _OrderedDict.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.values()
         [3, 2, 1]
         """
@@ -2215,7 +2215,7 @@ class OrderedDict(dict):
 
     def iteritems(self):
         """
-        >>> ii = OrderedDict(((1, 3), (3, 2), (2, 1))).iteritems()
+        >>> ii = _OrderedDict(((1, 3), (3, 2), (2, 1))).iteritems()
         >>> ii.next()
         (1, 3)
         >>> ii.next()
@@ -2235,7 +2235,7 @@ class OrderedDict(dict):
 
     def iterkeys(self):
         """
-        >>> ii = OrderedDict(((1, 3), (3, 2), (2, 1))).iterkeys()
+        >>> ii = _OrderedDict(((1, 3), (3, 2), (2, 1))).iterkeys()
         >>> ii.next()
         1
         >>> ii.next()
@@ -2252,7 +2252,7 @@ class OrderedDict(dict):
 
     def itervalues(self):
         """
-        >>> iv = OrderedDict(((1, 3), (3, 2), (2, 1))).itervalues()
+        >>> iv = _OrderedDict(((1, 3), (3, 2), (2, 1))).itervalues()
         >>> iv.next()
         3
         >>> iv.next()
@@ -2273,10 +2273,10 @@ class OrderedDict(dict):
 
     def clear(self):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.clear()
         >>> d
-        OrderedDict([])
+        _OrderedDict([])
         """
         dict.clear(self)
         self._sequence = []
@@ -2285,11 +2285,11 @@ class OrderedDict(dict):
         """
         No dict.pop in Python 2.2, gotta reimplement it
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.pop(3)
         2
         >>> d
-        OrderedDict([(1, 3), (2, 1)])
+        _OrderedDict([(1, 3), (2, 1)])
         >>> d.pop(4)
         Traceback (most recent call last):
         KeyError: 4
@@ -2300,7 +2300,7 @@ class OrderedDict(dict):
         TypeError: pop expected at most 2 arguments, got 3
         """
         if len(args) > 1:
-            raise TypeError, ('pop expected at most 2 arguments, got %s' %
+            raise TypeError('pop expected at most 2 arguments, got %s' %
                 (len(args) + 1))
         if key in self:
             val = self[key]
@@ -2317,14 +2317,14 @@ class OrderedDict(dict):
         Delete and return an item specified by index, not a random one as in
         dict. The index is -1 by default (the last item).
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.popitem()
         (2, 1)
         >>> d
-        OrderedDict([(1, 3), (3, 2)])
+        _OrderedDict([(1, 3), (3, 2)])
         >>> d.popitem(0)
         (1, 3)
-        >>> OrderedDict().popitem()
+        >>> _OrderedDict().popitem()
         Traceback (most recent call last):
         KeyError: 'popitem(): dictionary is empty'
         >>> d.popitem(2)
@@ -2341,17 +2341,17 @@ class OrderedDict(dict):
 
     def setdefault(self, key, defval = None):
         """
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.setdefault(1)
         3
         >>> d.setdefault(4) is None
         True
         >>> d
-        OrderedDict([(1, 3), (3, 2), (2, 1), (4, None)])
+        _OrderedDict([(1, 3), (3, 2), (2, 1), (4, None)])
         >>> d.setdefault(5, 0)
         0
         >>> d
-        OrderedDict([(1, 3), (3, 2), (2, 1), (4, None), (5, 0)])
+        _OrderedDict([(1, 3), (3, 2), (2, 1), (4, None), (5, 0)])
         """
         if key in self:
             return self[key]
@@ -2361,12 +2361,12 @@ class OrderedDict(dict):
 
     def update(self, from_od):
         """
-        Update from another OrderedDict or sequence of (key, value) pairs
+        Update from another _OrderedDict or sequence of (key, value) pairs
 
-        >>> d = OrderedDict(((1, 0), (0, 1)))
-        >>> d.update(OrderedDict(((1, 3), (3, 2), (2, 1))))
+        >>> d = _OrderedDict(((1, 0), (0, 1)))
+        >>> d.update(_OrderedDict(((1, 3), (3, 2), (2, 1))))
         >>> d
-        OrderedDict([(1, 3), (0, 1), (3, 2), (2, 1)])
+        _OrderedDict([(1, 3), (0, 1), (3, 2), (2, 1)])
         >>> d.update({4: 4})
         Traceback (most recent call last):
         TypeError: undefined order, cannot get items from dict
@@ -2374,7 +2374,7 @@ class OrderedDict(dict):
         Traceback (most recent call last):
         TypeError: cannot convert dictionary update sequence element "4" to a 2-item sequence
         """
-        if isinstance(from_od, OrderedDict):
+        if isinstance(from_od, _OrderedDict):
             for key, val in from_od.items():
                 self[key] = val
         elif isinstance(from_od, dict):
@@ -2399,7 +2399,7 @@ class OrderedDict(dict):
         since if new_key exists, it is ambiguous as to what happens to the
         associated values, and the position of new_key in the sequence.
 
-        >>> od = OrderedDict()
+        >>> od = _OrderedDict()
         >>> od['a'] = 1
         >>> od['b'] = 2
         >>> od.items()
@@ -2434,13 +2434,13 @@ class OrderedDict(dict):
         It takes a list of tuples - of the same sort returned by the ``items``
         method.
 
-        >>> d = OrderedDict()
+        >>> d = _OrderedDict()
         >>> d.setitems(((3, 1), (2, 3), (1, 2)))
         >>> d
-        OrderedDict([(3, 1), (2, 3), (1, 2)])
+        _OrderedDict([(3, 1), (2, 3), (1, 2)])
         """
         self.clear()
-        # NOTE: this allows you to pass in an OrderedDict as well :-)
+        # NOTE: this allows you to pass in an _OrderedDict as well :-)
         self.update(items)
 
     def setkeys(self, keys):
@@ -2452,12 +2452,12 @@ class OrderedDict(dict):
         If you pass in new keys that don't match, a ``KeyError`` will be
         raised.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.keys()
         [1, 3, 2]
         >>> d.setkeys((1, 2, 3))
         >>> d
-        OrderedDict([(1, 3), (2, 1), (3, 2)])
+        _OrderedDict([(1, 3), (2, 1), (3, 2)])
         >>> d.setkeys(['a', 'b', 'c'])
         Traceback (most recent call last):
         KeyError: 'Keylist is not the same as current keylist.'
@@ -2478,31 +2478,31 @@ class OrderedDict(dict):
     def setvalues(self, values):
         """
         You can pass in a list of values, which will replace the
-        current list. The value list must be the same len as the OrderedDict.
+        current list. The value list must be the same len as the _OrderedDict.
 
         (Or a ``ValueError`` is raised.)
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.setvalues((1, 2, 3))
         >>> d
-        OrderedDict([(1, 1), (3, 2), (2, 3)])
+        _OrderedDict([(1, 1), (3, 2), (2, 3)])
         >>> d.setvalues([6])
         Traceback (most recent call last):
-        ValueError: Value list is not the same length as the OrderedDict.
+        ValueError: Value list is not the same length as the _OrderedDict.
         """
         if len(values) != len(self):
             # NOTE: correct error to raise?
             raise ValueError('Value list is not the same length as the '
-                'OrderedDict.')
+                '_OrderedDict.')
         self.update(zip(self, values))
 
 ### Sequence Methods ###
 
     def index(self, key):
         """
-        Return the position of the specified key in the OrderedDict.
+        Return the position of the specified key in the _OrderedDict.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.index(3)
         1
         >>> d.index(4)
@@ -2516,18 +2516,18 @@ class OrderedDict(dict):
         Takes ``index``, ``key``, and ``value`` as arguments.
 
         Sets ``key`` to ``value``, so that ``key`` is at position ``index`` in
-        the OrderedDict.
+        the _OrderedDict.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.insert(0, 4, 0)
         >>> d
-        OrderedDict([(4, 0), (1, 3), (3, 2), (2, 1)])
+        _OrderedDict([(4, 0), (1, 3), (3, 2), (2, 1)])
         >>> d.insert(0, 2, 1)
         >>> d
-        OrderedDict([(2, 1), (4, 0), (1, 3), (3, 2)])
+        _OrderedDict([(2, 1), (4, 0), (1, 3), (3, 2)])
         >>> d.insert(8, 8, 1)
         >>> d
-        OrderedDict([(2, 1), (4, 0), (1, 3), (3, 2), (8, 1)])
+        _OrderedDict([(2, 1), (4, 0), (1, 3), (3, 2), (8, 1)])
         """
         if key in self:
             # NOTE: efficiency?
@@ -2537,35 +2537,35 @@ class OrderedDict(dict):
 
     def reverse(self):
         """
-        Reverse the order of the OrderedDict.
+        Reverse the order of the _OrderedDict.
 
-        >>> d = OrderedDict(((1, 3), (3, 2), (2, 1)))
+        >>> d = _OrderedDict(((1, 3), (3, 2), (2, 1)))
         >>> d.reverse()
         >>> d
-        OrderedDict([(2, 1), (3, 2), (1, 3)])
+        _OrderedDict([(2, 1), (3, 2), (1, 3)])
         """
         self._sequence.reverse()
 
     def sort(self, *args, **kwargs):
         """
-        Sort the key order in the OrderedDict.
+        Sort the key order in the _OrderedDict.
 
         This method takes the same arguments as the ``list.sort`` method on
         your version of Python.
 
-        >>> d = OrderedDict(((4, 1), (2, 2), (3, 3), (1, 4)))
+        >>> d = _OrderedDict(((4, 1), (2, 2), (3, 3), (1, 4)))
         >>> d.sort()
         >>> d
-        OrderedDict([(1, 4), (2, 2), (3, 3), (4, 1)])
+        _OrderedDict([(1, 4), (2, 2), (3, 3), (4, 1)])
         """
         self._sequence.sort(*args, **kwargs)
 
 class Keys(object):
     # NOTE: should this object be a subclass of list?
     """
-    Custom object for accessing the keys of an OrderedDict.
+    Custom object for accessing the keys of an _OrderedDict.
 
-    Can be called like the normal ``OrderedDict.keys`` method, but also
+    Can be called like the normal ``_OrderedDict.keys`` method, but also
     supports indexing and sequence methods.
     """
 
@@ -2654,9 +2654,9 @@ class Keys(object):
 
 class Items(object):
     """
-    Custom object for accessing the items of an OrderedDict.
+    Custom object for accessing the items of an _OrderedDict.
 
-    Can be called like the normal ``OrderedDict.items`` method, but also
+    Can be called like the normal ``_OrderedDict.items`` method, but also
     supports indexing and sequence methods.
     """
 
@@ -2670,7 +2670,7 @@ class Items(object):
     def __getitem__(self, index):
         """Fetch the item at position i."""
         if isinstance(index, types.SliceType):
-            # fetching a slice returns an OrderedDict
+            # fetching a slice returns an _OrderedDict
             return self._main[index].items()
         key = self._main._sequence[index]
         return (key, self._main[key])
@@ -2679,7 +2679,7 @@ class Items(object):
         """Set item at position i to item."""
         if isinstance(index, types.SliceType):
             # NOTE: item must be an iterable (list of tuples)
-            self._main[index] = OrderedDict(item)
+            self._main[index] = _OrderedDict(item)
         else:
             # NOTE: Does this raise a sensible error?
             orig = self._main.keys[index]
@@ -2764,9 +2764,9 @@ class Items(object):
 
 class Values(object):
     """
-    Custom object for accessing the values of an OrderedDict.
+    Custom object for accessing the values of an _OrderedDict.
 
-    Can be called like the normal ``OrderedDict.values`` method, but also
+    Can be called like the normal ``_OrderedDict.values`` method, but also
     supports indexing and sequence methods.
     """
 
@@ -2852,9 +2852,9 @@ class Values(object):
     def remove(self, item): raise TypeError('Can\'t remove items from values')
     def extend(self, other): raise TypeError('Can\'t extend values')
 
-class SequenceOrderedDict(OrderedDict):
+class Sequence_OrderedDict(_OrderedDict):
     """
-    Experimental version of OrderedDict that has a custom object for ``keys``,
+    Experimental version of _OrderedDict that has a custom object for ``keys``,
     ``values``, and ``items``.
 
     These are callable sequence objects that work as methods, or can be
@@ -2862,16 +2862,16 @@ class SequenceOrderedDict(OrderedDict):
 
     Test for ``keys``, ``items`` and ``values``.
 
-    >>> d = SequenceOrderedDict(((1, 2), (2, 3), (3, 4)))
+    >>> d = Sequence_OrderedDict(((1, 2), (2, 3), (3, 4)))
     >>> d
-    SequenceOrderedDict([(1, 2), (2, 3), (3, 4)])
+    Sequence_OrderedDict([(1, 2), (2, 3), (3, 4)])
     >>> d.keys
     [1, 2, 3]
     >>> d.keys()
     [1, 2, 3]
     >>> d.setkeys((3, 2, 1))
     >>> d
-    SequenceOrderedDict([(3, 4), (2, 3), (1, 2)])
+    Sequence_OrderedDict([(3, 4), (2, 3), (1, 2)])
     >>> d.setkeys((1, 2, 3))
     >>> d.keys[0]
     1
@@ -2883,18 +2883,18 @@ class SequenceOrderedDict(OrderedDict):
     2
     >>> d.keys[0:2] = [2, 1]
     >>> d
-    SequenceOrderedDict([(2, 3), (1, 2), (3, 4)])
+    Sequence_OrderedDict([(2, 3), (1, 2), (3, 4)])
     >>> d.keys.reverse()
     >>> d.keys
     [3, 1, 2]
     >>> d.keys = [1, 2, 3]
     >>> d
-    SequenceOrderedDict([(1, 2), (2, 3), (3, 4)])
+    Sequence_OrderedDict([(1, 2), (2, 3), (3, 4)])
     >>> d.keys = [3, 1, 2]
     >>> d
-    SequenceOrderedDict([(3, 4), (1, 2), (2, 3)])
-    >>> a = SequenceOrderedDict()
-    >>> b = SequenceOrderedDict()
+    Sequence_OrderedDict([(3, 4), (1, 2), (2, 3)])
+    >>> a = Sequence_OrderedDict()
+    >>> b = Sequence_OrderedDict()
     >>> a.keys == b.keys
     1
     >>> a['a'] = 3
@@ -2923,26 +2923,26 @@ class SequenceOrderedDict(OrderedDict):
     >>> d.keys.sort()
     >>> d.keys
     [1, 2, 3]
-    >>> d = SequenceOrderedDict(((1, 2), (2, 3), (3, 4)), strict=True)
+    >>> d = Sequence_OrderedDict(((1, 2), (2, 3), (3, 4)), strict=True)
     >>> d.keys[::-1] = [1, 2, 3]
     >>> d
-    SequenceOrderedDict([(3, 4), (2, 3), (1, 2)])
+    Sequence_OrderedDict([(3, 4), (2, 3), (1, 2)])
     >>> d.keys[:2]
     [3, 2]
     >>> d.keys[:2] = [1, 3]
     Traceback (most recent call last):
     KeyError: 'Keylist is not the same as current keylist.'
 
-    >>> d = SequenceOrderedDict(((1, 2), (2, 3), (3, 4)))
+    >>> d = Sequence_OrderedDict(((1, 2), (2, 3), (3, 4)))
     >>> d
-    SequenceOrderedDict([(1, 2), (2, 3), (3, 4)])
+    Sequence_OrderedDict([(1, 2), (2, 3), (3, 4)])
     >>> d.values
     [2, 3, 4]
     >>> d.values()
     [2, 3, 4]
     >>> d.setvalues((4, 3, 2))
     >>> d
-    SequenceOrderedDict([(1, 4), (2, 3), (3, 2)])
+    Sequence_OrderedDict([(1, 4), (2, 3), (3, 2)])
     >>> d.values[::-1]
     [2, 3, 4]
     >>> d.values[0]
@@ -2954,7 +2954,7 @@ class SequenceOrderedDict(OrderedDict):
     TypeError: Can't delete items from values
     >>> d.values[::2] = [2, 4]
     >>> d
-    SequenceOrderedDict([(1, 2), (2, 3), (3, 4)])
+    Sequence_OrderedDict([(1, 2), (2, 3), (3, 4)])
     >>> 7 in d.values
     0
     >>> len(d.values)
@@ -2980,16 +2980,16 @@ class SequenceOrderedDict(OrderedDict):
     TypeError: Can't append items to values
     >>> d.values = (1, 2, 3)
     >>> d
-    SequenceOrderedDict([(1, 1), (2, 2), (3, 3)])
+    Sequence_OrderedDict([(1, 1), (2, 2), (3, 3)])
 
-    >>> d = SequenceOrderedDict(((1, 2), (2, 3), (3, 4)))
+    >>> d = Sequence_OrderedDict(((1, 2), (2, 3), (3, 4)))
     >>> d
-    SequenceOrderedDict([(1, 2), (2, 3), (3, 4)])
+    Sequence_OrderedDict([(1, 2), (2, 3), (3, 4)])
     >>> d.items()
     [(1, 2), (2, 3), (3, 4)]
     >>> d.setitems([(3, 4), (2 ,3), (1, 2)])
     >>> d
-    SequenceOrderedDict([(3, 4), (2, 3), (1, 2)])
+    Sequence_OrderedDict([(3, 4), (2, 3), (1, 2)])
     >>> d.items[0]
     (3, 4)
     >>> d.items[:-1]
@@ -2999,10 +2999,10 @@ class SequenceOrderedDict(OrderedDict):
     [(3, 4), (6, 3), (1, 2)]
     >>> d.items[1:2] = [(9, 9)]
     >>> d
-    SequenceOrderedDict([(3, 4), (9, 9), (1, 2)])
+    Sequence_OrderedDict([(3, 4), (9, 9), (1, 2)])
     >>> del d.items[1:2]
     >>> d
-    SequenceOrderedDict([(3, 4), (1, 2)])
+    Sequence_OrderedDict([(3, 4), (1, 2)])
     >>> (3, 4) in d.items
     1
     >>> (4, 3) in d.items
@@ -3047,7 +3047,7 @@ class SequenceOrderedDict(OrderedDict):
     """
 
     def __init__(self, init_val=(), strict=True):
-        OrderedDict.__init__(self, init_val, strict=strict)
+        _OrderedDict.__init__(self, init_val, strict=strict)
         self._keys = self.keys
         self._values = self.values
         self._items = self.items
@@ -3068,7 +3068,7 @@ class SequenceOrderedDict(OrderedDict):
             try:
                 fun = self._att_dict[name]
             except KeyError:
-                OrderedDict.__setattr__(self, name, value)
+                _OrderedDict.__setattr__(self, name, value)
             else:
                 fun(value)
 
@@ -3087,11 +3087,18 @@ class SequenceOrderedDict(OrderedDict):
 #  _________________________________________________________________________
 #
 
-import ConfigParser
-import StringIO
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
-if not 'OrderedDict' in dir():
-    from odict import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    if not '_OrderedDict' in dir():
+        from odict import OrderedDict
+    else:
+        OrderedDict = _OrderedDict
 
 
 class OrderedConfigParser(ConfigParser.ConfigParser):
@@ -3101,7 +3108,7 @@ class OrderedConfigParser(ConfigParser.ConfigParser):
     """
 
     def __init__(self):
-        if sys.version >= (2,6,0):
+        if sys.version_info >= (2,6,0):
             ConfigParser.ConfigParser.__init__(self, dict_type=OrderedDict)
         else:
             ConfigParser.ConfigParser.__init__(self)
@@ -3113,7 +3120,7 @@ class OrderedConfigParser(ConfigParser.ConfigParser):
         In old version of Python, we prefetch the sections, to
         ensure that the data structures we are using are OrderedDict.
         """
-        if sys.version >= (2,6,0):
+        if sys.version_info >= (2,6,0):
             return
         while True:
             line = fp.readline()
@@ -3159,9 +3166,16 @@ class OrderedConfigParser(ConfigParser.ConfigParser):
 # This script was created with the virtualenv_install script.
 #
 
-import commands
+import subprocess
 import re
-import urllib2
+try:
+    import urllib2
+except ImportError:
+    import urllib.request as urllib2
+try:
+    import StringIO
+except ImportError:
+    import io as StringIO
 import zipfile
 import shutil
 import string
@@ -3170,6 +3184,7 @@ import sys
 import glob
 import errno
 import stat
+import os
 
 using_subversion = True
 
@@ -3178,9 +3193,9 @@ using_subversion = True
 #
 if 'PYTHONHOME' in os.environ:
     del os.environ['PYTHONHOME']
-    print "WARNING: ignoring the value of the PYTHONHOME environment variable!  This value can corrupt the virtual python installation."
+    print("WARNING: ignoring the value of the PYTHONHOME environment variable!  This value can corrupt the virtual python installation.")
 
-print "\nNOTE: this Python executable used to create virtual environment:\n\t%s\n" % sys.executable
+print("\nNOTE: this Python executable used to create virtual environment:\n\t%s\n" % sys.executable)
 #
 # The following taken from PyUtilib
 #
@@ -3256,21 +3271,22 @@ def parse_version(s):
 #
 def guess_release(svndir):
     if using_subversion and not sys.platform.startswith('win'):
-        output = commands.getoutput('svn ls '+svndir)
+        output = subprocess.Popen(['svn','ls',svndir], stdout=subprocess.PIPE).communicate()[0]
+        if sys.version_info[:2] >= (3,0):
+            output = output.decode(sys.stdout.encoding)
         if output=="":
             return None
-        #print output
         versions = []
         for link in re.split('/',output.strip()):
             tmp = link.strip()
             if tmp != '':
                 versions.append( tmp )
-        #print versions
     else:
         if sys.version_info[:2] <= (2,5):
             output = urllib2.urlopen(svndir).read()
         else:
             output = urllib2.urlopen(svndir, timeout=30).read()
+            output = output.decode(sys.stdout.encoding)
         if output=="":
             return None
         links = re.findall('\<li>\<a href[^>]+>[^\<]+\</a>',output)
@@ -3304,10 +3320,22 @@ def zip_file(filename,fdlist):
                 for fname in files:
                     if fname.endswith('pyc') or fname.endswith('pyo') or fname.endswith('zip'):
                         continue
+                    try:
+                        long16 = long(16)
+                        long28 = long(28)
+                    except NameError:
+                        long16 = 16
+                        long28 = 28
                     if fname.endswith('exe'):
-                        zf.external_attr = (0777 << 16L) | (010 << 28L)
+                        # Octal shifts
+                        #zf.external_attr = (0777 << 16L) | (010 << 28L)
+                        # Decimal shifts
+                        zf.external_attr = (511 << long16) | (8 << long28)
                     else:
-                        zf.external_attr = (0660 << 16L) | (010 << 28L)
+                        # Octal shifts
+                        #zf.external_attr = (0660 << 16L) | (010 << 28L)
+                        # Decimal shifts
+                        zf.external_attr = (432 << long16) | (8 << long28)
                     zf.write(join(root,fname))
         else:
             zf.write(file)
@@ -3424,12 +3452,14 @@ class Repository(object):
         if not self.config.root is None:
             if not offline:
                 if using_subversion and not sys.platform.startswith('win'):
-                    rootdir_output = commands.getoutput('svn ls ' + self.config.root)
+                    rootdir_output = subprocess.Popen(['svn','ls',self.config.root], stdout=subprocess.PIPE).communicate()[0]
                 else:
                     if sys.version_info[:2] <= (2,5):
                         rootdir_output = urllib2.urlopen(self.config.root).read()
                     else:
                         rootdir_output = urllib2.urlopen(self.config.root, timeout=30).read()
+                if sys.version_info[:2] >= (3,0):
+                    rootdir_output = rootdir_output.decode(sys.stdout.encoding)
             if self.config.branch:
                 self.trunk = self.config.root+'/branches/'+self.config.branch
             else:
@@ -3483,36 +3513,38 @@ class Repository(object):
 
     def write_config(self, OUTPUT):
         config = self.config
-        print >>OUTPUT, '[%s]' % config.name
+        sys.stdout = OUTPUT
+        print('[%s]' % config.name)
         if not config.root is None:
-            print >>OUTPUT, 'root=%s' % config.root
+            print('root=%s' % config.root)
         if not config.trunk is None:
-            print >>OUTPUT, 'trunk=%s' % config.trunk
+            print('trunk=%s' % config.trunk)
         if not config.stable is None:
-            print >>OUTPUT, 'stable=%s' % config.stable
+            print('stable=%s' % config.stable)
         if not config.tag is None:
-            print >>OUTPUT, 'tag=%s' % config.tag
+            print('tag=%s' % config.tag)
         elif not config.release is None:
-            print >>OUTPUT, 'release=%s' % config.release
+            print('release=%s' % config.release)
         if not config.local is None:
-            print >>OUTPUT, 'local=%s' % config.local
+            print('local=%s' % config.local)
         if not config.pypi is None:
-            print >>OUTPUT, 'pypi=%s' % config.pypi
+            print('pypi=%s' % config.pypi)
         elif not config.pyname is None:
-            print >>OUTPUT, 'pypi=%s' % config.pyname
-        print >>OUTPUT, 'dev=%s' % str(config.dev)
+            print('pypi=%s' % config.pyname)
+        print('dev=%s' % str(config.dev))
         if not config.branch is None:
-            print >>OUTPUT, 'branch=%s' % str(config.branch)
-        print >>OUTPUT, 'install=%s' % str(config.install)
+            print('branch=%s' % str(config.branch))
+        print('install=%s' % str(config.install))
         if not config.rev is None:
-            print >>OUTPUT, 'rev=%s' % str(config.rev)
+            print('rev=%s' % str(config.rev))
         if not config.username is None:
-            print >>OUTPUT, 'username=%s' % str(config.username)
+            print('username=%s' % str(config.username))
         if not config.platform is None:
-            print >>OUTPUT, 'platform=%s' % config.platform
+            print('platform=%s' % config.platform)
         if not config.version is None:
-            print >>OUTPUT, 'version=%s' % config.version
-        print >>OUTPUT, 'exit=%s' % config.exit
+            print('version=%s' % config.version)
+        print('exit=%s' % config.exit)
+        sys.stdout = sys.__stdout__
 
 
     def find_pkgroot(self, trunk=False, stable=False, release=False):
@@ -3564,7 +3596,7 @@ class Repository(object):
                 self.pkgroot = self.release_root
 
         else:
-            raise IOError, "Must have one of trunk, stable or release specified: %s" % self.name
+            raise IOError("Must have one of trunk, stable or release specified: %s" % self.name)
 
 
     def install_trunk(self, dir=None, install=True, preinstall=False, offline=False):
@@ -3589,37 +3621,38 @@ class Repository(object):
             return
         if self.local:
             install = True
-        print "-----------------------------------------------------------------"
-        print "  Installing branch"
-        print "  Checking out source for package",self.name
+        print("-----------------------------------------------------------------")
+        print("  Installing branch")
+        print("  Checking out source for package "+self.name)
         if self.local:
-            print "     Package dir: "+self.local
+            print("     Package dir: "+self.local)
         else:
-            print "     Subversion dir: "+self.pkgdir
+            print("     Subversion dir: "+self.pkgdir)
         if os.path.exists(dir):
-            print "     No checkout required"
-            print "-----------------------------------------------------------------"
+            print("     No checkout required")
+            print("-----------------------------------------------------------------")
         elif not using_subversion:
-            print ""
-            print "Error: Cannot checkout software %s with subversion." % self.name
-            print "A problem was detected executing subversion commands."
+            print("")
+            print("Error: Cannot checkout software %s with subversion." % self.name)
+            print("A problem was detected executing subversion commands.")
             if self.config.exit:
-                print "Aborting installer!"
+                print("Aborting installer!")
                 sys.exit(1)
-            print "Not aborting installer..."
+            print("Not aborting installer...")
             return
         else:
-            print "-----------------------------------------------------------------"
+            print("-----------------------------------------------------------------")
             try:
                 self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.pkgdir+self.rev, dir])
-            except OSError, err:
-                print ""
-                print "Error checkout software %s with subversion at %s" % (self.name,self.pkgdir+self.rev)
-                print str(err)
+            except OSError:
+                err = sys.exc_info()[1] # BUG?
+                print("")
+                print("Error checkout software %s with subversion at %s" % (self.name,self.pkgdir+self.rev))
+                print(str(err))
                 if self.config.exit:
-                    print "Aborting installer!"
+                    print("Aborting installer!")
                     sys.exit(1)
-                print "Not aborting installer..."
+                print("Not aborting installer...")
                 return
         if install:
             try:
@@ -3630,15 +3663,16 @@ class Repository(object):
                         self.run([self.python, 'setup.py', 'develop'], dir=dir)
                 else:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
-            except OSError, err:
-                print ""
-                print "Error installing software %s from source using the setup.py file." % self.name
-                print "This is probably due to a syntax or configuration error in this package."
-                print str(err)
+            except OSError:
+                err = sys.exc_info()[1] # BUG?
+                print("")
+                print("Error installing software %s from source using the setup.py file." % self.name)
+                print("This is probably due to a syntax or configuration error in this package.")
+                print(str(err))
                 if self.config.exit:
-                    print "Aborting installer!"
+                    print("Aborting installer!")
                     sys.exit(1)
-                print "Not aborting installer..."
+                print("Not aborting installer...")
 
     def update_trunk(self, dir=None):
         self.find_pkgroot(trunk=True)
@@ -3656,12 +3690,12 @@ class Repository(object):
         if self.pkgdir is None:
             self.easy_upgrade()
             return
-        print "-----------------------------------------------------------------"
-        print "  Updating branch"
-        print "  Updating source for package",self.name
-        print "     Subversion dir: "+self.pkgdir
-        print "     Source dir:     "+dir
-        print "-----------------------------------------------------------------"
+        print("-----------------------------------------------------------------")
+        print("  Updating branch")
+        print("  Updating source for package "+self.name)
+        print("     Subversion dir: "+self.pkgdir)
+        print("     Source dir:     "+dir)
+        print("-----------------------------------------------------------------")
         self.run([self.svn,'update','-q']+self.revarg+[dir])
         if self.dev:
             self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -3679,14 +3713,15 @@ class Repository(object):
             elif preinstall:
                 if not os.path.exists(dir):
                     self.run(self.easy_install_path + [Repository.easy_install_flag, '--exclude-scripts', '--always-copy', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
-        except OSError, err:
-            print ""
-            print "Error installing package %s with easy_install" % self.name
-            print str(err)
+        except OSError:
+            err = sys.exc_info()[1] # BUG?
+            print("")
+            print("Error installing package %s with easy_install" % self.name)
+            print(str(err))
             if self.config.exit:
-                print "Aborting installer!"
+                print("Aborting installer!")
                 sys.exit(1)
-            print "Not aborting installer..."
+            print("Not aborting installer...")
 
     def pip_install(self, install, preinstall, dir, offline):
         try:
@@ -3698,14 +3733,15 @@ class Repository(object):
             elif preinstall:
                 if not os.path.exists(dir):
                     self.run(self.pip_path + ['-v', '--no-install', '--download', '.', self.pypi], dir=os.path.dirname(dir))
-        except OSError, err:
-            print ""
-            print "Error installing package %s with pip" % self.name
-            print str(err)
+        except OSError:
+            err = sys.exc_info()[1] # BUG?
+            print("")
+            print("Error installing package %s with pip" % self.name)
+            print(str(err))
             if self.config.exit:
-                print "Aborting installer!"
+                print("Aborting installer!")
                 sys.exit(1)
-            print "Not aborting installer..."
+            print("Not aborting installer...")
 
     def easy_upgrade(self):
         self.run(self.easy_install_path + [Repository.easy_install_flag, '--upgrade', self.pypi])
@@ -3715,7 +3751,7 @@ class Repository(object):
         if not dir is None:
             os.chdir(dir)
             cwd=dir
-        print "Running command '%s' in directory %s" % (" ".join(cmd), cwd)
+        print("Running command '%s' in directory %s" % (" ".join(cmd), cwd))
         sys.stdout.flush()
         call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
         if not dir is None:
@@ -3785,7 +3821,7 @@ class Installer(object):
 
     def add_repository(self, *args, **kwds):
         if not 'root' in kwds and not 'pypi' in kwds and not 'release' in kwds and not 'trunk' in kwds and not 'stable' in kwds:
-            raise IOError, "No repository info specified for repository "+args[0]
+            raise IOError("No repository info specified for repository "+args[0])
         repos = Repository( *args, **kwds)
         if repos.name in self.sw_dict:
             for i in range(len(self.sw_packages)):
@@ -3953,13 +3989,13 @@ class Installer(object):
         try:
             sys.stdout.flush()
             call_subprocess(['svn'+executable_extension,'--version'], show_stdout=False)
-        except OSError, err:
-            print ""
-            print "------------------------------------------------"
-            print "WARNING: problems executing subversion commands."
-            print "Subversion is disabled."
-            print "------------------------------------------------"
-            print ""
+        except OSError:
+            print("")
+            print("------------------------------------------------")
+            print("WARNING: problems executing subversion commands.")
+            print("Subversion is disabled.")
+            print("------------------------------------------------")
+            print("")
             using_subversion = False
         #
         if options.update and (options.stable or options.trunk):
@@ -4035,11 +4071,11 @@ class Installer(object):
 
     def setup_installer(self, options):
         if options.preinstall:
-            print "Creating preinstall zip file in '%s'" % self.home_dir
+            print("Creating preinstall zip file in '%s'" % self.home_dir)
         elif options.update:
-            print "Updating existing installation in '%s'" % self.home_dir
+            print("Updating existing installation in '%s'" % self.home_dir)
         else:
-            print "Starting fresh installation in '%s'" % self.home_dir
+            print("Starting fresh installation in '%s'" % self.home_dir)
         #
         # Setup HTTP proxy
         #
@@ -4056,8 +4092,8 @@ class Installer(object):
                 proxy = os.environ.get('http_proxy', '')
             os.environ['HTTP_PROXY'] = proxy
             os.environ['http_proxy'] = proxy
-            print "  using the HTTP_PROXY environment: %s" % proxy
-            print ""
+            print("  using the HTTP_PROXY environment: %s" % proxy)
+            print("")
         #
         # Disable the PYTHONPATH, to isolate this installation from
         # other Python installations that a user may be working with.
@@ -4072,9 +4108,9 @@ class Installer(object):
         # that contains the full installation.
         #
         if options.preinstall:
-            print "-----------------------------------------------------------------"
-            print " STARTING preinstall in directory %s" % self.home_dir
-            print "-----------------------------------------------------------------"
+            print("-----------------------------------------------------------------")
+            print(" STARTING preinstall in directory %s" % self.home_dir)
+            print("-----------------------------------------------------------------")
             rmtree(self.abshome_dir)
             os.mkdir(self.abshome_dir)
         #
@@ -4111,15 +4147,15 @@ class Installer(object):
             self.read_config_file(file=self.config_file, follow_externals=options.follow_externals)
         for file in options.config_files:
             self.read_config_file(file=file, follow_externals=options.follow_externals)
-        print "-----------------------------------------------------------------"
-        print "Finished processing configuration information."
-        print "-----------------------------------------------------------------"
-        print " START - Configuration summary"
-        print "-----------------------------------------------------------------"
+        print("-----------------------------------------------------------------")
+        print("Finished processing configuration information.")
+        print("-----------------------------------------------------------------")
+        print(" START - Configuration summary")
+        print("-----------------------------------------------------------------")
         self.write_config(stream=sys.stdout)
-        print "-----------------------------------------------------------------"
-        print " END - Configuration summary"
-        print "-----------------------------------------------------------------"
+        print("-----------------------------------------------------------------")
+        print(" END - Configuration summary")
+        print("-----------------------------------------------------------------")
         #
         if options.preinstall or not options.offline:
             #self.get_packages(options)
@@ -4150,11 +4186,12 @@ class Installer(object):
             options.release = INPUT.readline().strip() != 'False'
             INPUT.close()
         else:
-            OUTPUT=open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'w')
-            print >>OUTPUT, options.trunk
-            print >>OUTPUT, options.stable
-            print >>OUTPUT, options.release
-            OUTPUT.close()
+            sys.stdout = open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'w')
+            print(options.trunk)
+            print(options.stable)
+            print(options.release)
+            sys.stdout.close()
+            sys.stdout = sys.__stdout__
             self.write_config( join(self.abshome_dir,'admin','config.ini') )
         #
         # Setup package directories
@@ -4213,9 +4250,10 @@ class Installer(object):
         #
         # Create a README.txt file
         #
-        OUTPUT=open(join(self.abshome_dir,"README.txt"),"w")
-        print >>OUTPUT, self.README.strip()
-        OUTPUT.close()
+        sys.stdout = open(join(self.abshome_dir,"README.txt"),"w")
+        print(self.README.strip())
+        sys.stdout.close()
+        sys.stdout = sys.__stdout__
         #
         # Finalize package export
         #
@@ -4224,9 +4262,9 @@ class Installer(object):
         # Finalize preinstall
         #
         if options.preinstall:
-            print "-----------------------------------------------------------------"
-            print " FINISHED preinstall in directory %s" % self.home_dir
-            print "-----------------------------------------------------------------"
+            print("-----------------------------------------------------------------")
+            print(" FINISHED preinstall in directory %s" % self.home_dir)
+            print("-----------------------------------------------------------------")
             os.chdir(self.abshome_dir)
             zip_file(self.default_dirname+'.zip', ['.'])
             sys.exit(0)
@@ -4311,12 +4349,12 @@ class Installer(object):
         # Misc notifications
         #
         if not options.update:
-            print ""
-            print "-----------------------------------------------------------------"
-            print "  Add %s to the PATH environment variable" % (self.home_dir+os.sep+"bin")
-            print "-----------------------------------------------------------------"
-        print ""
-        print "Finished installation in '%s'" % self.home_dir
+            print("")
+            print("-----------------------------------------------------------------")
+            print("  Add %s to the PATH environment variable" % (self.home_dir+os.sep+"bin"))
+            print("-----------------------------------------------------------------")
+        print("")
+        print("Finished installation in '%s'" % self.home_dir)
 
     def localize_cmd_files(self, dir, force_localization=False):
         """
@@ -4332,7 +4370,7 @@ class Installer(object):
         for file in self.cmd_files:
             fname = join(dir,bindir,file)
             if not os.path.exists(fname):
-                print "WARNING: Problem while localizing file '%s'.  This file is missing" % fname
+                print("WARNING: Problem while localizing file '%s'.  This file is missing" % fname)
                 continue
             INPUT = open(fname, 'r')
             content = "".join(INPUT.readlines())
@@ -4354,7 +4392,7 @@ class Installer(object):
                 if options.clear:
                     rmtree( join(self.abshome_dir,todir) )
                 cmd = [Repository.svn,Repository.svn_get,'-q',self.svnjoin(pkgroot,fromdir),join(self.abshome_dir,todir)]
-            print "Running command '%s'" % " ".join(cmd)
+            print("Running command '%s'" % " ".join(cmd))
             sys.stdout.flush()
             call_subprocess(cmd, filter_stdout=filter_python_develop,show_stdout=True)
 
@@ -4373,15 +4411,16 @@ class Installer(object):
                     output = urllib2.urlopen(file).read()
                 else:
                     output = urllib2.urlopen(file, timeout=30).read()
-            except Exception, err:
-                print "Problems opening configuration url:",file
+                    output = output.decode(sys.stdout.encoding)
+            except Exception:
+                print("Problems opening configuration url: "+file)
                 raise
             fp = StringIO.StringIO(output)
             parser.readfp(fp, file)
             fp.close()
         else:
             if not file in parser.read(file):
-                raise IOError, "Error while parsing file %s." % file
+                raise IOError("Error while parsing file %s." % file)
         sections = parser.sections()
         if 'installer' in sections:
             for option, value in parser.items('installer'):
@@ -4411,14 +4450,16 @@ class Installer(object):
             self.write_config(stream=OUTPUT)
             OUTPUT.close()
         else:
+            sys.stdout = stream
             for repos in self.sw_packages:
                 repos.write_config(stream)
-                print >>stream, ""
+                print("")
             if len(self.cmd_files) > 0:
-                print >>stream, "[localize]"
+                print("[localize]")
                 for file in self.cmd_files:
-                    print >>stream, file+"="
-                print >>stream, "\n"
+                    print(file+"=")
+                print("\n")
+            sys.stdout = sys.__stdout__
 
 
 
@@ -4479,11 +4520,12 @@ def main():
             os.environ['TEMPDIR'] = '/tmp'
     try:
         vpy_main()
-    except Exception, err:
+    except Exception:
+        err = sys.exc_info()[1] # BUG?
         if vpy_main.raise_exceptions:
             raise
-        print ""
-        print "ERROR:",str(err)
+        print("")
+        print("ERROR: "+str(err))
 
 #
 # This is a monkey patch, to control the execution of the install_setuptools()
@@ -4497,13 +4539,13 @@ def install_setuptools(py_executable, unzip=False,
     try:
         if install_setuptools.use_default:
             default_install_setuptools(py_executable, unzip, search_dirs, never_download)
-    except OSError, err:
-        print "-----------------------------------------------------------------"
-        print "Error installing the 'setuptools' package!"
+    except OSError:
+        print("-----------------------------------------------------------------")
+        print("Error installing the 'setuptools' package!")
         if os.environ['HTTP_PROXY'] == '':
-            print ""
-            print "WARNING: you may need to set your HTTP_PROXY environment variable!"
-        print "-----------------------------------------------------------------"
+            print("")
+            print("WARNING: you may need to set your HTTP_PROXY environment variable!")
+        print("-----------------------------------------------------------------")
         sys.exit(1)
 
 install_setuptools.use_default=True
@@ -4519,13 +4561,13 @@ def install_pip(*args, **kwds):
     try:
         if install_pip.use_default:
             default_install_pip(*args, **kwds)
-    except OSError, err:
-        print "-----------------------------------------------------------------"
-        print "Error installing the 'pip' package!"
+    except OSError:
+        print("-----------------------------------------------------------------")
+        print("Error installing the 'pip' package!")
         if os.environ['HTTP_PROXY'] == '':
-            print ""
-            print "WARNING: you may need to set your HTTP_PROXY environment variable!"
-        print "-----------------------------------------------------------------"
+            print("")
+            print("WARNING: you may need to set your HTTP_PROXY environment variable!")
+        print("-----------------------------------------------------------------")
         sys.exit(1)
 
 install_pip.use_default=True
@@ -4540,9 +4582,9 @@ def mkdir(path):
         logger.info('Creating %s', path)
         try:
             os.makedirs(path)
-        except Exception, e:
-            print "Cannot create directory '%s'!" % path
-            print "Verify that you have write permissions to this directory."
+        except Exception:
+            print("Cannot create directory '%s'!" % path)
+            print("Verify that you have write permissions to this directory.")
             sys.exit(1)
     else:
         logger.info('Directory %s already exists', path)
