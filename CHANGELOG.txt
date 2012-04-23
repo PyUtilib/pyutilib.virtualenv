@@ -3,10 +3,27 @@
 ===============================
 
 -------------------------------------------------------------------------------
- 2.10
+ 3.1 
 -------------------------------------------------------------------------------
 
 - Under development.
+
+-------------------------------------------------------------------------------
+ 3.0
+-------------------------------------------------------------------------------
+
+- Many changes to support vpy_install under Python 3.x
+  . Changed print commands to be functions
+  . Changed exception handling to use sys.exc_info
+  . Used urllib instead of urllib2
+  . Import StringIO from io instead of StringIO
+  . Used collections.OrderedDict? by default, if it is available
+  . Translated output of urllib.open and subprocess.Popen
+
+- Bug fix: use utf-8 as the encoding if sys.stdout.encoding is None.
+
+- Explicitly converting parsed options into str() — as unicode strings
+  can cause errors in some versions of Python (notably, 2.6.1 and 2.6.2)
 
 -------------------------------------------------------------------------------
  2.9
