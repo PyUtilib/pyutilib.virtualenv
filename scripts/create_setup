@@ -87,10 +87,10 @@ def main():
     installer.find_packages()
     
     # Build MSI Installers
-    installer.build_package_installers()
+    #installer.build_package_installers()
     
     # # Modify MSI installer
-    installer.modify_package_installers()
+    #installer.modify_package_installers()
     
     # # Write NSIS codes to NSH files
     installer.create_data_nsh(file='dyn_data.nsh')
@@ -166,7 +166,7 @@ Function UninstallPrevious
   ; we explicitly delete it.  {SIGH}
   ;
   ClearErrors
-  ExecWait '"$2" /S _?=$INSTDIR' $0
+  ;;ExecWait '"$2" /S _?=$INSTDIR' $0
   IfErrors 0 +3
      MessageBox MB_OK "Failed to uninstall ${PRODUCT_NAME}" IDOK 0
      Abort
@@ -182,7 +182,7 @@ Section "Uninstall"
   ; Remove from path
   ;;Push $INSTDIR\bin
   ;;Call un.RemoveFromPath
-  ${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR\\bin"
+  ;;${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR\\bin"
 
 """
     uninstall_tail = """
@@ -462,32 +462,9 @@ Section "%(name)s"
   DetailPrint "--------------------------------------------------------------"
   DetailPrint ""
   StrCpy $9 $PythonExecutable -11
-  ReadRegStr $2 "HKLM" "Software\\%(name)s" "ProductCode"
-  StrCmp "$2" "" install
-  DetailPrint "%(name)s is already installed on this machine! Checking version..."
-  ReadRegStr $3 "HKLM" "Software\\%(name)s" "Version"
-  DetailPrint " Package %(name)s version $3 is installed on this machine."
-  ${VersionCompare} '%(version)s' $3 $4
-  ;DetailPrint "Comparing version %(version)s to $3 with result $4"
-  StrCmp $4 '0' current
-  StrCmp $4 '1' uninstall newer
-current:
-  DetailPrint "Congratulations! You already have the most current version of"
-  DetailPrint " %(name)s."
-  Goto done
-newer:
-  DetailPrint "Hmm. Your version is newer than the one bundled here: %(version)s < $3"
-  DetailPrint "We are going to skip this package for now. You can always install it"
-  DetailPrint " by hand later from this program's 'Program Files' directory."
-  Goto done
-uninstall:
-  DetailPrint "Seems like you have an older version of this package. We will try"
-  DetailPrint " to uninstall the old version before we install our new one, just"
-  DetailPrint " to be safe."
-  nsExec::ExecToLog 'msiexec.exe /X$2 /quiet' $0
 install:
   DetailPrint "Installing %(name)s-%(version)s"
-  nsExec::ExecToLog 'msiexec.exe /I \"$INSTDIR\\%(msi_file)s\" /quiet TARGETDIR="$9"' $0
+  nsExec::ExecToLog '\"$PythonExecutable\" \"$INSTDIR\\%(name)s\\setup.py\" install' $0
 done:
   DetailPrint "Package %(name)s complete."
   DetailPrint ""
@@ -498,8 +475,7 @@ Section "un.%(name)s"
   DetailPrint "--------------------------------------------------------------"
   DetailPrint "Removing %(name)s Package"
   DetailPrint "--------------------------------------------------------------"
-  ReadRegStr $2 "HKLM" "Software\\%(name)s" "ProductCode"
-  nsExec::ExecToLog 'msiexec /X$2 /quiet' $0
+  nsExec::ExecToLog 'pip uninstall $(name)s -y' $0
 SectionEnd
 """
     
