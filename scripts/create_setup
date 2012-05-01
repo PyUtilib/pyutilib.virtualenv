@@ -464,7 +464,7 @@ Section "%(name)s"
   StrCpy $9 $PythonExecutable -11
 install:
   DetailPrint "Installing %(name)s-%(version)s"
-  nsExec::ExecToLog '\"$PythonExecutable\" \"$INSTDIR\\%(dir)s\\%(name)s\\setup.py\" install' $0
+  nsExec::ExecToLog '\"$PythonExecutable\" \"$INSTDIR\\%(name)s\\setup.py\" install' $0
 done:
   DetailPrint "Package %(name)s complete."
   DetailPrint ""
@@ -621,7 +621,7 @@ SectionEnd
         
         
     def get_nsis_data_code(self):
-        return "  File /r %s\n"%(self.root_dir+os.sep+self.name)
+        return "  File /r %s\n"%(self.root_dir)
         
     def get_nsis_install_code(self):
         if self.is_tpl: req_text = '' 
