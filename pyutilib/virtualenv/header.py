@@ -803,7 +803,7 @@ class Installer(object):
         # Change the virtualenv options
         #
         parser.remove_option("--python")
-        parser.add_option("--python",
+        parser.add_option("-p", "--python",
             dest='python',
             metavar='PYTHON_EXE',
             help="Specify the Python interpreter to use, e.g., --python=python2.5 will install with the python2.5 interpreter.")

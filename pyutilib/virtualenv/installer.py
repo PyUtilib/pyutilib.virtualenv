@@ -19,12 +19,8 @@ import virtualenv
 import sys
 import stat
 
-if sys.version_info < (3,):
-    files = ['odict.py']
-else:
-    files = []
 # The files that are integrated into a virtualenv installer
-files += ['OrderedConfigParser.py', 'header.py']
+files = ['odict.py', 'OrderedConfigParser.py', 'header.py']
 
 def main():
     if len(sys.argv) != 3:
