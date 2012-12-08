@@ -1396,6 +1396,9 @@ default_install_setuptools = install_setuptools
 
 def install_setuptools(py_executable, unzip=False,
                        search_dirs=None, never_download=False):
+    if sys.version_info > (3,0):
+        # We don't use setuptools in Python 3.x
+        return
     try:
         if install_setuptools.use_default:
             default_install_setuptools(py_executable, unzip, search_dirs, never_download)
