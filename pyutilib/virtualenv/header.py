@@ -973,6 +973,7 @@ class Installer(object):
         #
         if options.offline:
             install_setuptools.use_default=False
+            install_distribute.use_default=False
             install_pip.use_default=False
         #
         # If we're clearing the current installation, then remove a bunch of
@@ -1408,6 +1409,30 @@ def install_setuptools(py_executable, unzip=False,
         sys.exit(1)
 
 install_setuptools.use_default=True
+
+
+#
+# This is a monkey patch, to control the execution of the install_distribute()
+# function that is defined by virtualenv.
+#
+default_install_distribute = install_distribute
+
+
+def install_distribute(py_executable, unzip=False,
+                       search_dirs=None, never_download=False):
+    try:
+        if install_distribute.use_default:
+            default_install_distribute(py_executable, unzip, search_dirs, never_download)
+    except OSError:
+        print("-----------------------------------------------------------------")
+        print("Error installing the 'distribute' package!")
+        if os.environ['HTTP_PROXY'] == '':
+            print("")
+            print("WARNING: you may need to set your HTTP_PROXY environment variable!")
+        print("-----------------------------------------------------------------")
+        sys.exit(1)
+
+install_distribute.use_default=True
 
 
 #
