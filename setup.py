@@ -25,7 +25,7 @@ if sys.version_info >= (3,):
     extra['convert_2to3_doctests'] = ['README.txt']
 
 setup(name="pyutilib.virtualenv",
-    version='3.3',
+    version='3.2',
     maintainer='William E. Hart',
     maintainer_email='wehart@sandia.gov',
     url = 'https://software.sandia.gov/svn/public/pyutilib/pyutilib.virtualenv',
