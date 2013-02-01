@@ -19,10 +19,6 @@ from setuptools import setup
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-#extra = {}
-#if sys.version_info >= (3,):
-#    extra['use_2to3'] = True
-#    extra['convert_2to3_doctests'] = ['README.txt']
 
 setup(name="pyutilib.virtualenv",
     version='3.3',
@@ -52,6 +48,5 @@ setup(name="pyutilib.virtualenv",
         [console_scripts]
         vpy_create=pyutilib.virtualenv.installer:main
         vpy_install=pyutilib.virtualenv.vpy_install:main
-    """#,
-    #**extra
+    """
     )
