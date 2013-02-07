@@ -22,14 +22,7 @@ import stat
 # The files that are integrated into a virtualenv installer
 files = ['odict.py', 'OrderedConfigParser.py', 'header.py']
 
-def main():
-    if len(sys.argv) != 3:
-        sys.stdout.write("vpy_create <config-file> <name>\n")
-        sys.stdout.write("vpy_create vpy <name>\n")
-        sys.exit(1)
-
-    script_name = sys.argv[2]
-
+def vpy_create(config_name, script_name):
     here = os.path.dirname(os.path.abspath(__file__))
     new_text = ""
     for file in files:
@@ -42,13 +35,13 @@ def main():
         new_text += "".join( INPUT.readlines() )
         INPUT.close()
         new_text += "\n"
-    if sys.argv[1] != 'vpy':
+    if config_name != 'vpy':
         new_text += "\n"
         new_text += "#\n"
-        new_text += "# Imported from %s\n" % sys.argv[1]
+        new_text += "# Imported from %s\n" % config_name
         new_text += "#\n"
         new_text += "\n"
-        INPUT = open(sys.argv[1],'r')
+        INPUT = open(config_name,'r')
         new_text += "".join( INPUT.readlines() )
         INPUT.close()
     #new_text += "\n"
@@ -79,6 +72,16 @@ def main():
         f.write(new_text)
         f.close()
         os.chmod(script_name, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+
+def main():
+    if len(sys.argv) != 3:
+        sys.stdout.write("vpy_create <config-file> <name>\n")
+        sys.stdout.write("vpy_create vpy <name>\n")
+        sys.exit(1)
+
+    config_name = sys.argv[1]
+    script_name = sys.argv[2]
+    vpy_create(config_name, script_name)
 
 if __name__ == '__main__':
     main()

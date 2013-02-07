@@ -3516,7 +3516,7 @@ class Repository(object):
 
     svn_get='checkout'
     easy_install_path = ["easy_install"]
-    easy_install_flag = '-q'
+    easy_install_flags = ['-q']
     pip_path = ["pip"]
     python = "python"
     svn = "svn"
@@ -3524,7 +3524,11 @@ class Repository(object):
 
     def __init__(self, name, **kwds):
         class _TEMP_(object):
-            def __init__(self, root=None, trunk=None, stable=None, release=None, tag=None, pyname=None, pypi=None, dev=False, username=None, install=True, rev=None, local=None, platform=None, version=None, branch=None, exit=True):
+            def __init__( self, root=None, trunk=None, stable=None, 
+                          release=None, tag=None, pyname=None, pypi=None, 
+                          dev=False, username=None, install=True, rev=None, 
+                          local=None, platform=None, version=None, 
+                          branch=None, exit=True ):
                 import inspect
                 args, varargs, varkw, defaults = inspect.getargspec(self.__init__)
                 for i in range(len(args)-1):
@@ -3857,10 +3861,10 @@ class Repository(object):
                 if offline:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
-                    self.run(self.easy_install_path + [Repository.easy_install_flag, self.pypi], dir=os.path.dirname(dir))
+                    self.run(self.easy_install_path + Repository.easy_install_flags + [self.pypi], dir=os.path.dirname(dir))
             elif preinstall:
                 if not os.path.exists(dir):
-                    self.run(self.easy_install_path + [Repository.easy_install_flag, '--exclude-scripts', '--always-copy', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
+                    self.run(self.easy_install_path + Repository.easy_install_flags + ['--exclude-scripts', '--always-copy', '--editable', '--build-directory', '.', self.pypi], dir=os.path.dirname(dir))
         except OSError:
             err = sys.exc_info()[1] # BUG?
             print("")
@@ -3892,7 +3896,7 @@ class Repository(object):
             print("Not aborting installer...")
 
     def easy_upgrade(self):
-        self.run(self.easy_install_path + [Repository.easy_install_flag, '--upgrade', self.pypi])
+        self.run(self.easy_install_path + Repository.easy_install_flags + ['--upgrade', self.pypi])
 
     def run(self, cmd, dir=None):
         cwd=os.getcwd()
@@ -4093,6 +4097,14 @@ class Installer(object):
             dest='localize',
             default=False)
 
+        parser.add_option('--pypi-url',
+            help='Provide an alernative index_url to easy_install '
+                 '(e.g., to redirect the installer to a local PyPI mirror)',
+            action='store',
+            dest='pypi_url',
+            default=None)
+
+
         #
         # Change the virtualenv options
         #
@@ -4126,7 +4138,9 @@ class Installer(object):
         #
         global logger
         if options.verbose:
-            Repository.easy_install_flag = '-v'
+            # This works because the -v will appear after (and override)
+            # the default -q on the final command line.
+            Repository.easy_install_flags.append('-v')
         verbosity = options.verbose - options.quiet
         self.logger = Logger([(Logger.level_for_integer(2-verbosity), sys.stdout)])
         logger = self.logger
@@ -4180,6 +4194,13 @@ class Installer(object):
         #
         if options.preinstall:
             Repository.svn_get='export'
+        #
+        # If the user requested an alternative PyPI index, add it to the
+        # easy_install command line.
+        #
+        if options.pypi_url:
+            Repository.easy_install_flags.append("--index-url")
+            Repository.easy_install_flags.append(options.pypi_url)
 
     def get_homedir(self, options, args):
         #
@@ -4313,7 +4334,8 @@ class Installer(object):
             self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
             self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
             self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
-            self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+            if sys.version_info[:2] < (3,0):
+                self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
             #
             # Configure the package versions, for offline installs
             #
