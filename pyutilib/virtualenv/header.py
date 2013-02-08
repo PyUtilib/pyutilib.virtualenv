@@ -505,10 +505,14 @@ class Repository(object):
             try:
                 self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.pkgdir+self.rev, dir])
             except OSError:
-                err = sys.exc_info()[1] # BUG?
+                err,tb = sys.exc_info()[1,2] # BUG?
                 print("")
                 print("Error checkout software %s with subversion at %s" % (self.name,self.pkgdir+self.rev))
                 print(str(err))
+                print("\nTraceback:\n")
+                import traceback
+                traceback.print_tb(tb, file=sys.stdout)
+                print("\n")
                 if self.config.exit:
                     print("Aborting installer!")
                     sys.exit(1)
@@ -524,11 +528,15 @@ class Repository(object):
                 else:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
             except OSError:
-                err = sys.exc_info()[1] # BUG?
+                err,tb = sys.exc_info()[1,2] # BUG?
                 print("")
                 print("Error installing software %s from source using the setup.py file." % self.name)
                 print("This is probably due to a syntax or configuration error in this package.")
                 print(str(err))
+                print("\nTraceback:\n")
+                import traceback
+                traceback.print_tb(tb, file=sys.stdout)
+                print("\n")
                 if self.config.exit:
                     print("Aborting installer!")
                     sys.exit(1)
@@ -586,10 +594,14 @@ class Repository(object):
                                  self.pypi], 
                              dir=os.path.dirname(dir))
         except OSError:
-            err = sys.exc_info()[1] # BUG?
+            err,tb = sys.exc_info()[1,2] # BUG?
             print("")
             print("Error installing package %s with easy_install" % self.name)
             print(str(err))
+            print("\nTraceback:\n")
+            import traceback
+            traceback.print_tb(tb, file=sys.stdout)
+            print("\n")
             if self.config.exit:
                 print("Aborting installer!")
                 sys.exit(1)
@@ -611,10 +623,14 @@ class Repository(object):
                               + ['--no-install', '--download', '.', self.pypi],
                               dir=os.path.dirname(dir))
         except OSError:
-            err = sys.exc_info()[1] # BUG?
+            err,tb = sys.exc_info()[1,2] # BUG?
             print("")
             print("Error installing package %s with pip" % self.name)
             print(str(err))
+            print("\nTraceback:\n")
+            import traceback
+            traceback.print_tb(tb, file=sys.stdout)
+            print("\n")
             if self.config.exit:
                 print("Aborting installer!")
                 sys.exit(1)
