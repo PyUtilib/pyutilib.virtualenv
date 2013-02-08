@@ -564,9 +564,9 @@ class Repository(object):
 
     def install_package(self, install, preinstall, dir, offline):
         if Repository.useEasyInstall:
-            return self.easy_install(self, install, preinstall, dir, offline)
+            return self.easy_install(install, preinstall, dir, offline)
         else:
-            return self.pip_install(self, install, preinstall, dir, offline)
+            return self.pip_install(install, preinstall, dir, offline)
 
     def easy_install(self, install, preinstall, dir, offline):
         try:
