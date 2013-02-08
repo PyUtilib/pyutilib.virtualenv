@@ -620,7 +620,8 @@ class Repository(object):
                 if not os.path.exists(dir):
                     self.run( self.pip_path + ['install'] 
                               + Repository.pip_flags 
-                              + ['--no-install', '--build', '.', self.pypi],
+                              + [ '--no-install', '--ignore-installed',
+                                  '--build', '.', self.pypi ],
                               dir=os.path.dirname(dir))
         except OSError:
             err,tb = sys.exc_info()[1:3] # BUG?
