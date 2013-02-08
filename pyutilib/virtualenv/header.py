@@ -505,7 +505,7 @@ class Repository(object):
             try:
                 self.run([self.svn]+self.svn_username+[Repository.svn_get,'-q',self.pkgdir+self.rev, dir])
             except OSError:
-                err,tb = sys.exc_info()[1,2] # BUG?
+                err,tb = sys.exc_info()[1:2] # BUG?
                 print("")
                 print("Error checkout software %s with subversion at %s" % (self.name,self.pkgdir+self.rev))
                 print(str(err))
@@ -528,7 +528,7 @@ class Repository(object):
                 else:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
             except OSError:
-                err,tb = sys.exc_info()[1,2] # BUG?
+                err,tb = sys.exc_info()[1:2] # BUG?
                 print("")
                 print("Error installing software %s from source using the setup.py file." % self.name)
                 print("This is probably due to a syntax or configuration error in this package.")
@@ -594,7 +594,7 @@ class Repository(object):
                                  self.pypi], 
                              dir=os.path.dirname(dir))
         except OSError:
-            err,tb = sys.exc_info()[1,2] # BUG?
+            err,tb = sys.exc_info()[1:2] # BUG?
             print("")
             print("Error installing package %s with easy_install" % self.name)
             print(str(err))
@@ -623,7 +623,7 @@ class Repository(object):
                               + ['--no-install', '--download', '.', self.pypi],
                               dir=os.path.dirname(dir))
         except OSError:
-            err,tb = sys.exc_info()[1,2] # BUG?
+            err,tb = sys.exc_info()[1:2] # BUG?
             print("")
             print("Error installing package %s with pip" % self.name)
             print(str(err))
@@ -655,7 +655,7 @@ class Repository(object):
         if not dir is None:
             os.chdir(dir)
             cwd=dir
-        print( "\n\nRunning command '%s'\n\tin directory %s\n" 
+        print( "\nRunning command '%s'\n\tin directory %s" 
                % (" ".join(cmd), cwd) )
         sys.stdout.flush()
         call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
