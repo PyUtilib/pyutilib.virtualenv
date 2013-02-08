@@ -3803,10 +3803,10 @@ class Repository(object):
                 print("")
                 print("Error checkout software %s with subversion at %s" % (self.name,self.pkgdir+self.rev))
                 print(str(err))
-                print("\nTraceback:\n")
+                print("Traceback:")
                 import traceback
+                traceback.print_stack(f=tb.tb_frame.f_back,file=sys.stdout)
                 traceback.print_tb(tb, file=sys.stdout)
-                print("\n")
                 if self.config.exit:
                     print("Aborting installer!")
                     sys.exit(1)
@@ -3827,10 +3827,10 @@ class Repository(object):
                 print("Error installing software %s from source using the setup.py file." % self.name)
                 print("This is probably due to a syntax or configuration error in this package.")
                 print(str(err))
-                print("\nTraceback:\n")
+                print("Traceback:")
                 import traceback
+                traceback.print_stack(f=tb.tb_frame.f_back,file=sys.stdout)
                 traceback.print_tb(tb, file=sys.stdout)
-                print("\n")
                 if self.config.exit:
                     print("Aborting installer!")
                     sys.exit(1)
@@ -3892,10 +3892,10 @@ class Repository(object):
             print("")
             print("Error installing package %s with easy_install" % self.name)
             print(str(err))
-            print("\nTraceback:\n")
+            print("Traceback:")
             import traceback
+            traceback.print_stack(f=tb.tb_frame.f_back,file=sys.stdout)
             traceback.print_tb(tb, file=sys.stdout)
-            print("\n")
             if self.config.exit:
                 print("Aborting installer!")
                 sys.exit(1)
@@ -3914,17 +3914,17 @@ class Repository(object):
                 if not os.path.exists(dir):
                     self.run( self.pip_path + ['install'] 
                               + Repository.pip_flags 
-                              + ['--no-install', '--download', '.', self.pypi],
+                              + ['--no-install', '--build', '.', self.pypi],
                               dir=os.path.dirname(dir))
         except OSError:
             err,tb = sys.exc_info()[1:3] # BUG?
             print("")
             print("Error installing package %s with pip" % self.name)
             print(str(err))
-            print("\nTraceback:\n")
+            print("Traceback:")
             import traceback
+            traceback.print_stack(f=tb.tb_frame.f_back,file=sys.stdout)
             traceback.print_tb(tb, file=sys.stdout)
-            print("\n")
             if self.config.exit:
                 print("Aborting installer!")
                 sys.exit(1)
