@@ -221,9 +221,11 @@ def unzip_file(filename, dir=None, verbose=False):
 class Repository(object):
 
     svn_get='checkout'
+    useEasyInstall = False
     easy_install_path = ["easy_install"]
     easy_install_flags = ['-q']
     pip_path = ["pip"]
+    pip_flags = ['-q']
     python = "python"
     svn = "svn"
     dev = []
@@ -475,7 +477,7 @@ class Repository(object):
         if not self.version is None and not eval(self.version):
             return
         if self.pkgdir is None and self.local is None:
-            self.easy_install(install, preinstall, dir, offline)
+            self.install_package(install, preinstall, dir, offline)
             return
         if self.local:
             install = True
@@ -546,7 +548,7 @@ class Repository(object):
 
     def perform_update(self, dir=None):
         if self.pkgdir is None:
-            self.easy_upgrade()
+            self.upgrade_packages()
             return
         print("-----------------------------------------------------------------")
         print("  Updating branch")
@@ -560,8 +562,13 @@ class Repository(object):
         else:
             self.run([self.python, 'setup.py', 'install'], dir=dir)
 
+    def install_package(self, install, preinstall, dir, offline):
+        if Repository.useEasyInstall:
+            return self.easy_install(self, install, preinstall, dir, offline)
+        else:
+            return self.pip_install(self, install, preinstall, dir, offline)
+
     def easy_install(self, install, preinstall, dir, offline):
-        #return self.pip_install(install, preinstall, dir, offline)
         try:
             if install:
                 if offline:
@@ -594,10 +601,15 @@ class Repository(object):
                 if offline:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
-                    self.run(self.pip_path + ['-v', self.pypi])
+                    self.run( self.pip_path + ['install'] 
+                              + Repository.pip_flags + [self.pypi],
+                              dir=os.path.dirname(dir))
             elif preinstall:
                 if not os.path.exists(dir):
-                    self.run(self.pip_path + ['-v', '--no-install', '--download', '.', self.pypi], dir=os.path.dirname(dir))
+                    self.run( self.pip_path + ['install'] 
+                              + Repository.pip_flags 
+                              + ['--no-install', '--download', '.', self.pypi],
+                              dir=os.path.dirname(dir))
         except OSError:
             err = sys.exc_info()[1] # BUG?
             print("")
@@ -608,8 +620,18 @@ class Repository(object):
                 sys.exit(1)
             print("Not aborting installer...")
 
+    def upgrade_packages(self):
+        if Repository.useEasyInstall:
+            return self.easy_upgrade()
+        else:
+            return self.pip_upgrade()
+
     def easy_upgrade(self):
         self.run( self.easy_install_path + Repository.easy_install_flags 
+                  + ['--upgrade', self.pypi] )
+
+    def pip_upgrade(self):
+        self.run( self.pip_path + ['install'] + Repository.pip_flags 
                   + ['--upgrade', self.pypi] )
 
     def run(self, cmd, dir=None):
@@ -617,7 +639,8 @@ class Repository(object):
         if not dir is None:
             os.chdir(dir)
             cwd=dir
-        print("Running command '%s' in directory %s" % (" ".join(cmd), cwd))
+        print( "\n\nRunning command '%s'\n\tin directory %s\n" 
+               % (" ".join(cmd), cwd) )
         sys.stdout.flush()
         call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
         if not dir is None:
@@ -854,7 +877,13 @@ class Installer(object):
         if options.verbose:
             # This works because the -v will appear after (and override)
             # the default -q on the final command line.
+            if '-q' in Repository.easy_install_flags:
+                Repository.easy_install_flags.remove('-q')
             Repository.easy_install_flags.append('-v')
+
+            if '-q' in Repository.pip_flags:
+                Repository.pip_flags.remove('-q')
+            Repository.pip_flags.append('-v')
         verbosity = options.verbose - options.quiet
         self.logger = Logger([(Logger.level_for_integer(2-verbosity), sys.stdout)])
         logger = self.logger
@@ -915,6 +944,8 @@ class Installer(object):
         if options.pypi_url:
             Repository.easy_install_flags.append("--index-url")
             Repository.easy_install_flags.append(options.pypi_url)
+            Repository.pip_flags.append("--index-url")
+            Repository.pip_flags.append(options.pypi_url)
 
     def get_homedir(self, options, args):
         #
