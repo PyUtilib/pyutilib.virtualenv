@@ -3880,7 +3880,11 @@ class Repository(object):
         if Repository.useEasyInstall:
             return self.easy_install(install, preinstall, dir, offline)
         else:
-            return self.pip_install(install, preinstall, dir, offline)
+            try:
+                return self.pip_install(install, preinstall, dir, offline)
+            except:
+                print("ERROR installing with PIP; falling back on easy_install")
+            return self.easy_install(install, preinstall, dir, offline)
 
     def easy_install(self, install, preinstall, dir, offline):
         try:
