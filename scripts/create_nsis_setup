@@ -2,6 +2,12 @@
 """Create a "virtual" Python installation
 """
 
+#
+# This utility is deprecated and may be removed in the future.  I
+# believe that it's functionality has been migrated over to the
+# pyutilib.autodist.makensis.py utility
+#
+
 # If you change the version here, change it in setup.py 
 # and docs/conf.py as well.
 virtualenv_version = "1.6.1"
