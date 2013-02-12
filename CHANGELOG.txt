@@ -3,10 +3,30 @@
 ===============================
 
 -------------------------------------------------------------------------------
- 3.3
+ 3.4
 -------------------------------------------------------------------------------
 
 - Under development.
+
+-------------------------------------------------------------------------------
+ 3.3
+-------------------------------------------------------------------------------
+
+- Letting PIP fall back on easy_install (if PIP fails, e.g., for packages
+  that only distribute eggs)
+
+-  Overhaul to filenaming conventions within the source code:
+    renaming installer.py → vpy_create.py
+    updating vpy_create() to embed useful comments at the beginning of the generated installer.
+    scripts/vpy_install now points to the main pyutilib/virtualenv/vpy_install.py
+    updating vpy_create so that it can run without having to install pyutilib.virtualenv
+
+- When pre-installing, force pip to ignore already-installed packages
+
+- Switching vpy_install to use PIP instead of easy_install
+
+- Adding the --pypi-url option to redirect the virtual environment
+  setup process to a PyPI mirror
 
 -------------------------------------------------------------------------------
  3.2
