@@ -817,12 +817,26 @@ class Installer(object):
             dest='use_pythonpath',
             default=False)
 
-        parser.add_option(
-            '--site-packages',
-            dest='no_site_packages',
-            action='store_false',
-            help="Setup the virtual environment to use the global site-packages",
-            default=True)
+        # Historically, virtualenv used --no-site-packages, but
+        # recently, they moved to --system-site-packages /
+        # --no-site-packages.  Either way, they support the
+        # "--no-site-packages" option.  For portability, we will query
+        # that argument and set the default to the logical negation.
+        if not parser.has_option('--no-site-packages'):
+            raise RuntimeError(
+                "Internal VirtualEnv error: cannot determine the name of "
+                "the --no-site-packages option.  "
+                "Please report this to the PyUtilib Developers.")
+        site_packages_opt = parser.get_option('--no-site-packages')
+        if site_packages_opt.action == 'store_true':
+            parser.set_defaults(**dict([tuple([site_packages_opt.dest,False])]))
+        elif site_packages_opt.action == 'store_false':
+            parser.set_defaults(**dict([tuple([site_packages_opt.dest,True])]))
+        else:
+            raise RuntimeError(
+                "Internal VirtualEnv error: cannot determine the store "
+                "function for the --no-site-packages option.  "
+                "Please report this to the PyUtilib Developers.")
 
         parser.add_option(
             '-a', '--add-package',
@@ -874,7 +888,6 @@ class Installer(object):
         parser.remove_option("--relocatable")
         parser.remove_option("--version")
         parser.remove_option("--unzip-setuptools")
-        parser.remove_option("--no-site-packages")
         parser.remove_option("--clear")
         #
         # Add description
