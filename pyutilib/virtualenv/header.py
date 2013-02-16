@@ -232,7 +232,7 @@ class Repository(object):
 
     def __init__(self, name, **kwds):
         class _TEMP_(object):
-            def __init__( self, root=None, trunk=None, stable=None, 
+            def __init__( self, root=None, trunk=None, 
                           release=None, tag=None, pyname=None, pypi=None, 
                           dev=False, username=None, install=True, rev=None, 
                           local=None, platform=None, version=None, 
@@ -242,6 +242,10 @@ class Repository(object):
                 for i in range(len(args)-1):
                     kwd = args[i+1]
                     setattr(self, kwd, defaults[i])
+        if os.path.exists(name):
+            self.offline=True
+        else:
+            self.offline=False
         self.config = _TEMP_()
         self.config.name = name
         for kwd in kwds:
@@ -270,8 +274,6 @@ class Repository(object):
         self.trunk = None
         self.trunk_root = None
         self.branch = None
-        self.stable = None
-        self.stable_root = None
         self.release = None
         self.tag = None
         self.release_root = None
@@ -305,9 +307,9 @@ class Repository(object):
             self.revarg=['-r',config.rev]
         self.install = config.install
 
-    def guess_versions(self, offline=False):
+    def guess_versions(self):
         if not self.config.root is None:
-            if not offline:
+            if not self.offline:
                 if using_subversion and not sys.platform.startswith('win'):
                     rootdir_output = subprocess.Popen(['svn','ls',self.config.root], stdout=subprocess.PIPE).communicate()[0]
                 else:
@@ -326,22 +328,14 @@ class Repository(object):
                 self.trunk = self.config.root+'/trunk'
             self.trunk_root = self.trunk
             try:
-                if offline or not 'stable' in rootdir_output:
-                    raise IOError
-                self.stable = guess_release(self.config.root+'/stable')
-                self.stable_root = self.stable
-            except (urllib2.HTTPError,IOError):
-                self.stable = None
-                self.stable_root = None
-            try:
-                if offline or not 'releases' in rootdir_output:
+                if self.offline or not 'releases' in rootdir_output:
                     raise IOError
                 self.release = guess_release(self.config.root+'/releases')
                 self.tag = None
                 self.release_root = self.release
             except (urllib2.HTTPError,IOError):
                 try:
-                    if offline or not 'tags' in rootdir_output:
+                    if self.offline or not 'tags' in rootdir_output:
                         raise IOError
                     self.release = guess_release(self.config.root+'/tags')
                     self.tag = self.release
@@ -354,11 +348,6 @@ class Repository(object):
                 self.trunk = self.config.trunk
             else:
                 self.trunk += self.config.trunk
-        if not self.config.stable is None:
-            if self.stable is None:
-                self.stable = self.config.stable
-            else:
-                self.stable += self.config.stable
         if not self.config.release is None:
             if self.release is None:
                 self.release = self.config.release
@@ -379,8 +368,6 @@ class Repository(object):
             print('root=%s' % config.root)
         if not config.trunk is None:
             print('trunk=%s' % config.trunk)
-        if not config.stable is None:
-            print('stable=%s' % config.stable)
         if not config.tag is None:
             print('tag=%s' % config.tag)
         elif not config.release is None:
@@ -407,12 +394,10 @@ class Repository(object):
         sys.stdout = sys.__stdout__
 
 
-    def find_pkgroot(self, trunk=False, stable=False, release=False):
+    def find_pkgroot(self, trunk=False, release=False):
         if trunk:
             if self.trunk is None:
-                if not self.stable is None:
-                    self.find_pkgroot(stable=True)
-                elif self.pypi is None and self.local is None:
+                if self.pypi is None and self.local is None:
                     self.find_pkgroot(release=True)
                 else:
                     # use easy_install
@@ -424,27 +409,9 @@ class Repository(object):
                 self.pkgroot = self.trunk_root
                 return
 
-        elif stable:
-            if self.stable is None:
-                if not self.release is None:
-                    self.find_pkgroot(release=True)
-                elif self.pypi is None and self.local is None:
-                    self.find_pkgroot(trunk=True)
-                else:
-                    # use easy_install
-                    self.pkgdir = None
-                    self.pkgroot = None
-                    return
-            else:
-                self.pkgdir = self.stable
-                self.pkgroot = self.stable_root
-                return
-
         elif release:
             if self.release is None:
-                if not self.stable is None:
-                    self.find_pkgroot(stable=True)
-                elif self.pypi is None and self.local is None:
+                if self.pypi is None and self.local is None:
                     self.find_pkgroot(trunk=True)
                 else:
                     # use easy_install
@@ -456,28 +423,24 @@ class Repository(object):
                 self.pkgroot = self.release_root
 
         else:
-            raise IOError("Must have one of trunk, stable or release specified: %s" % self.name)
+            raise IOError("Must have one of trunk or release specified: %s" % self.name)
 
 
-    def install_trunk(self, dir=None, install=True, preinstall=False, offline=False):
+    def install_trunk(self, dir=None, install=True, preinstall=False):
         self.find_pkgroot(trunk=True)
-        self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
+        self.perform_install(dir=dir, install=install, preinstall=preinstall)
 
-    def install_stable(self, dir=None, install=True, preinstall=False, offline=False):
-        self.find_pkgroot(stable=True)
-        self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
-
-    def install_release(self, dir=None, install=True, preinstall=False, offline=False):
+    def install_release(self, dir=None, install=True, preinstall=False):
         self.find_pkgroot(release=True)
-        self.perform_install(dir=dir, install=install, preinstall=preinstall, offline=offline)
+        self.perform_install(dir=dir, install=install, preinstall=preinstall)
 
-    def perform_install(self, dir=None, install=True, preinstall=False, offline=False):
+    def perform_install(self, dir=None, install=True, preinstall=False):
         if not self.platform_re is None and not self.platform_re.match(sys.platform):
             return
         if not self.version is None and not eval(self.version):
             return
         if self.pkgdir is None and self.local is None:
-            self.install_package(install, preinstall, dir, offline)
+            self.install_package(install, preinstall, dir)
             return
         if self.local:
             install = True
@@ -521,7 +484,7 @@ class Repository(object):
         if install:
             try:
                 if self.dev:
-                    if offline:
+                    if self.offline:
                         self.run([self.python, 'setup.py', 'develop', '--no-deps'], dir=dir)
                     else:
                         self.run([self.python, 'setup.py', 'develop'], dir=dir)
@@ -542,48 +505,20 @@ class Repository(object):
                     sys.exit(1)
                 print("Not aborting installer...")
 
-    def update_trunk(self, dir=None):
-        self.find_pkgroot(trunk=True)
-        self.perform_update(dir=dir)
-
-    def update_stable(self, dir=None):
-        self.find_pkgroot(stable=True)
-        self.perform_update(dir=dir)
-
-    def update_release(self, dir=None):
-        self.find_pkgroot(release=True)
-        self.perform_update(dir=dir)
-
-    def perform_update(self, dir=None):
-        if self.pkgdir is None:
-            self.upgrade_packages()
-            return
-        print("-----------------------------------------------------------------")
-        print("  Updating branch")
-        print("  Updating source for package "+self.name)
-        print("     Subversion dir: "+self.pkgdir)
-        print("     Source dir:     "+dir)
-        print("-----------------------------------------------------------------")
-        self.run([self.svn,'update','-q']+self.revarg+[dir])
-        if self.dev:
-            self.run([self.python, 'setup.py', 'develop'], dir=dir)
-        else:
-            self.run([self.python, 'setup.py', 'install'], dir=dir)
-
-    def install_package(self, install, preinstall, dir, offline):
+    def install_package(self, install, preinstall, dir):
         if Repository.useEasyInstall:
-            return self.easy_install(install, preinstall, dir, offline)
+            return self.easy_install(install, preinstall, dir)
         else:
             try:
-                return self.pip_install(install, preinstall, dir, offline)
+                return self.pip_install(install, preinstall, dir)
             except:
                 print("ERROR installing with PIP; falling back on easy_install")
-            return self.easy_install(install, preinstall, dir, offline)
+            return self.easy_install(install, preinstall, dir)
 
-    def easy_install(self, install, preinstall, dir, offline):
+    def easy_install(self, install, preinstall, dir):
         try:
             if install:
-                if offline:
+                if self.offline:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
                     self.run( self.easy_install_path 
@@ -611,10 +546,10 @@ class Repository(object):
                 sys.exit(1)
             print("Not aborting installer...")
 
-    def pip_install(self, install, preinstall, dir, offline):
+    def pip_install(self, install, preinstall, dir):
         try:
             if install:
-                if offline:
+                if self.offline:
                     self.run([self.python, 'setup.py', 'install'], dir=dir)
                 else:
                     self.run( self.pip_path + ['install'] 
@@ -730,7 +665,7 @@ class Installer(object):
 """ % sys.argv[0]
 
     def add_repository(self, *args, **kwds):
-        if not 'root' in kwds and not 'pypi' in kwds and not 'release' in kwds and not 'trunk' in kwds and not 'stable' in kwds:
+        if not 'root' in kwds and not 'pypi' in kwds and not 'release' in kwds and not 'trunk' in kwds:
             raise IOError("No repository info specified for repository "+args[0])
         repos = Repository( *args, **kwds)
         if repos.name in self.sw_dict:
@@ -769,18 +704,6 @@ class Installer(object):
             dest='trunk',
             default=False)
 
-        parser.add_option('--stable',
-            help='Install stable branches of Python software using subversion.',
-            action='store_true',
-            dest='stable',
-            default=False)
-
-        parser.add_option('--update',
-            help='Update all Python packages.',
-            action='store_true',
-            dest='update',
-            default=False)
-
         parser.add_option('--proxy',
             help='Set the HTTP_PROXY environment with this option.',
             action='store',
@@ -791,12 +714,6 @@ class Installer(object):
             help='Prepare an installation that will be used to build a MS Windows installer.',
             action='store_true',
             dest='preinstall',
-            default=False)
-
-        parser.add_option('--offline',
-            help='Perform installation offline, using source extracted from ZIP files.',
-            action='store_true',
-            dest='offline',
             default=False)
 
         parser.add_option('--zip',
@@ -937,34 +854,21 @@ class Installer(object):
             print("")
             using_subversion = False
         #
-        if options.update and (options.stable or options.trunk):
-            self.logger.fatal("ERROR: cannot specify --stable or --trunk when specifying the --update option.")
-            sys.exit(1000)
-        if options.update and len(options.config_files) > 0:
-            self.logger.fatal("ERROR: cannot specify --config when specifying the --update option.")
-            sys.exit(1000)
-        if options.update and options.keep_config:
-            self.logger.fatal("ERROR: cannot specify --keep-config when specifying the --update option.")
-            sys.exit(1000)
         if len(args) > 1:
             self.logger.fatal("ERROR: installer script can only have one argument")
             sys.exit(1000)
         #
         # Error checking
         #
-        if not options.preinstall and (os.path.exists(self.abshome_dir) ^ options.update):
-            if options.update:
-                self.logger.fatal(wrapper.fill("ERROR: The 'update' option is specified, but the installation path '%s' does not exist!" % self.home_dir))
-                sys.exit(1000)
-            elif os.path.exists(join(self.abshome_dir,'bin')):
-                self.logger.fatal(wrapper.fill("ERROR: The installation path '%s' already exists!  Use the --update option if you wish to update, or remove this directory to create a fresh installation." % self.home_dir))
-                sys.exit(1000)
+        if not options.preinstall and os.path.exists(self.abshome_dir):
+            self.logger.fatal(wrapper.fill("ERROR: The installation path '%s' already exists! Remove this directory to create a fresh installation." % self.home_dir))
+            sys.exit(1000)
         if len(args) == 0:
             args.append(self.abshome_dir)
         #
         # Reset the config file if no options are specified
         #
-        if not self.config_file is None and not (options.trunk or options.stable or options.release):
+        if not self.config_file is None and not (options.trunk or options.release):
             self.config_file = os.path.dirname(self.config_file)+"/pypi.ini"
         #
         # If applying preinstall, then only do subversion exports
@@ -1020,28 +924,22 @@ class Installer(object):
     def setup_installer(self, options):
         if options.preinstall:
             print("Creating preinstall zip file in '%s'" % self.home_dir)
-        elif options.update:
-            print("Updating existing installation in '%s'" % self.home_dir)
         else:
             print("Starting fresh installation in '%s'" % self.home_dir)
         #
         # Setup HTTP proxy
         #
-        if options.offline:
-            os.environ['HTTP_PROXY'] = ''
-            os.environ['http_proxy'] = ''
-        else:
-            proxy = ''
-            if not options.proxy is None:
-                proxy = options.proxy
-            if proxy is '':
-                proxy = os.environ.get('HTTP_PROXY', '')
-            if proxy is '':
-                proxy = os.environ.get('http_proxy', '')
-            os.environ['HTTP_PROXY'] = proxy
-            os.environ['http_proxy'] = proxy
-            print("  using the HTTP_PROXY environment: %s" % proxy)
-            print("")
+        proxy = ''
+        if not options.proxy is None:
+            proxy = options.proxy
+        if proxy is '':
+            proxy = os.environ.get('HTTP_PROXY', '')
+        if proxy is '':
+            proxy = os.environ.get('http_proxy', '')
+        os.environ['HTTP_PROXY'] = proxy
+        os.environ['http_proxy'] = proxy
+        print("  using the HTTP_PROXY environment: %s" % proxy)
+        print("")
         #
         # Disable the PYTHONPATH, to isolate this installation from
         # other Python installations that a user may be working with.
@@ -1065,7 +963,7 @@ class Installer(object):
         # When preinstalling or working offline, disable the
         # default install_setuptools() function.
         #
-        if options.offline:
+        if options.trunk or options.release:
             install_setuptools.use_default=False
             install_distribute.use_default=False
             install_pip.use_default=False
@@ -1084,7 +982,7 @@ class Installer(object):
         #
         # Parse config files
         #
-        if options.update or options.release:
+        if options.release:
             if os.path.exists(join(self.abshome_dir, 'admin', 'config.ini')):
                 self.config=None
                 options.config_files.append( join(self.abshome_dir, 'admin', 'config.ini') )
@@ -1106,10 +1004,7 @@ class Installer(object):
         print(" END - Configuration summary")
         print("-----------------------------------------------------------------")
         #
-        if options.preinstall or not options.offline:
-            #self.get_packages(options)
-            pass
-        else:
+        if not options.preinstall and not (options.trunk or options.release):
             self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
             self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
             self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
@@ -1119,7 +1014,7 @@ class Installer(object):
             # Configure the package versions, for offline installs
             #
             for pkg in self.sw_packages:
-                pkg.guess_versions(True)
+                pkg.guess_versions()
 
     def get_packages(self, options):
         #
@@ -1129,20 +1024,12 @@ class Installer(object):
             os.mkdir(self.abshome_dir)
         if not os.path.exists(join(self.abshome_dir,'admin')):
             os.mkdir(join(self.abshome_dir,'admin'))
-        if options.update:
-            INPUT=open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'r')
-            options.trunk = INPUT.readline().strip() != 'False'
-            options.stable = INPUT.readline().strip() != 'False'
-            options.release = INPUT.readline().strip() != 'False'
-            INPUT.close()
-        else:
-            sys.stdout = open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'w')
-            print(options.trunk)
-            print(options.stable)
-            print(options.release)
-            sys.stdout.close()
-            sys.stdout = sys.__stdout__
-            self.write_config( join(self.abshome_dir,'admin','config.ini') )
+        sys.stdout = open(join(self.abshome_dir,'admin',"virtualenv.cfg"),'w')
+        print(options.trunk)
+        print(options.release)
+        sys.stdout.close()
+        sys.stdout = sys.__stdout__
+        self.write_config( join(self.abshome_dir,'admin','config.ini') )
         #
         # Setup package directories
         #
@@ -1176,9 +1063,9 @@ class Installer(object):
         # Get package source
         #
         for pkg in self.sw_packages:
-            pkg.guess_versions(False)
+            pkg.guess_versions()
             if not pkg.install:
-                pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=options.release)
+                pkg.find_pkgroot(trunk=options.trunk, release=options.release)
                 continue
             if pkg.local:
                 tmp = pkg.local
@@ -1187,15 +1074,10 @@ class Installer(object):
             else:
                 tmp = join(self.abshome_dir,'dist',pkg.name)
             if options.trunk:
-                if not options.update:
-                    pkg.install_trunk(dir=tmp, install=False, preinstall=options.preinstall, offline=options.offline)
-            elif options.stable:
-                if not options.update:
-                    pkg.install_stable(dir=tmp, install=False, preinstall=options.preinstall, offline=options.offline)
+                pkg.install_trunk(dir=tmp, install=False, preinstall=options.preinstall)
             else:
-                if not options.update:
-                    pkg.install_release(dir=tmp, install=False, preinstall=options.preinstall, offline=options.offline)
-        if options.update or not os.path.exists(join(self.abshome_dir,'doc')):
+                pkg.install_release(dir=tmp, install=False, preinstall=options.preinstall)
+        if not os.path.exists(join(self.abshome_dir,'doc')):
             self.install_auxdirs(options)
         #
         # Create a README.txt file
@@ -1253,14 +1135,13 @@ class Installer(object):
         else:
             Repository.pip_path = [os.path.abspath(join(bindir, 'pip.exe'))]
         #
-        if options.preinstall or not options.offline:
-            self.get_packages(options)
+        self.get_packages(options)
         #
         # Install the related packages
         #
         for pkg in self.sw_packages:
             if not pkg.install:
-                pkg.find_pkgroot(trunk=options.trunk, stable=options.stable, release=options.release)
+                pkg.find_pkgroot(trunk=options.trunk, release=options.release)
                 continue
             if pkg.local:
                 srcdir = pkg.local
@@ -1269,20 +1150,9 @@ class Installer(object):
             else:
                 srcdir = join(self.abshome_dir,'dist',pkg.name)
             if options.trunk:
-                if options.update:
-                    pkg.update_trunk(dir=srcdir)
-                else:
-                    pkg.install_trunk(dir=srcdir, preinstall=options.preinstall, offline=options.offline)
-            elif options.stable:
-                if options.update:
-                    pkg.update_stable(dir=srcdir)
-                else:
-                    pkg.install_stable(dir=srcdir, preinstall=options.preinstall, offline=options.offline)
+                pkg.install_trunk(dir=srcdir, preinstall=options.preinstall)
             else:
-                if options.update:
-                    pkg.update_release(dir=srcdir)
-                else:
-                    pkg.install_release(dir=srcdir, preinstall=options.preinstall, offline=options.offline)
+                pkg.install_release(dir=srcdir, preinstall=options.preinstall)
         #
         # Localize DOS cmd files
         #
@@ -1298,11 +1168,10 @@ class Installer(object):
         #
         # Misc notifications
         #
-        if not options.update:
-            print("")
-            print("-----------------------------------------------------------------")
-            print("  Add %s to the PATH environment variable" % (self.home_dir+os.sep+"bin"))
-            print("-----------------------------------------------------------------")
+        print("")
+        print("-----------------------------------------------------------------")
+        print("  Add %s to the PATH environment variable" % (self.home_dir+os.sep+"bin"))
+        print("-----------------------------------------------------------------")
         print("")
         print("Finished installation in '%s'" % self.home_dir)
 
@@ -1336,12 +1205,9 @@ class Installer(object):
     def install_auxdirs(self, options):
         for todir,pkg,fromdir in self.auxdir:
             pkgroot = self.sw_dict[pkg].pkgroot
-            if options.update:
-                cmd = [Repository.svn,'update','-q',self.svnjoin(self.abshome_dir, todir)]
-            else:
-                if options.clear:
-                    rmtree( join(self.abshome_dir,todir) )
-                cmd = [Repository.svn,Repository.svn_get,'-q',self.svnjoin(pkgroot,fromdir),join(self.abshome_dir,todir)]
+            if options.clear:
+                rmtree( join(self.abshome_dir,todir) )
+            cmd = [Repository.svn,Repository.svn_get,'-q',self.svnjoin(pkgroot,fromdir),join(self.abshome_dir,todir)]
             print("Running command '%s'" % " ".join(cmd))
             sys.stdout.flush()
             call_subprocess(cmd, filter_stdout=filter_python_develop,show_stdout=True)
