@@ -246,6 +246,7 @@ class Repository(object):
             self.offline=True
         else:
             self.offline=False
+        print "Repository",name,self.offline, os.getcwd()
         self.config = _TEMP_()
         self.config.name = name
         for kwd in kwds:
@@ -816,7 +817,7 @@ class Installer(object):
         # Add description
         #
         parser.description=self.description
-        parser.epilog="If DEST_DIR is not specified, then a default installation path is used:  "+self.default_windir+" on Windows and "+self.default_unixdir+" on Linux.  This command uses the Python 'setuptools' package to install Python packages.  This package installs packages by downloading files from the internet.  If you are running this from within a firewall, you may need to set the HTTP_PROXY environment variable to a value like 'http://<proxyhost>:<port>'."
+        parser.epilog="If DEST_DIR is not specified, then a default installation path is used:  "+self.default_windir+" on Windows and "+self.default_unixdir+" on Linux.  This command uses the Python 'pip' package to install Python packages.  This package installs packages by downloading files from the internet.  If you are running this from within a firewall, you may need to set the HTTP_PROXY environment variable to a value like 'http://<proxyhost>:<port>'."
 
 
     def adjust_options(self, options, args):
