@@ -3653,7 +3653,7 @@ class Repository(object):
             tmp = join(Installer.abshome_dir,'dist',name)
         if tmp and os.path.exists(tmp):
             self.offline=True
-        print "Repository",self.offline,tmp,name
+        print("Repository %s %s %s" % (str(self.offline),tmp,name))
         #
         self.initialize(self.config)
 
@@ -4403,10 +4403,11 @@ class Installer(object):
         if not options.preinstall and not (options.trunk or options.release):
             self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
             self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
-            if sys.version_info[:2] < (3,0):
-                self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
-            else:
-                self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
+            #if sys.version_info[:2] < (3,0):
+            #    self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+            #else:
+            #    self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
+            self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
             #
             # Configure the package versions, for offline installs
             #
@@ -4441,16 +4442,16 @@ class Installer(object):
         #
         self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
         self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
-        if sys.version_info[:2] < (3,0):
-            self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
-        else:
-            self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
+        #if sys.version_info[:2] < (3,0):
+        #    self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+        #else:
+        self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
         if options.preinstall:
             #
             # When preinstalling, add the setuptools package to the installation list
             #
             self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
-            self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+            #self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
         for _pkg in options.packages:
             if os.path.exists(_pkg):
                 self.sw_packages.append( Repository(_pkg, local=os.path.abspath(_pkg)) )
