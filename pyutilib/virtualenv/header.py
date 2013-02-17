@@ -242,19 +242,6 @@ class Repository(object):
                 for i in range(len(args)-1):
                     kwd = args[i+1]
                     setattr(self, kwd, defaults[i])
-        #
-        self.offline=False
-        tmp = None
-        if self.local:
-            tmp = self.local
-        elif self.dev:
-            tmp = join(self.srcdir, self.name)
-        else:
-            tmp = join(self.abshome_dir,'dist',self.name)
-        if tmp and os.path.exists(tmp):
-            self.offline=True
-        print "Repository",self.offline,tmp,name
-        #
         self.config = _TEMP_()
         self.config.name = name
         for kwd in kwds:
@@ -275,6 +262,19 @@ class Repository(object):
                     self.config.exit = True
             else:
                 setattr(self.config, kwd, kwds[kwd])
+        #
+        self.offline=False
+        tmp = None
+        if self.config.local:
+            tmp = self.config.local
+        elif self.config.dev:
+            tmp = join(Installer.abshome_dir,'src', name)
+        else:
+            tmp = join(Installer.abshome_dir,'dist',name)
+        if tmp and os.path.exists(tmp):
+            self.offline=True
+        print "Repository",self.offline,tmp,name
+        #
         self.initialize(self.config)
 
     def initialize(self, config):
@@ -639,11 +639,12 @@ wrapper = textwrap.TextWrapper(subsequent_indent="    ")
 
 class Installer(object):
 
+    abshome_dir = None
+
     def __init__(self):
         self.description="This script manages the installation of packages into a virtual Python installation."
         self.home_dir = None
         self.default_dirname='python'
-        self.abshome_dir = None
         self.sw_packages = []
         self.sw_dict = {}
         self.cmd_files = []
@@ -917,7 +918,7 @@ class Installer(object):
         else:
             home_dir = args[0]
         self.home_dir = home_dir
-        self.abshome_dir = os.path.abspath(home_dir)
+        Installer.abshome_dir = os.path.abspath(home_dir)
         if options.source is None:
             self.srcdir = join(self.abshome_dir,'src')
         else:
