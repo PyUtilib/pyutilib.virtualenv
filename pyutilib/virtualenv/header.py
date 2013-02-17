@@ -963,7 +963,8 @@ class Installer(object):
         # When preinstalling or working offline, disable the
         # default install_setuptools() function.
         #
-        if options.trunk or options.release:
+        print "HERE", options
+        if not options.preinstall and (options.trunk or options.release):
             install_setuptools.use_default=False
             install_distribute.use_default=False
             install_pip.use_default=False
