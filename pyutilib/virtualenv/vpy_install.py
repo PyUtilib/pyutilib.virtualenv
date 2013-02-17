@@ -4084,6 +4084,12 @@ class Installer(object):
             dest='trunk',
             default=False)
 
+        parser.add_option('--offline',
+            help='Disable the installation of offline packages',
+            action='store_true',
+            dest='install_offline',
+            default=False)
+
         parser.add_option('--proxy',
             help='Set the HTTP_PROXY environment with this option.',
             action='store',
@@ -4240,7 +4246,7 @@ class Installer(object):
         #
         # Error checking
         #
-        if not options.preinstall and os.path.exists(self.abshome_dir):
+        if not options.preinstall and os.path.exists(self.abshome_dir+os.sep+'bin'):
             self.logger.fatal(wrapper.fill("ERROR: The installation path '%s' already exists! Remove this directory to create a fresh installation." % self.home_dir))
             sys.exit(1000)
         if len(args) == 0:
@@ -4343,10 +4349,10 @@ class Installer(object):
         # When preinstalling or working offline, disable the
         # default install_setuptools() function.
         #
-        #if not options.preinstall:
-        #    install_setuptools.use_default=False
-        #    install_distribute.use_default=False
-        #    install_pip.use_default=False
+        if not options.preinstall or options.install_offline:
+            install_setuptools.use_default=False
+            install_distribute.use_default=False
+            install_pip.use_default=False
         #
         # If we're clearing the current installation, then remove a bunch of
         # directories
