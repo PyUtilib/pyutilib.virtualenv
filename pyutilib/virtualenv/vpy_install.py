@@ -4402,10 +4402,11 @@ class Installer(object):
         #
         if not options.preinstall and not (options.trunk or options.release):
             self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
-            self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
-            self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
             if sys.version_info[:2] < (3,0):
                 self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+            else:
+                self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
+            self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
             #
             # Configure the package versions, for offline installs
             #
@@ -4439,6 +4440,10 @@ class Installer(object):
         # Get source packages
         #
         self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
+        if sys.version_info[:2] < (3,0):
+            self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+        else:
+            self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
         self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
         if options.preinstall:
             #
