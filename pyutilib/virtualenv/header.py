@@ -242,11 +242,19 @@ class Repository(object):
                 for i in range(len(args)-1):
                     kwd = args[i+1]
                     setattr(self, kwd, defaults[i])
-        if os.path.exists(name):
-            self.offline=True
+        #
+        self.offline=False
+        tmp = None
+        if self.local:
+            tmp = self.local
+        elif self.dev:
+            tmp = join(self.srcdir, self.name)
         else:
-            self.offline=False
-        print "Repository",name,self.offline, os.getcwd()
+            tmp = join(self.abshome_dir,'dist',self.name)
+        if tmp and os.path.exists(tmp):
+            self.offline=True
+        print "Repository",self.offline,tmp,name
+        #
         self.config = _TEMP_()
         self.config.name = name
         for kwd in kwds:
