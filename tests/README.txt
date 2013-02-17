@@ -58,47 +58,6 @@ NOTE: this uses the ZIP file generated in (3).
 . Verify that */doc exists
 
 
-6. ../scripts/vpy_install --config test5.ini
-   ../scripts/vpy_install --update
-
-. Verify that easy_install upgrades nose
-. Verify that the other packages are updated with subversion
-. Verify that pyutilib.enum and tevaspot are installed with 'develop'
-. Verify that pyutilib.th is installed with 'install'
-
-
-7. ../scripts/vpy_install --config test5.ini dummy
-   ../scripts/vpy_install --update
-
-. Verify that this gives an error because the directory 'python' does
-  not exist.
-
-
-8. ../scripts/vpy_install --config test5.ini dummy
-   ../scripts/vpy_install --update dummy
-
-. Verify that easy_install upgrades nose
-. Verify that the other packages are updated with subversion
-. Verify that pyutilib.enum and tevaspot are installed with 'develop'
-. Verify that pyutilib.th is installed with 'install'
-
-
-9. ../scripts/vpy_install --config test5.ini --trunk
-   ../scripts/vpy_install --update
-
-. Verify that easy_install upgrades nose
-. Verify that the other packages are updated with subversion
-. Verify that pyutilib.enum and tevaspot are installed with 'develop'
-. Verify that pyutilib.th is installed with 'install'
-
-
-10. ../scripts/vpy_install --config test5.ini --localize
-    ../scripts/vpy_install --localize --update
-
-. Verify that the CMD files are localized after installation.
-. Verify that the CMD files are localized after update.
-
-
 11. setenv SSG_USERNAME foobar
     ../scripts/vpy_install --config test5.ini
 
