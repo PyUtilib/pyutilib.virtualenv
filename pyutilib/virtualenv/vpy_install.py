@@ -3350,7 +3350,7 @@ print("\nNOTE: this Python executable used to create virtual environment:\n\t%s\
 #
 # The following taken from PyUtilib
 #
-if (sys.platform.startswith('win'): #pragma:nocover
+if sys.platform.startswith('win'): #pragma:nocover
     executable_extension=".exe"
 else:                            #pragma:nocover
     executable_extension=""
