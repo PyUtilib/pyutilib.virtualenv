@@ -3350,7 +3350,7 @@ print("\nNOTE: this Python executable used to create virtual environment:\n\t%s\
 #
 # The following taken from PyUtilib
 #
-if (sys.platform[0:3] == "win"): #pragma:nocover
+if (sys.platform.startswith('win'): #pragma:nocover
     executable_extension=".exe"
 else:                            #pragma:nocover
     executable_extension=""
@@ -3533,7 +3533,7 @@ class Repository(object):
     pip_path = None #["pip"]
     pip_flags = ['-q']
     python = None #"python"
-    svn = "svn"
+    svn = "svn" + executable_extension
     dev = []
 
     def __init__(self, name, **kwds):
@@ -3607,6 +3607,8 @@ class Repository(object):
                     Repository.python = _path
             else:
                 _path = os.path.abspath(join(bindir, 'python'))
+                if sys.platform.startswith('win'):
+                    _path += 'w.exe'
                 if os.path.exists(_path):
                     Repository.python = _path
             if Repository.python is None:
@@ -3967,12 +3969,6 @@ class Repository(object):
         call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
         if not dir is None:
             os.chdir(cwd)
-
-
-if sys.platform.startswith('win'):
-    if not is_jython:
-        Repository.python += 'w.exe'
-    Repository.svn += '.exe'
 
 
 def filter_python_develop(line):
