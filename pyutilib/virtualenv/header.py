@@ -221,12 +221,12 @@ def unzip_file(filename, dir=None, verbose=False):
 class Repository(object):
 
     svn_get='checkout'
-    useEasyInstall = False
-    easy_install_path = ["easy_install"]
+    useEasyInstall = True
+    easy_install_path = None #["easy_install"]
     easy_install_flags = ['-q']
-    pip_path = ["pip"]
+    pip_path = None #["pip"]
     pip_flags = ['-q']
-    python = "python"
+    python = None #"python"
     svn = "svn"
     dev = []
 
@@ -276,6 +276,52 @@ class Repository(object):
         print("Repository %s %s %s" % (str(self.offline),tmp,name))
         #
         self.initialize(self.config)
+
+    @staticmethod
+    def _configureExecutables(installer=None):
+        #
+        # Set the bin directory
+        #
+        if installer is not None:
+            if os.path.exists(installer.abshome_dir+os.sep+"Scripts"):
+                Repository.bindir = join(installer.abshome_dir,"Scripts")
+            else:
+                Repository.bindir = join(installer.abshome_dir,"bin")
+
+        bindir = Repository.bindir
+        if bindir is None:
+            print("(ERROR) installer called _configureExecutables() "
+                  "before _configureExecutables(installer)")
+            return
+
+        if Repository.python is None:
+            _path = os.path.abspath(join(bindir, 'jython.bat'))
+            if is_jython:
+                if os.path.exists(_path):
+                    Repository.python = _path
+            else:
+                _path = os.path.abspath(join(bindir, 'python'))
+                if os.path.exists(_path):
+                    Repository.python = _path
+            if Repository.python is None:
+                print("(INFO) Virtualenv 'python' executable not found")
+        if Repository.easy_install_path is None:
+            _path = os.path.abspath(join(bindir, 'easy_install'))
+            if os.path.exists(_path):
+                Repository.easy_install_path = [Repository.python, _path]
+            elif os.path.exists(_path + '.exe'):
+                Repository.easy_install_path = [_path + '.exe']
+            else:
+                print("(INFO) Virtualenv 'easy_install' executable not found")
+        if Repository.pip_path is None:
+            _path = os.path.abspath(join(bindir, 'pip'))
+            if os.path.exists(_path):
+                Repository.pip_path = [Repository.python, _path]
+            elif os.path.exists(_path + '.exe'):
+                Repository.pip_path = [_path + '.exe']
+            else:
+                print("(INFO) Virtualenv 'pip' executable not found")
+ 
 
     def initialize(self, config):
         self.name = config.name
@@ -515,8 +561,13 @@ class Repository(object):
                 print("Not aborting installer...")
 
     def install_package(self, install, preinstall, dir):
+        Repository._configureExecutables()
         if Repository.useEasyInstall:
-            return self.easy_install(install, preinstall, dir)
+            try:
+                return self.easy_install(install, preinstall, dir)
+            except:
+                print("ERROR installing with easy_install; falling back on PIP")
+            return self.pip_install(install, preinstall, dir)
         else:
             try:
                 return self.pip_install(install, preinstall, dir)
@@ -1137,25 +1188,7 @@ class Installer(object):
         pass
 
     def install_packages(self, options):
-        #
-        # Set the bin directory
-        #
-        if os.path.exists(self.abshome_dir+os.sep+"Scripts"):
-            bindir = join(self.abshome_dir,"Scripts")
-        else:
-            bindir = join(self.abshome_dir,"bin")
-        if is_jython:
-            Repository.python = os.path.abspath(join(bindir, 'jython.bat'))
-        else:
-            Repository.python = os.path.abspath(join(bindir, 'python'))
-        if os.path.exists(os.path.abspath(join(bindir, 'easy_install'))):
-            Repository.easy_install_path = [Repository.python, os.path.abspath(join(bindir, 'easy_install'))]
-        else:
-            Repository.easy_install_path = [os.path.abspath(join(bindir, 'easy_install.exe'))]
-        if os.path.exists(os.path.abspath(join(bindir, 'pip'))):
-            Repository.pip_path = [Repository.python, os.path.abspath(join(bindir, 'pip'))]
-        else:
-            Repository.pip_path = [os.path.abspath(join(bindir, 'pip.exe'))]
+        Repository._configureExecutables(self)
         #
         self.get_packages(options)
         #
