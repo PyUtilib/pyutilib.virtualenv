@@ -3,10 +3,34 @@
 ===============================
 
 -------------------------------------------------------------------------------
- 3.4
+ 4.1
 -------------------------------------------------------------------------------
 
 - Under development.
+
+-------------------------------------------------------------------------------
+ 4.0
+-------------------------------------------------------------------------------
+
+- Fixing virtualenv so that it once again picks up the system site
+  packages by default. This was accidentally broken when we upgraded
+  the underlying virtualenv version to >1.6.4.
+
+- Removing the —update and —offline options.
+
+- Changing the package management to detect offline/online mode.
+
+- Removed the use of monkey patching for pip/setuptools installation.
+
+- Changed the order so setuptools or distribute come before pip.
+
+- Deferring resolution of virtualenv binaries (python, easy_install,
+  pip) until they are positively found (coopr —with-extras was
+  failing because the binaries were not installed the first time
+  the installer looked, and it was defaulting to the Windows binary
+  naming).
+
+- Adding a fallback from easy_install to pip.
 
 -------------------------------------------------------------------------------
  3.3
