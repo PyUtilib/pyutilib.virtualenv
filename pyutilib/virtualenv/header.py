@@ -1410,10 +1410,13 @@ def install_setuptools(py_executable, unzip=False,
                        search_dirs=None, never_download=False):
     try:
         if install_setuptools.use_default:
-            default_install_setuptools(py_executable, unzip, search_dirs, never_download)
+            #
+            # Always used 'distribute' instead of 'setuptools'
+            #
+            default_install_distribute(py_executable, unzip, search_dirs, never_download)
     except OSError:
         print("-----------------------------------------------------------------")
-        print("Error installing the 'setuptools' package!")
+        print("Error installing the 'distribute' package!")
         if os.environ['HTTP_PROXY'] == '':
             print("")
             print("WARNING: you may need to set your HTTP_PROXY environment variable!")
