@@ -4468,7 +4468,7 @@ class Installer(object):
             #    self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
             #else:
             #    self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
-            self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
+            #self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
             #
             # Configure the package versions, for offline installs
             #
@@ -4506,12 +4506,13 @@ class Installer(object):
         #if sys.version_info[:2] < (3,0):
         #    self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
         #else:
-        self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
+        #self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
         if options.preinstall:
             #
             # When preinstalling, add the setuptools package to the installation list
             #
-            self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
+            pass
+            #self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
             #self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
         for _pkg in options.packages:
             if os.path.exists(_pkg):
