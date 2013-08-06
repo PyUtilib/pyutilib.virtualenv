@@ -32,6 +32,7 @@ import stat
 import os
 
 using_subversion = True
+virtualenv_pypi_string = "virtualenv<=1.9.1"
 
 #
 # Working around error with PYTHONHOME
@@ -1068,7 +1069,7 @@ class Installer(object):
         print("-----------------------------------------------------------------")
         #
         if not options.preinstall and not (options.trunk or options.release):
-            self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv<=1.9.1') )
+            self.sw_packages.insert( 0, Repository('virtualenv', pypi=virtualenv_pypi_string) )
             self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
             #if sys.version_info[:2] < (3,0):
             #    self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
@@ -1107,7 +1108,7 @@ class Installer(object):
         #
         # Get source packages
         #
-        self.sw_packages.insert( 0, Repository('virtualenv', pypi='virtualenv') )
+        self.sw_packages.insert( 0, Repository('virtualenv', pypi=virtualenv_pypi_string) )
         self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
         #if sys.version_info[:2] < (3,0):
         #    self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
