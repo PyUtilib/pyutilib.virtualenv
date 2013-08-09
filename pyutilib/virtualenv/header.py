@@ -1425,7 +1425,7 @@ def install_setuptools(py_executable, unzip=False,
                        search_dirs=None, never_download=False):
     try:
         if install_setuptools.use_default:
-            default_install_setuptools(py_executable, unzip, search_dirs, never_download)
+            default_install_distribute(py_executable, unzip, search_dirs, never_download)
     except OSError:
         print("-----------------------------------------------------------------")
         print("Error installing the 'setuptools' package!")
