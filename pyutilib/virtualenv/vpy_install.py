@@ -4474,8 +4474,8 @@ class Installer(object):
             # 4/2013, setuptools and distribute re-merged, and the
             # current distribute is a shell wrapper -- that among other
             # things -- no longer bundles the cli-*.exe binaries.
-            #self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
             self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
+            self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
             #
             # Configure the package versions, for offline installs
             #
@@ -4519,15 +4519,17 @@ class Installer(object):
         # current distribute is a shell wrapper -- that among other
         # things -- no longer bundles the cli-*.exe binaries.
 
-        #self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
         self.sw_packages.insert( 0, Repository('setuptools',pypi='setuptools') )
+        self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
 
         if options.preinstall:
             #
             # When preinstalling, add the setuptools package to the installation list
             #
+            #self.sw_packages.insert( 0, Repository('setuptools',pypi='setuptools') )
             #self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
-            self.sw_packages.insert( 0, Repository('setuptools',pypi='setuptools') )
+            pass
+
         for _pkg in options.packages:
             if os.path.exists(_pkg):
                 self.sw_packages.append( Repository(_pkg, local=os.path.abspath(_pkg)) )
