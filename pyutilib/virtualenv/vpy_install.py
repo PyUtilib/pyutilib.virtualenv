@@ -3426,10 +3426,7 @@ import stat
 import os
 
 using_subversion = True
-if sys.version_info < (3,0):
-    virtualenv_pypi_string = "virtualenv<=1.9.1"
-else:
-    virtualenv_pypi_string = "virtualenv"
+virtualenv_pypi_string = "virtualenv<=1.9.1"
 
 #
 # Working around error with PYTHONHOME

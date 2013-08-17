@@ -15,10 +15,7 @@ import os
 import sys
 from setuptools import setup
 
-if sys.version_info < (3,0):
-    virtualenv_version = 'virtualenv<=1.9.1'
-else:
-    virtualenv_version = 'virtualenv'
+virtualenv_version = 'virtualenv<=1.9.1'
 
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
