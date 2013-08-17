@@ -15,6 +15,10 @@ import os
 import sys
 from setuptools import setup
 
+if sys.version_info < (3,0):
+    virtualenv_version = 'virtualenv<=1.9.1'
+else:
+    virtualenv_version = 'virtualenv'
 
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
@@ -43,7 +47,7 @@ setup(name="pyutilib.virtualenv",
     packages=['pyutilib', 'pyutilib.virtualenv'],
     keywords=['utility'],
     namespace_packages=['pyutilib'],
-    install_requires=['virtualenv<=1.9.1'],
+    install_requires=[virtualenv_version],
     entry_points = """
         [console_scripts]
         vpy_create=pyutilib.virtualenv.vpy_create:main
