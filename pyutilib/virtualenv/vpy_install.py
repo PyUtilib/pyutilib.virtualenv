@@ -3435,7 +3435,7 @@ if post_setuptools_distribute_merge or sys.version_info >= (3,0):
 else:
     virtualenv_pypi_string = "virtualenv<1.10"
     distribute_string = "distribute<0.7"
-    setuptools_string = "setuptools<0.7"
+    setuptools_string = "setuptools==0.6c11"
 
 #
 # Working around error with PYTHONHOME
