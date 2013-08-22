@@ -32,10 +32,16 @@ import stat
 import os
 
 using_subversion = True
-if sys.version_info < (3,0):
-    virtualenv_pypi_string = "virtualenv<=1.9.1"
-else:
+post_setuptools_distribute_merge = False
+
+if post_setuptools_distribute_merge or sys.version_info >= (3,0):
     virtualenv_pypi_string = "virtualenv"
+    distribute_string = "distribute"
+    setuptools_string = "setuptools"
+else:
+    virtualenv_pypi_string = "virtualenv<1.10"
+    distribute_string = "distribute<0.7"
+    setuptools_string = "setuptools<0.7"
 
 #
 # Working around error with PYTHONHOME
@@ -1083,8 +1089,10 @@ class Installer(object):
             # 4/2013, setuptools and distribute re-merged, and the
             # current distribute is a shell wrapper -- that among other
             # things -- no longer bundles the cli-*.exe binaries.
-            self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
-            self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
+            if post_setuptools_distribute_merge:
+                self.sw_packages.insert( 0, Repository('setuptools', pypi=setuptools_string) )
+            else:
+                self.sw_packages.insert( 0, Repository('distribute', pypi=distribute_string) )
             #
             # Configure the package versions, for offline installs
             #
@@ -1127,9 +1135,10 @@ class Installer(object):
         # 4/2013, setuptools and distribute re-merged, and the
         # current distribute is a shell wrapper -- that among other
         # things -- no longer bundles the cli-*.exe binaries.
-
-        self.sw_packages.insert( 0, Repository('setuptools',pypi='setuptools') )
-        self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
+        if post_setuptools_distribute_merge:
+            self.sw_packages.insert( 0, Repository('setuptools', pypi=setuptools_string) )
+        else:
+            self.sw_packages.insert( 0, Repository('distribute', pypi=distribute_string) )
 
         if options.preinstall:
             #
@@ -1423,17 +1432,24 @@ def main():
 # This is a monkey patch, to control the execution of the install_setuptools()
 # function that is defined by virtualenv.
 #
-default_install_setuptools = install_setuptools
+try:
+    default_install_setuptools = install_setuptools
+except:
+    default_install_setuptools = None
 
 
 def install_setuptools(py_executable, unzip=False,
                        search_dirs=None, never_download=False):
     try:
         if install_setuptools.use_default:
-            default_install_distribute(py_executable, unzip, search_dirs, never_download)
+            if post_setuptools_distribute_merge:
+                default_install_setuptools(py_executable, unzip, search_dirs, never_download)
+            else:
+                default_install_distribute(py_executable, unzip, search_dirs, never_download)
     except OSError:
         print("-----------------------------------------------------------------")
-        print("Error installing the 'setuptools' package!")
+        print( "Error installing the '%s' package!" % 
+               ( 'setuptools' if post_setuptools_distribute_merge else 'distribute') )
         if os.environ['HTTP_PROXY'] == '':
             print("")
             print("WARNING: you may need to set your HTTP_PROXY environment variable!")
@@ -1447,7 +1463,10 @@ install_setuptools.use_default=True
 # This is a monkey patch, to control the execution of the install_distribute()
 # function that is defined by virtualenv.
 #
-default_install_distribute = install_distribute
+try:
+    default_install_distribute = install_distribute
+except:
+    default_install_distribute = None
 
 
 def install_distribute(py_executable, unzip=False,
@@ -1471,7 +1490,10 @@ install_distribute.use_default=True
 # This is a monkey patch, to control the execution of the install_pip()
 # function that is defined by virtualenv.
 #
-default_install_pip = install_pip
+try:
+    default_install_pip = install_pip
+except:
+    default_install_pip = None
 
 def install_pip(*args, **kwds):
     try:
