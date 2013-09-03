@@ -574,28 +574,32 @@ class Repository(object):
 
     def install_package(self, install, preinstall, dir):
         Repository._configureExecutables()
+        extra_env = {}
+        if os.path.basename(dir) == 'distribute':
+            extra_env['DONT_PATCH_SETUPTOOLS'] = 'True'
         if Repository.useEasyInstall:
             try:
-                return self.easy_install(install, preinstall, dir)
+                return self.easy_install(install, preinstall, dir, extra_env)
             except:
                 print("ERROR installing with easy_install; falling back on PIP")
-            return self.pip_install(install, preinstall, dir)
+            return self.pip_install(install, preinstall, dir, extra_env)
         else:
             try:
-                return self.pip_install(install, preinstall, dir)
+                return self.pip_install(install, preinstall, dir, extra_env)
             except:
                 print("ERROR installing with PIP; falling back on easy_install")
-            return self.easy_install(install, preinstall, dir)
+            return self.easy_install(install, preinstall, dir, extra_env)
 
-    def easy_install(self, install, preinstall, dir):
+    def easy_install(self, install, preinstall, dir, extra_env=None):
         try:
             if install:
                 if self.offline:
-                    self.run([self.python, 'setup.py', 'install'], dir=dir)
+                    self.run([self.python, 'setup.py', 'install'], 
+                             dir=dir, extra_env=extra_env)
                 else:
                     self.run( self.easy_install_path 
                               + Repository.easy_install_flags + [self.pypi], 
-                              dir=os.path.dirname(dir))
+                              dir=os.path.dirname(dir), extra_env=extra_env)
             elif preinstall:
                 if not os.path.exists(dir):
                     self.run(self.easy_install_path 
@@ -603,7 +607,7 @@ class Repository(object):
                              + [ '--exclude-scripts', '--always-copy', 
                                  '--editable', '--build-directory', '.', 
                                  self.pypi], 
-                             dir=os.path.dirname(dir))
+                             dir=os.path.dirname(dir), extra_env=extra_env)
         except OSError:
             err,tb = sys.exc_info()[1:3] # BUG?
             print("")
@@ -618,22 +622,23 @@ class Repository(object):
                 sys.exit(1)
             print("Not aborting installer...")
 
-    def pip_install(self, install, preinstall, dir):
+    def pip_install(self, install, preinstall, dir, extra_env=None):
         try:
             if install:
                 if self.offline:
-                    self.run([self.python, 'setup.py', 'install'], dir=dir)
+                    self.run([self.python, 'setup.py', 'install'], 
+                             dir=dir, extra_env=extra_env)
                 else:
                     self.run( self.pip_path + ['install'] 
                               + Repository.pip_flags + [self.pypi],
-                              dir=os.path.dirname(dir))
+                              dir=os.path.dirname(dir), extra_env=extra_env)
             elif preinstall:
                 if not os.path.exists(dir):
                     self.run( self.pip_path + ['install'] 
                               + Repository.pip_flags 
                               + [ '--no-install', '--ignore-installed',
                                   '--build', '.', self.pypi ],
-                              dir=os.path.dirname(dir))
+                              dir=os.path.dirname(dir), extra_env=extra_env)
         except OSError:
             err,tb = sys.exc_info()[1:3] # BUG?
             print("")
@@ -662,7 +667,7 @@ class Repository(object):
         self.run( self.pip_path + ['install'] + Repository.pip_flags 
                   + ['--upgrade', self.pypi] )
 
-    def run(self, cmd, dir=None):
+    def run(self, cmd, dir=None, extra_env=None):
         cwd=os.getcwd()
         if not dir is None:
             os.chdir(dir)
@@ -670,7 +675,7 @@ class Repository(object):
         print( "\nRunning command '%s'\n\tin directory %s" 
                % (" ".join(cmd), cwd) )
         sys.stdout.flush()
-        call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True)
+        call_subprocess(cmd, filter_stdout=filter_python_develop, show_stdout=True, extra_env=extra_env)
         if not dir is None:
             os.chdir(cwd)
 
