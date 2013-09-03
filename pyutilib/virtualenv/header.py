@@ -1549,7 +1549,8 @@ def mkdir(path):
 #
 default_call_subprocess = call_subprocess
 def call_subprocess(cmd, **kwds):
-    if kwds and kwds.get('extra_env',{}).get('DONT_PATCH_SETUPTOOLS', '') == 'true':
+    if kwds.get('extra_env',{}) and \
+            kwds.get('extra_env',{}).get('DONT_PATCH_SETUPTOOLS', '') == 'true':
         kwds['extra_env']['DONT_PATCH_SETUPTOOLS'] = 'True'
     return default_call_subprocess(cmd, **kwds)
 
