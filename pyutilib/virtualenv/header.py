@@ -1012,6 +1012,16 @@ class Installer(object):
         os.environ['HTTP_PROXY'] = proxy
         os.environ['http_proxy'] = proxy
         print("  using the HTTP_PROXY environment: %s" % proxy)
+        proxy = ''
+        if not options.proxy is None:
+            proxy = options.proxy
+        if proxy is '':
+            proxy = os.environ.get('HTTPS_PROXY', '')
+        if proxy is '':
+            proxy = os.environ.get('https_proxy', '')
+        os.environ['HTTPS_PROXY'] = proxy
+        os.environ['https_proxy'] = proxy
+        print("  using the HTTPS_PROXY environment: %s" % proxy)
         print("")
         #
         # Disable the PYTHONPATH, to isolate this installation from
@@ -1526,6 +1536,17 @@ def mkdir(path):
             sys.exit(1)
     else:
         logger.info('Directory %s already exists', path)
+
+
+#
+# This is a monkey patch to correc the capitalization of "true" set by
+# virtualenv
+#
+default_call_subprocess = call_subprocess
+def call_subprocess(cmd, **kwds):
+    if kwds.get('extra_env',{}).get('DONT_PATCH_SETUPTOOLS', '') == 'true':
+        kwds['extra_env']['DONT_PATCH_SETUPTOOLS'] = 'True'
+    return default_call_subprocess(cmd, **kwds)
 
 #
 # The following methods will be called by virtualenv
