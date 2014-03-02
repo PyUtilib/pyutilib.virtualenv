@@ -977,6 +977,7 @@ class Installer(object):
             home_dir = args[0]
         self.home_dir = home_dir
         Installer.abshome_dir = os.path.abspath(home_dir)
+        print "HERE", Installer.abshome_dir
         print glob.glob(os.path.join(Installer.abshome_dir,'*'))
         if os.path.exists(os.path.join(Installer.abshome_dir,'Scripts')):
             Installer.py_executable = os.path.join(Installer.abshome_dir,'Scripts','python')
