@@ -977,14 +977,15 @@ class Installer(object):
             home_dir = args[0]
         self.home_dir = home_dir
         Installer.abshome_dir = os.path.abspath(home_dir)
-        print "HERE", Installer.abshome_dir
-        print glob.glob(os.path.join(Installer.abshome_dir,'*'))
-        if os.path.exists(os.path.join(Installer.abshome_dir,'Scripts')):
+        #print "HERE", Installer.abshome_dir
+        #print glob.glob(os.path.join(Installer.abshome_dir,'*'))
+        #if os.path.exists(os.path.join(Installer.abshome_dir,'Scripts')):
+        if sys.platform.startswith('win'):
             Installer.py_executable = os.path.join(Installer.abshome_dir,'Scripts','python')
-            print glob.glob(os.path.join(Installer.abshome_dir,'Scripts','*'))
+            #print glob.glob(os.path.join(Installer.abshome_dir,'Scripts','*'))
         else:
             Installer.py_executable = os.path.join(Installer.abshome_dir,'bin','python')
-            print glob.glob(os.path.join(Installer.abshome_dir,'bin','*'))
+            #print glob.glob(os.path.join(Installer.abshome_dir,'bin','*'))
         if sys.platform.startswith('win'):
             Installer.py_executable += '.exe'
         print("Executable: "+Installer.py_executable)
