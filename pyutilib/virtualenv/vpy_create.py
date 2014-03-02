@@ -21,7 +21,7 @@ import stat
 import virtualenv
 
 # The files that are integrated into a virtualenv installer
-files = ['odict.py', 'OrderedConfigParser.py', 'header.py']
+files = ['odict.py', 'OrderedConfigParser.py', 'header.py', 'wheels.py']
 
 pyutilib_re = re.compile("(pyutilib[/\\\\]virtualenv[/\\\\].*)")
 
@@ -33,7 +33,7 @@ def vpy_create(config_name, script_name):
     if config_name != 'vpy':
         source_files.append(config_name)
 
-    new_text = ""
+    new_text = "# PYUTILIB.VIRTUALENV - START\n"
     for f in source_files:
         m = pyutilib_re.search(f)
         if m:
@@ -46,6 +46,7 @@ def vpy_create(config_name, script_name):
         new_text += "\n"
     #new_text += "\n"
     #new_text += "Repository.easy_install_path='"+sys.prefix+os.sep+'bin'+os.sep+'easy_install'+"'"
+    new_text += "\n# PYUTILIB.VIRTUALENV - END\n"
 
     new_text = virtualenv.create_bootstrap_script(new_text)
     tmp = []

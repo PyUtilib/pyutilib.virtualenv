@@ -32,16 +32,8 @@ import stat
 import os
 
 using_subversion = True
-post_setuptools_distribute_merge = False
-
-if post_setuptools_distribute_merge or sys.version_info >= (3,0):
-    virtualenv_pypi_string = "virtualenv"
-    distribute_string = "distribute"
-    setuptools_string = "setuptools"
-else:
-    virtualenv_pypi_string = "virtualenv<1.10"
-    distribute_string = "distribute<0.7"
-    setuptools_string = "setuptools==0.6c11"
+virtualenv_pypi_string = "virtualenv"
+setuptools_string = "setuptools"
 
 #
 # Working around error with PYTHONHOME
@@ -893,6 +885,10 @@ class Installer(object):
 
     def adjust_options(self, options, args):
         #
+        # Add the virtualenv_support directory that is installed with the virtualenv.
+        #
+        options.search_dirs.append(os.path.join(Installer.abshome_dir, 'virtualenv_support'))
+        #
         # Force options.clear to be False.  This allows us to preserve the logic
         # associated with --clear, which we may want to use later.
         #
@@ -981,6 +977,10 @@ class Installer(object):
             home_dir = args[0]
         self.home_dir = home_dir
         Installer.abshome_dir = os.path.abspath(home_dir)
+        if os.path.exists(os.path.join(Installer.abshome_dir,'Scripts')):
+            Installer.py_executable = os.path.join(Installer.abshome_dir,'Scripts','python')
+        else:
+            Installer.py_executable = os.path.join(Installer.abshome_dir,'bin','python')
         if options.source is None:
             self.srcdir = join(self.abshome_dir,'src')
         else:
@@ -1053,7 +1053,6 @@ class Installer(object):
         #
         if options.install_offline:
             install_setuptools.use_default=False
-            install_distribute.use_default=False
             install_pip.use_default=False
         #
         # If we're clearing the current installation, then remove a bunch of
@@ -1093,21 +1092,9 @@ class Installer(object):
         print("-----------------------------------------------------------------")
         #
         if not options.preinstall and not (options.trunk or options.release):
-            self.sw_packages.insert( 0, Repository('virtualenv', pypi=virtualenv_pypi_string) )
-            self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
-            #if sys.version_info[:2] < (3,0):
-            #    self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
-            #else:
-            #    self.sw_packages.insert( 0, Repository('distribute', pypi='distribute') )
-
-            # For a while, distribute was more reliable; however, in
-            # 4/2013, setuptools and distribute re-merged, and the
-            # current distribute is a shell wrapper -- that among other
-            # things -- no longer bundles the cli-*.exe binaries.
-            if post_setuptools_distribute_merge:
-                self.sw_packages.insert( 0, Repository('setuptools', pypi=setuptools_string) )
-            else:
-                self.sw_packages.insert( 0, Repository('distribute', pypi=distribute_string) )
+            ##self.sw_packages.insert( 0, Repository('virtualenv', pypi=virtualenv_pypi_string) )
+            ##self.sw_packages.insert( 0, Repository('setuptools', pypi=setuptools_string) )
+            ##self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
             #
             # Configure the package versions, for offline installs
             #
@@ -1140,20 +1127,9 @@ class Installer(object):
         #
         # Get source packages
         #
-        self.sw_packages.insert( 0, Repository('virtualenv', pypi=virtualenv_pypi_string) )
-        self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
-        #if sys.version_info[:2] < (3,0):
-        #    self.sw_packages.insert( 0, Repository('setuptools', pypi='setuptools') )
-        #else:
-
-        # For a while, distribute was more reliable; however, in
-        # 4/2013, setuptools and distribute re-merged, and the
-        # current distribute is a shell wrapper -- that among other
-        # things -- no longer bundles the cli-*.exe binaries.
-        if post_setuptools_distribute_merge:
-            self.sw_packages.insert( 0, Repository('setuptools', pypi=setuptools_string) )
-        else:
-            self.sw_packages.insert( 0, Repository('distribute', pypi=distribute_string) )
+        ##self.sw_packages.insert( 0, Repository('virtualenv', pypi=virtualenv_pypi_string) )
+        ##self.sw_packages.insert( 0, Repository('setuptools', pypi=setuptools_string) )
+        ##self.sw_packages.insert( 0, Repository('pip', pypi='pip') )
 
         if options.preinstall:
             #
@@ -1404,6 +1380,10 @@ def get_installer():
         get_installer.installer = configure( create_installer() )
         return get_installer.installer
 
+##
+## The following change the behavior of the virtualenv logic
+##
+
 #
 # Override the default definition of rmtree, to better handle MSWindows errors
 # that are associated with read-only files
@@ -1453,8 +1433,7 @@ except:
     default_install_setuptools = None
 
 
-def install_setuptools(py_executable, unzip=False,
-                       search_dirs=None, never_download=False):
+def install_setuptools(py_executable, unzip=False, search_dirs=None, never_download=False):
     try:
         if install_setuptools.use_default:
             if post_setuptools_distribute_merge:
@@ -1473,42 +1452,6 @@ def install_setuptools(py_executable, unzip=False,
 
 install_setuptools.use_default=True
 
-
-#
-# This is a monkey patch, to control the execution of the install_distribute()
-# function that is defined by virtualenv.
-#
-try:
-    default_install_distribute = install_distribute
-except:
-    default_install_distribute = None
-
-
-def install_distribute(py_executable, unzip=False,
-                       search_dirs=None, never_download=False):
-    try:
-        if install_distribute.use_default:
-            default_install_distribute(py_executable, unzip, search_dirs, never_download)
-    except OSError:
-        print("-----------------------------------------------------------------")
-        print("Error installing the 'distribute' package!")
-        if os.environ['HTTP_PROXY'] == '':
-            print("")
-            print("WARNING: you may need to set your HTTP_PROXY environment variable!")
-        print("-----------------------------------------------------------------")
-        sys.exit(1)
-
-install_distribute.use_default=True
-
-
-#
-# This is a monkey patch, to control the execution of the install_pip()
-# function that is defined by virtualenv.
-#
-try:
-    default_install_pip = install_pip
-except:
-    default_install_pip = None
 
 def install_pip(*args, **kwds):
     try:
@@ -1542,9 +1485,8 @@ def mkdir(path):
     else:
         logger.info('Directory %s already exists', path)
 
-
 #
-# This is a monkey patch to correc the capitalization of "true" set by
+# This is a monkey patch to correct the capitalization of "true" set by
 # virtualenv
 #
 default_call_subprocess = call_subprocess
@@ -1566,7 +1508,10 @@ def adjust_options(options, args):
     installer.get_homedir(options, args)
     installer.adjust_options(options, args)
     installer.setup_installer(options)
+    unzip_wheels()
 
 def after_install(options, home_dir):
+    install_wheel(['virtualenv'], Installer.py_executable, options.search_dirs)
     installer = get_installer()
     installer.install_packages(options)
+
