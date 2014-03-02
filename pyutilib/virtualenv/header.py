@@ -978,9 +978,11 @@ class Installer(object):
         self.home_dir = home_dir
         Installer.abshome_dir = os.path.abspath(home_dir)
         if os.path.exists(os.path.join(Installer.abshome_dir,'Scripts')):
-            Installer.py_executable = os.path.join(Installer.abshome_dir,'Scripts','python.exe')
+            Installer.py_executable = os.path.join(Installer.abshome_dir,'Scripts','python')
         else:
             Installer.py_executable = os.path.join(Installer.abshome_dir,'bin','python')
+        if sys.platform.startswith('win'):
+            Installer.py_executable += '.exe'
         if options.source is None:
             self.srcdir = join(self.abshome_dir,'src')
         else:
