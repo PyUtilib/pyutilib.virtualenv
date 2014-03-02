@@ -15,7 +15,7 @@ import os
 import sys
 from setuptools import setup
 
-virtualenv_version = 'virtualenv<1.10'
+virtualenv_version = 'virtualenv'
 
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
