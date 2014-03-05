@@ -857,8 +857,7 @@ class Installer(object):
             default=False)
 
         parser.add_option('--pypi-url',
-            help='Provide an alernative index_url to easy_install '
-                 '(e.g., to redirect the installer to a local PyPI mirror)',
+            help='Specify the url for the PyPI package index used for online installation',
             action='store',
             dest='pypi_url',
             default=None)
