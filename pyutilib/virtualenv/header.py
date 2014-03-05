@@ -52,7 +52,7 @@ else:                            #pragma:nocover
     executable_extension=""
 
 
-def search_file(filename, search_path=None, implicitExt=executable_extension, executable=False,         isfile=True):
+def search_file(filename, search_path=None, implicitExt=executable_extension, executable=False, isfile=True):
     if search_path is None:
         #
         # Use the PATH environment if it is defined and not empty
@@ -160,7 +160,6 @@ def guess_release(svndir):
     if not latest_str[0] in '0123456789':
         return svndir
     return svndir+"/"+latest_str
-
 
 
 def zip_file(filename,fdlist):
@@ -1388,7 +1387,7 @@ def get_installer():
         return get_installer.installer
 
 ##
-## The following change the behavior of the virtualenv logic
+## The following functions change the behavior of the virtualenv logic
 ##
 
 #
@@ -1429,48 +1428,6 @@ def main():
             raise
         print("")
         print("ERROR: "+str(err))
-
-#
-# This is a monkey patch, to control the execution of the install_setuptools()
-# function that is defined by virtualenv.
-#
-try:
-    default_install_setuptools = install_setuptools
-except:
-    default_install_setuptools = None
-
-
-def install_setuptools(py_executable, unzip=False, search_dirs=None, never_download=False):
-    try:
-        if install_setuptools.use_default:
-            default_install_setuptools(py_executable, unzip, search_dirs, never_download)
-    except OSError:
-        print("-----------------------------------------------------------------")
-        print( "Error installing the '%s' package!" % 
-               ( 'setuptools' ) )
-        if os.environ['HTTP_PROXY'] == '':
-            print("")
-            print("WARNING: you may need to set your HTTP_PROXY environment variable!")
-        print("-----------------------------------------------------------------")
-        sys.exit(1)
-
-install_setuptools.use_default=True
-
-
-def install_pip(*args, **kwds):
-    try:
-        if install_pip.use_default:
-            default_install_pip(*args, **kwds)
-    except OSError:
-        print("-----------------------------------------------------------------")
-        print("Error installing the 'pip' package!")
-        if os.environ['HTTP_PROXY'] == '':
-            print("")
-            print("WARNING: you may need to set your HTTP_PROXY environment variable!")
-        print("-----------------------------------------------------------------")
-        sys.exit(1)
-
-install_pip.use_default=True
 
 
 #
