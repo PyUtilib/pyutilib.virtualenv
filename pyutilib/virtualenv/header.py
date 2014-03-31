@@ -1057,9 +1057,16 @@ class Installer(object):
         # When preinstalling or working offline, disable the
         # default install_setuptools() function.
         #
-        if options.install_offline:
-            install_setuptools.use_default=False
-            install_pip.use_default=False
+        # JDS [3/31/14]: This logic or something like it may be needed
+        # for the post-setuptools 2.0 world, but the actual
+        # install_setuptools and install_pip functions that we were
+        # editing have disappeared.  Commenting this out so that the
+        # offline installer doesn't fail due to syntax error.
+        #
+        #if options.install_offline:
+        #    install_setuptools.use_default=False
+        #    install_pip.use_default=False
+
         #
         # If we're clearing the current installation, then remove a bunch of
         # directories
