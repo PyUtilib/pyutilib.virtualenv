@@ -26,6 +26,23 @@ files = ['odict.py', 'OrderedConfigParser.py', 'header.py', 'wheels.py']
 pyutilib_re = re.compile("(pyutilib[/\\\\]virtualenv[/\\\\].*)")
 
 def vpy_create(config_name, script_name):
+    try:
+        virtualenv_ver = virtualenv.__version__.split('.')
+        for i,v in enumerate(virtualenv_ver):
+            try:
+                virtualenv_ver[i] = int(v)
+            except:
+                pass
+        virtualenv_ver = tuple(virtualenv_ver)
+    except:
+        # catch-all for __version__ failing or any other weirdness.
+        virtualenv_ver = (0,0)
+    if virtualenv_ver[:2] < (1,11):
+        raise RuntimeError(
+            "pyutilib.virtualenv.vpy_create() requires virtualenv>=1.11\n"
+            "\tVirtualenv version %s was found.\n\tAborting." % 
+            ( virtualenv.__version__, ) )
+
     here = os.path.dirname(os.path.abspath(__file__))
     source_files = []
     for f in files:
