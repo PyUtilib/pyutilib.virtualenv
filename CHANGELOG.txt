@@ -3,10 +3,18 @@
 ===============================
 
 -------------------------------------------------------------------------------
- 4.4
+ 4.3.4
 -------------------------------------------------------------------------------
 
-- Under development.
+- Added a guard to prevent users from running vpy_create using an old
+  version of virtualenv.
+
+- Recreating vpy_install with virtualenv 1.11.4
+
+- Patch to fix problem where vpy_install failed due to syntax error
+  when running in offline mode.
+
+- Cleaning up deprecated functions.
 
 -------------------------------------------------------------------------------
  4.3
