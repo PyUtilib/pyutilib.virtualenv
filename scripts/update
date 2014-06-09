@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ 1 <= 0 ]; then
+if [ 1 ]; then
     # Install wheel if it's not already available
     pip install wheel
 
@@ -20,8 +20,8 @@ fi
 zip -r virtualenv_support.zip virtualenv_support
 
 # Fill the template with the ZIP file
-python `dirname $0`/rebuild.py
-mv wheels.py ../pyutilib/virtualenv
+python `dirname $0`/rebuild.py wheels_template.py wheels.py
+cp wheels.py ../pyutilib/virtualenv
 
 # Generate ../pyutilib/virtualenv/vpy_install.py
 python update.py

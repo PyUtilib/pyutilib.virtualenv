@@ -35,8 +35,8 @@ import os
 import sys
 
 here = os.path.dirname(__file__)
-script = os.path.join(here, 'wheels_template.py')
-target = 'wheels.py'
+script = os.path.join(here, sys.argv[1])
+target = sys.argv[2]
 
 file_regex = re.compile(
     r'##file (.*?)\n([a-zA-Z][a-zA-Z0-9_]+)\s*=\s*convert\("""\n(.*?)"""\)',
