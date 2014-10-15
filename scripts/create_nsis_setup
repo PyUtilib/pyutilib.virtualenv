@@ -219,7 +219,7 @@ SectionEnd
 /*
  * data.nsh
  *
- * The Coopr data section.
+ * The Pyomo data section.
  */
 
 Section "" SEC02

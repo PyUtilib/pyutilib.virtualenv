@@ -53,8 +53,8 @@ pyname=PyUtilib
 root=https://software.sandia.gov/svn/public/pyutilib
 dev=True
 
-[coopr]
-root=https://software.sandia.gov/svn/public/coopr/coopr
+[pyomo]
+root=https://software.sandia.gov/svn/public/pyomo/pyomo
 dev=True
 
 [tevaspot]

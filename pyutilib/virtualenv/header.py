@@ -1158,7 +1158,7 @@ class Installer(object):
             else:
                 self.sw_packages.append( Repository(_pkg, pypi=_pkg) )
         #
-        # Add Coopr Forum packages
+        # Add Pyomo Forum packages
         #
         self.get_other_packages(options)
         #

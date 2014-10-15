@@ -16,7 +16,7 @@ def configure(installer):
     #
     installer.add_repository('nose', pypi='nose')
     installer.add_repository('pyutilib', pyname='PyUtilib', root='https://software.sandia.gov/svn/public/pyutilib', dev=True)
-    installer.add_repository('coopr', pyname='Coopr', root='https://software.sandia.gov/svn/public/coopr', dev=True)
+    installer.add_repository('pyomo', pyname='Pyomo', root='https://software.sandia.gov/svn/public/pyomo', dev=True)
     installer.add_repository('tevaspot', pyname='TevaSpot', root='https://software.sandia.gov/svn/teva/spot/spot', trunk='/packages/tevaspot', tag='/packages/tevaspot', dev=True)
     #
     # Add cmd scripts, which need to be customized
