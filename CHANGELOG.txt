@@ -3,10 +3,21 @@
 ===============================
 
 -------------------------------------------------------------------------------
+ 4.5
+-------------------------------------------------------------------------------
+
+- Next release.
+
+-------------------------------------------------------------------------------
  4.4
 -------------------------------------------------------------------------------
 
-- Under development.
+- Upgrading to virtualenv 1.11.6
+
+- Updating the update command so that it first tries to run lbin and
+  lpython to find pip and python before falling back on the system path.
+
+- Updating 'update' script to pass named arguments to rebuild.py
 
 -------------------------------------------------------------------------------
  4.3.4
