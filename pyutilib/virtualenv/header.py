@@ -149,7 +149,7 @@ def guess_release(svndir):
     latest = None
     latest_str = None
     for version in versions:
-        if version is '.':
+        if version == '.':
             continue
         v = parse_version(version)
         if latest is None or latest < v:
@@ -1016,9 +1016,9 @@ class Installer(object):
         proxy = ''
         if not options.proxy is None:
             proxy = options.proxy
-        if proxy is '':
+        if proxy == '':
             proxy = os.environ.get('HTTP_PROXY', '')
-        if proxy is '':
+        if proxy == '':
             proxy = os.environ.get('http_proxy', '')
         os.environ['HTTP_PROXY'] = proxy
         os.environ['http_proxy'] = proxy
@@ -1026,9 +1026,9 @@ class Installer(object):
         proxy = ''
         if not options.proxy is None:
             proxy = options.proxy
-        if proxy is '':
+        if proxy == '':
             proxy = os.environ.get('HTTPS_PROXY', '')
-        if proxy is '':
+        if proxy == '':
             proxy = os.environ.get('https_proxy', '')
         os.environ['HTTPS_PROXY'] = proxy
         os.environ['https_proxy'] = proxy
