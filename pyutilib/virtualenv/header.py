@@ -630,7 +630,7 @@ class Repository(object):
                         + Repository.pip_flags 
                         + [ #'--no-install', '--ignore-installed',
                             #'--build', '.', 
-                            '--download', '.', 
+                            '--no-binary', '--download', '.', 
                             self.pypi ],
                         dir=os.path.dirname(dir), extra_env=extra_env)
         except OSError:
