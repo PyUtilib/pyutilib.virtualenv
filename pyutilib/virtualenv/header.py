@@ -32,6 +32,7 @@ import stat
 import os
 
 using_subversion = True
+using_git = True
 virtualenv_pypi_string = "virtualenv"
 setuptools_string = "setuptools"
 
@@ -229,11 +230,12 @@ class Repository(object):
     pip_flags = ['-q']
     python = None #"python"
     svn = "svn" + executable_extension
+    git = "git" + executable_extension
     dev = []
 
     def __init__(self, name, **kwds):
         class _TEMP_(object):
-            def __init__( self, root=None, trunk=None, 
+            def __init__( self, root=None, trunk=None, github=None,
                           release=None, tag=None, pyname=None, pypi=None, 
                           dev=False, username=None, install=True, rev=None, 
                           local=None, platform=None, version=None, 
@@ -336,6 +338,7 @@ class Repository(object):
         self.tag = None
         self.release_root = None
         #
+        self.github = config.github
         self.pypi = config.pypi
         self.local = config.local
         self.platform = config.platform
@@ -424,6 +427,8 @@ class Repository(object):
         print('[%s]' % config.name)
         if not config.root is None:
             print('root=%s' % config.root)
+        if not config.github is None:
+            print('github=%s' % config.github)
         if not config.trunk is None:
             print('trunk=%s' % config.trunk)
         if not config.tag is None:
@@ -512,6 +517,24 @@ class Repository(object):
         if os.path.exists(dir):
             print("     No checkout required")
             print("-----------------------------------------------------------------")
+        elif using_git and not self.github is None:
+            print("-----------------------------------------------------------------")
+            try:
+                self.run([self.git, 'clone', self.github, dir])
+            except OSError:
+                err,tb = sys.exc_info()[1:3] # BUG?
+                print("")
+                print("Error checkout software %s with git at %s" % (self.name,self.github))
+                print(str(err))
+                print("Traceback:")
+                import traceback
+                traceback.print_stack(f=tb.tb_frame.f_back,file=sys.stdout)
+                traceback.print_tb(tb, file=sys.stdout)
+                if self.config.exit:
+                    print("Aborting installer!")
+                    sys.exit(1)
+                print("Not aborting installer...")
+                return
         elif not using_subversion:
             print("")
             print("Error: Cannot checkout software %s with subversion." % self.name)
@@ -858,6 +881,12 @@ class Installer(object):
             dest='localize',
             default=False)
 
+        parser.add_option('--git',
+            help='Checkout with git if the github URL is provided',
+            action='store_true',
+            dest='using_git',
+            default=False)
+
         parser.add_option('--pypi-url',
             help='Specify the url for the PyPI package index used for online installation',
             action='store',
@@ -929,9 +958,27 @@ class Installer(object):
             print("")
             using_subversion = False
         #
-        if len(args) > 1:
-            self.logger.fatal("ERROR: installer script can only have one argument")
-            sys.exit(1000)
+        # Determine if the git command is available
+        #
+        global using_git
+        if not options.using_git:
+            using_git = False
+        if using_git:
+            try:
+                sys.stdout.flush()
+                call_subprocess(['git'+executable_extension,'--version'], show_stdout=False)
+            except OSError:
+                print("")
+                print("------------------------------------------------")
+                print("WARNING: problems executing git commands.")
+                print("Git is disabled.")
+                print("------------------------------------------------")
+                print("")
+                using_git = False
+            #
+            if len(args) > 1:
+                self.logger.fatal("ERROR: installer script can only have one argument")
+                sys.exit(1000)
         #
         # Error checking
         #
