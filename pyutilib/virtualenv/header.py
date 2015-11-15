@@ -510,14 +510,16 @@ class Repository(object):
         print("-----------------------------------------------------------------")
         print("  Installing branch")
         print("  Checking out source for package "+self.name)
-        print("  %s %s" % (str(using_git), str(self.root)))
+        #print("  %s %s" % (str(using_git), str(self.root)))
         if self.local:
             print("     Package dir: "+self.local)
         elif using_git and not self.root is None:
             if '%23' in self.root:
-                self.root = self.root.split('%23')[0]
+                self.root, self.branch = self.root.split('%23')
             elif '#' in self.root:
-                self.root = self.root.split('#')[0]
+                self.root, self.branch = self.root.split('#')
+            else:
+                self.branch = None
             print("     Git dir: "+self.root)
         else:
             print("     Subversion dir: "+self.pkgdir)
@@ -527,16 +529,11 @@ class Repository(object):
         elif using_git and not self.root is None and '.git' in self.root:
             print("-----------------------------------------------------------------")
             try:
-                if '%23' in self.root:
-                    branch= ['-b', self.root.split('%23')[1]]
-                    url= self.root.split('%23')[0]
-                elif '#' in self.root:
-                    branch= ['-b', self.root.split('#')[1]]
-                    url= self.root.split('#')[0]
-                else:
+                if self.branch is None:
                     branch = []
-                    url= self.root
-                self.run([self.git, 'clone'] + branch + [url, dir])
+                else:
+                    branch= ['-b', self.branch]
+                self.run([self.git, 'clone'] + branch + [self.root, dir])
             except OSError:
                 err,tb = sys.exc_info()[1:3] # BUG?
                 print("")
