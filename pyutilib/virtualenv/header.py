@@ -512,6 +512,8 @@ class Repository(object):
         print("  Checking out source for package "+self.name)
         if self.local:
             print("     Package dir: "+self.local)
+        elif using_git and not self.github is None:
+            print("     Git dir: "+self.github)
         else:
             print("     Subversion dir: "+self.pkgdir)
         if os.path.exists(dir):
