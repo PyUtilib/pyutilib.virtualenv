@@ -21,6 +21,7 @@ try:
     import StringIO
 except ImportError:
     import io as StringIO
+import string
 import zipfile
 import shutil
 import string
@@ -235,7 +236,7 @@ class Repository(object):
 
     def __init__(self, name, **kwds):
         class _TEMP_(object):
-            def __init__( self, root=None, trunk=None, github=None,
+            def __init__( self, root=None, trunk=None, 
                           release=None, tag=None, pyname=None, pypi=None, 
                           dev=False, username=None, install=True, rev=None, 
                           local=None, platform=None, version=None, 
@@ -338,7 +339,6 @@ class Repository(object):
         self.tag = None
         self.release_root = None
         #
-        self.github = config.github
         self.pypi = config.pypi
         self.local = config.local
         self.platform = config.platform
@@ -369,7 +369,7 @@ class Repository(object):
         self.install = config.install
 
     def guess_versions(self):
-        if self.config.github is None and not self.config.root is None:
+        if not self.config.root is None and not '.git' in self.config.root:
             if not self.offline:
                 if using_subversion and not sys.platform.startswith('win'):
                     rootdir_output = subprocess.Popen(['svn','ls',self.config.root], stdout=subprocess.PIPE).communicate()[0]
@@ -405,8 +405,7 @@ class Repository(object):
                     self.release = None
                     self.release_root = None
         else:
-            # NOTE: this forces the use of github, which wasn't the intent
-            self.trunk = self.config.github
+            self.trunk = self.config.root
         if not self.config.trunk is None:
             if self.trunk is None:
                 self.trunk = self.config.trunk
@@ -430,8 +429,6 @@ class Repository(object):
         print('[%s]' % config.name)
         if not config.root is None:
             print('root=%s' % config.root)
-        if not config.github is None:
-            print('github=%s' % config.github)
         if not config.trunk is None:
             print('trunk=%s' % config.trunk)
         if not config.tag is None:
@@ -513,23 +510,37 @@ class Repository(object):
         print("-----------------------------------------------------------------")
         print("  Installing branch")
         print("  Checking out source for package "+self.name)
+        print("  %s %s" % (str(using_git), str(self.root)))
         if self.local:
             print("     Package dir: "+self.local)
-        elif using_git and not self.github is None:
-            print("     Git dir: "+self.github)
+        elif using_git and not self.root is None:
+            if '%23' in self.root:
+                self.root = self.root.split('%23')[0]
+            elif '#' in self.root:
+                self.root = self.root.split('#')[0]
+            print("     Git dir: "+self.root)
         else:
             print("     Subversion dir: "+self.pkgdir)
         if os.path.exists(dir):
             print("     No checkout required")
             print("-----------------------------------------------------------------")
-        elif using_git and not self.github is None:
+        elif using_git and not self.root is None and '.git' in self.root:
             print("-----------------------------------------------------------------")
             try:
-                self.run([self.git, 'clone', self.github, dir])
+                if '%23' in self.root:
+                    branch= ['-b', self.root.split('%23')[1]]
+                    url= self.root.split('%23')[0]
+                elif '#' in self.root:
+                    branch= ['-b', self.root.split('#')[1]]
+                    url= self.root.split('#')[0]
+                else:
+                    branch = []
+                    url= self.root
+                self.run([self.git, 'clone'] + branch + [url, dir])
             except OSError:
                 err,tb = sys.exc_info()[1:3] # BUG?
                 print("")
-                print("Error checkout software %s with git at %s" % (self.name,self.github))
+                print("Error checkout software %s with git at %s" % (self.name,self.root))
                 print(str(err))
                 print("Traceback:")
                 import traceback
@@ -886,12 +897,6 @@ class Installer(object):
             dest='localize',
             default=False)
 
-        parser.add_option('--git',
-            help='Checkout with git if the github URL is provided',
-            action='store_true',
-            dest='using_git',
-            default=False)
-
         parser.add_option('--pypi-url',
             help='Specify the url for the PyPI package index used for online installation',
             action='store',
@@ -966,8 +971,6 @@ class Installer(object):
         # Determine if the git command is available
         #
         global using_git
-        if not options.using_git:
-            using_git = False
         if using_git:
             try:
                 sys.stdout.flush()
