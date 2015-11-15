@@ -6,7 +6,9 @@
  4.5
 -------------------------------------------------------------------------------
 
-- Next release.
+- Adding support for references to github repositories.  For example:
+  root=https://github.com/PyUtilib/pyutilib.git#pyomo references the PyUtilib
+  github repository with branch 'pyomo'.
 
 -------------------------------------------------------------------------------
  4.4
