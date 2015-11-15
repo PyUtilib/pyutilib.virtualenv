@@ -515,6 +515,7 @@ class Repository(object):
         elif using_git and not self.github is None:
             print("     Git dir: "+self.github)
         else:
+            print("     %s %s" % (str(using_git), str(self.github)))
             print("     Subversion dir: "+self.pkgdir)
         if os.path.exists(dir):
             print("     No checkout required")
