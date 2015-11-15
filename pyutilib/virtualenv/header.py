@@ -369,7 +369,7 @@ class Repository(object):
         self.install = config.install
 
     def guess_versions(self):
-        if not self.config.root is None:
+        if not self.config.github is None and not self.config.root is None:
             if not self.offline:
                 if using_subversion and not sys.platform.startswith('win'):
                     rootdir_output = subprocess.Popen(['svn','ls',self.config.root], stdout=subprocess.PIPE).communicate()[0]
