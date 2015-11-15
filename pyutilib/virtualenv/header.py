@@ -404,6 +404,9 @@ class Repository(object):
                 except (urllib2.HTTPError,IOError):
                     self.release = None
                     self.release_root = None
+        else:
+            # NOTE: this forces the use of github, which wasn't the intent
+            self.trunk = self.config.github
         if not self.config.trunk is None:
             if self.trunk is None:
                 self.trunk = self.config.trunk
