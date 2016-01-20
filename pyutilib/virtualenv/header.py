@@ -15,8 +15,10 @@ import subprocess
 import re
 try:
     import urllib2
+    from urllib import pathname2url
 except ImportError:
     import urllib.request as urllib2
+    from urllib.request import pathname2url
 try:
     import StringIO
 except ImportError:
@@ -1366,8 +1368,8 @@ class Installer(object):
         if not fp is None:
             parser.readfp(fp, '<default configuration>')
         elif not os.path.exists(file):
-            if not '/' in file and not self.config_file is None:
-                file = os.path.dirname(self.config_file)+"/"+file
+            if os.path.sep not in file and self.config_file is not None:
+                file = 'file:'+pathname2url(os.path.join(os.path.dirname(self.config_file),file))
             try:
                 if sys.version_info[:2] <= (2,5):
                     output = urllib2.urlopen(file).read()
