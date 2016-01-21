@@ -120,7 +120,20 @@ def parse_version(s):
 #   9.3.2
 #   8.28.rc1
 #
-def guess_release(svndir):
+def guess_release(versions):
+    latest = None
+    latest_str = None
+    for version in versions:
+        if version == '.':
+            continue
+        v = parse_version(version)
+        if latest is None or latest < v:
+            latest = v
+            latest_str = version
+    return latest_str
+
+
+def guess_svn_release(svndir):
     if using_subversion and not sys.platform.startswith('win'):
         output = subprocess.Popen(['svn','ls',svndir], stdout=subprocess.PIPE).communicate()[0]
         if sys.version_info[:2] >= (3,0):
@@ -150,15 +163,7 @@ def guess_release(svndir):
         versions = []
         for link in links:
             versions.append( re.split('>', link[:-5])[-1] )
-    latest = None
-    latest_str = None
-    for version in versions:
-        if version == '.':
-            continue
-        v = parse_version(version)
-        if latest is None or latest < v:
-            latest = v
-            latest_str = version
+    latest_str = guess_release(versions)
     if latest_str is None:
         return None
     if not latest_str[0] in '0123456789':
@@ -371,7 +376,10 @@ class Repository(object):
         self.install = config.install
 
     def guess_versions(self):
-        if not self.config.root is None and not '.git' in self.config.root:
+        if self.config.root is not None and '.git' in self.config.root:
+            self.trunk = self.config.root
+            self.release = 'release'
+        elif self.config.root is not None:
             if not self.offline:
                 if using_subversion and not sys.platform.startswith('win'):
                     rootdir_output = subprocess.Popen(['svn','ls',self.config.root], stdout=subprocess.PIPE).communicate()[0]
@@ -393,14 +401,14 @@ class Repository(object):
             try:
                 if self.offline or not 'releases' in rootdir_output:
                     raise IOError
-                self.release = guess_release(self.config.root+'/releases')
+                self.release = guess_svn_release(self.config.root+'/releases')
                 self.tag = None
                 self.release_root = self.release
             except (urllib2.HTTPError,IOError):
                 try:
                     if self.offline or not 'tags' in rootdir_output:
                         raise IOError
-                    self.release = guess_release(self.config.root+'/tags')
+                    self.release = guess_svn_release(self.config.root+'/tags')
                     self.tag = self.release
                     self.release_root = self.release
                 except (urllib2.HTTPError,IOError):
@@ -515,14 +523,16 @@ class Repository(object):
         #print("  %s %s" % (str(using_git), str(self.root)))
         if self.local:
             print("     Package dir: "+self.local)
-        elif using_git and not self.root is None:
+        elif using_git and not self.root is None and '.git' in self.root:
             if '%23' in self.root:
                 self.root, self.branch = self.root.split('%23')
             elif '#' in self.root:
                 self.root, self.branch = self.root.split('#')
             else:
                 self.branch = None
-            print("     Git dir: "+self.root)
+            print("     Git dir: %s%s" %
+                  ( self.root,
+                    ' (branch: %s)' % self.branch if self.branch else '' ) )
         else:
             print("     Subversion dir: "+self.pkgdir)
         if os.path.exists(dir):
@@ -550,6 +560,19 @@ class Repository(object):
                     sys.exit(1)
                 print("Not aborting installer...")
                 return
+            if self.pkgdir == 'release':
+                _cwd = os.getcwd()
+                try:
+                    os.chdir(dir)
+                    versions = subprocess.Popen(
+                        [self.git, 'tag'], stdout=subprocess.PIPE
+                        ).communicate()[0].split()
+                    latest_version = guess_release(versions)
+                    print("Git switching %s to tag: %s" %
+                          ( self.name, latest_version ))
+                    self.run([ self.git, 'checkout', 'tags/'+latest_version ])
+                finally:
+                    os.chdir(_cwd)
         elif not using_subversion:
             print("")
             print("Error: Cannot checkout software %s with subversion." % self.name)
