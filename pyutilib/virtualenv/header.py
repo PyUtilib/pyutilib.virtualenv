@@ -16,9 +16,11 @@ import re
 try:
     import urllib2
     from urllib import pathname2url
+    from urlparse import urlparse
 except ImportError:
     import urllib.request as urllib2
     from urllib.request import pathname2url
+    from urllib.parse import urlparse
 try:
     import StringIO
 except ImportError:
@@ -932,6 +934,12 @@ class Installer(object):
             dest='pypi_url',
             default=None)
 
+        parser.add_option('--trust-pypi-url',
+            help='Assert that the specified PyPI URL is a trusted host',
+            action='store_true',
+            dest='trust_pypi_url',
+            default=False)
+
 
         #
         # Change the virtualenv options
@@ -1043,6 +1051,9 @@ class Installer(object):
             Repository.easy_install_flags.append(options.pypi_url)
             Repository.pip_flags.append("--index-url")
             Repository.pip_flags.append(options.pypi_url)
+            if options.trust_pypi_url:
+                Repository.pip_flags.append("--trusted-host")
+                Repository.pip_flags.append(urlparse(options.pypi_url).hostname)
 
     def get_homedir(self, options, args):
         #
